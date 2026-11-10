@@ -1,0 +1,27 @@
+Rapfi 0.43.01 — GPL-3.0-or-later
+Copyright: Rapfi developers. See AUTHORS.txt and LICENSE.txt.
+
+Official project: https://github.com/dotb1ue/rapfi
+Official distribution: https://www.gomocalc.com/build/
+Downloaded 2026-11-10. Reported engine build:
+0.43.01 (clang++ 21.0.0 on Wasm WASM_SIMD SINGLE_THREAD)
+Distribution Last-Modified: 2025-07-27 20:02:59 GMT.
+
+Bundled upstream source snapshot, version 0.43.01:
+rapfi-source.tar.gz
+https://github.com/dotb1ue/rapfi/tree/f6f05b2e66bafea930ac5802f544a35547fc70ce
+This is the last upstream commit before the distribution timestamp, with the
+matching version. Bit-for-bit reproducibility of the upstream binary has not
+been established. No changes to the engine JS or WASM binary were made.
+
+Network submodule for that source:
+https://github.com/dotb1ue/rapfi-networks/tree/918b757a129258e9e765f77fe17d507c2bb1a60b
+All the network/config bytes in the official rapfi.data are provided locally
+as weights-0.bin, weights-1.bin, weights-2.bin, concatenated in that order.
+The worker passes these original bytes through getPreloadedPackage.
+
+Building upstream: see Readme.md and Rapfi/CMakeLists.txt in source archive.
+Use Emscripten, NO_COMMAND_MODULES=ON, NO_MULTI_THREADING=ON,
+USE_WASM_SIMD=ON and the corresponding Networks files.
+The application wrapper worker.js and engine-client.js are included as source.
+No warranty; see LICENSE.txt.
