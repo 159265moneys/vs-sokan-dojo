@@ -2,6 +2,19 @@
 
 スマホ向けの縦持ち五目並べ。固定アスペクト比を持たず、端末の画面いっぱいに表示する。盤面は利用できる高さと幅で縮尺を変え、セーフエリアにも追従する。素のHTML / CSS / JavaScript + Rapfi WebAssembly。外部ゲームエンジンやサーバー計算は不要。
 
+[ゲームを開く](https://159265moneys.github.io/vs-sokan-dojo/)
+
+## GitHub Pagesへの公開
+
+`dist/` をGitHub Pagesへ配信する。定期実行は設定せず、公開ワークフローは手動実行する。
+
+```sh
+git push origin main
+gh workflow run pages.yml --ref main
+```
+
+ワークフローはゲーム・Rapfi・教材の検証後に公開する。Web App Manifestの起動先とスコープは相対指定で、プロジェクトURL配下に対応している。
+
 ## 起動
 
 ```sh
