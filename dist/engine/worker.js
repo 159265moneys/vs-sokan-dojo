@@ -29,13 +29,57 @@ function output(line) {
 async function init() {
   try {
     self.postMessage({ type: "status", text: "読み込み中" });
+    const sizes = [16000000, 16000000, 8306406];
+    const total = sizes.reduce((a, b) => a + b, 0);
+    let loaded = 0,
+      lastPercent = -1;
+    const report = (bytes) => {
+      loaded += bytes;
+      const percent = Math.min(100, Math.floor((loaded / total) * 100));
+      if (percent !== lastPercent) {
+        lastPercent = percent;
+        self.postMessage({
+          type: "progress",
+          loaded,
+          total,
+          percent,
+          stage: "download",
+        });
+      }
+    };
     const chunks = await Promise.all(
       [0, 1, 2].map(async (i) => {
         const r = await fetch(`weights-${i}.bin`);
-        if (!r.ok) throw Error("重みを取得できません");
-        return new Uint8Array(await r.arrayBuffer());
+        if (!r.ok) throw Error("読み込みに失敗しました");
+        if (!r.body) {
+          const bytes = new Uint8Array(await r.arrayBuffer());
+          if (bytes.length !== sizes[i]) throw Error("データを読み込めません");
+          report(bytes.length);
+          return bytes;
+        }
+        const bytes = new Uint8Array(sizes[i]);
+        let offset = 0;
+        const reader = r.body.getReader();
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          if (offset + value.length > bytes.length)
+            throw Error("データを読み込めません");
+          bytes.set(value, offset);
+          offset += value.length;
+          report(value.length);
+        }
+        if (offset !== sizes[i]) throw Error("データを読み込めません");
+        return bytes;
       }),
     );
+    self.postMessage({
+      type: "progress",
+      loaded,
+      total,
+      percent: 100,
+      stage: "initialize",
+    });
     const bytes = new Uint8Array(chunks.reduce((n, c) => n + c.length, 0));
     let offset = 0;
     for (const c of chunks) {

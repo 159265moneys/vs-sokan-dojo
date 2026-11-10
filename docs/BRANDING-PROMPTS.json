@@ -1,0 +1,24 @@
+{
+  "tool": "built-in image_gen",
+  "title": "VS 楚涵",
+  "assets": {
+    "title": "dist/assets/branding/title.png",
+    "emblem": "dist/assets/branding/emblem.png",
+    "home": "dist/assets/branding/icon-512.png",
+    "apple": "dist/assets/branding/apple-touch-icon.png"
+  },
+  "prompts": [
+    {
+      "key": "sokanTitle",
+      "prompt": "Use case: logo-brand. Asset type: a finished transparent title-logo sprite for a Japanese mobile Gomoku game, NOT a mockup. Exact text must read \"VS 楚涵\". The two kanji are 楚 (U+695A) and 涵 (U+6DB5); preserve those precise characters and do not substitute similar characters. One horizontal line, VS smaller on the left and 楚涵 large and unmistakably readable on the right. Create original strong, compact, hand-lettered Japanese arcade game typography: broad confident brush-cut strokes, clean solid silhouettes, slight forward energy, highly legible at 140px wide. Warm ivory kanji and restrained amber-gold VS with a tiny amber ink slash underline, matching a charcoal-navy mobile board-game interface. Flat screen-printed ink texture only within the letters, very little distress. Wide approximately 3:1 composition, tightly and evenly framed with very little transparent margin. Genuine transparent background. No board, no stones, no extra text, no English slogan, no seal, no badge, no shield, no crown, no flames, no chrome bevel, no lens flares, no watermark. This is an actual separate production logo sprite."
+    },
+    {
+      "key": "sokanEmblem",
+      "prompt": "Use case: stylized-concept. Asset type: a finished separate game-emblem sprite for a premium Japanese mobile Gomoku duel game. No text. Square composition, genuinely transparent background. A bold compact amber wooden Gomoku board tile viewed from a shallow elevated angle, with only a few crisp crossing grid lines. Two oversized glossy playing stones dominate the emblem: a deep obsidian-black stone in the front-left and an ivory-white stone slightly behind-right, visibly opposing each other, subtly overlapping. One short sharp amber ink-stroke sweep under the tile conveys competitive energy without any explosion. Polished hand-painted 2.5D game inventory art, restrained texture, precise silhouette, clear light from upper left, rich but controlled contrast. Make both stones and the board instantly distinguishable when the whole icon is shown at 40px. Use the charcoal-navy, warm ivory and amber palette of a readable mobile game. Fill about 85 percent of the square canvas with the emblem, leave an even transparent margin. Only this game object, no words, no UI, no mockup, no shield, no crown, no swords, no fire, no badges, no fake app border, no watermark."
+    },
+    {
+      "key": "sokanHomeIcon",
+      "prompt": "Use case: compositing. Asset type: finished home-screen app icon for the Japanese Gomoku game VS 楚涵. Input image 1 is the reference emblem; preserve its two glossy black and ivory Gomoku stones, amber wooden board tile, and clean painted 2.5D treatment. Create a NEW square fully opaque app icon, 1024x1024 or larger, with a solid deep charcoal-navy background (#11151c) extending to all four corners, no transparency and no premade rounded corners. The entire emblem should be scaled down and centered within the central 70 percent of the canvas so all important parts are safe under circular and squircle launcher masks. Strong readable black-white silhouette and warm board edge, slightly brighter rim on black stone for dark-background contrast. Subtle controlled lighting only. No lettering, no watermark, no phone mockup, no surrounding frame, no fake UI, no gradient halo, no flames or badges. This is a standalone production app icon, not a sheet."
+    }
+  ]
+}

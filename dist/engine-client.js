@@ -1,7 +1,8 @@
 export class Engine {
-  constructor(onStatus = () => {}, onInfo = () => {}) {
+  constructor(onStatus = () => {}, onInfo = () => {}, onProgress = () => {}) {
     this.onStatus = onStatus;
     this.onInfo = onInfo;
+    this.onProgress = onProgress;
     this.seq = 0;
     this.pending = null;
     this.start();
@@ -11,6 +12,7 @@ export class Engine {
     this.onStatus("loading");
     this.worker = new Worker(new URL("./engine/worker.js", import.meta.url));
     this.worker.onmessage = ({ data: d }) => {
+      if (d.type === "progress") this.onProgress(d);
       if (d.type === "ready") {
         clearTimeout(this.bootTimer);
         this.ready = true;

@@ -210,3 +210,66 @@ export function makePuzzle(l, t) {
   };
 }
 export const moveLabel = coord;
+
+// Keep the original catalog stable for existing records and small-board proofs.
+// These additions teach a local defensive objective, not a universal best move.
+const earlyDefenseLessons = [
+  {
+    id: "live-three",
+    tag: "08 / 四になる前に守る",
+    name: "三のうちに、片側を閉じる。",
+    short: "活三を止める",
+    black: "A1 C1 E1",
+    white: "G8 H8 I8",
+    answers: "F8 J8",
+    theme: "early-defense",
+    goal: "次の活四を防ぐ",
+    steps: [
+      {
+        move: "F8",
+        title: "三の片側を閉じる",
+        text: "白の三を放置すると、両端が空いた四になる。F8かJ8で片側を閉じる。",
+        marks: "J8",
+      },
+      {
+        move: "J8",
+        title: "白の四は片側だけ",
+        text: "F8を閉じたので、白の勝ち口はK8だけ。",
+        marks: "K8",
+      },
+      {
+        move: "K8",
+        title: "残った勝ち口を塞ぐ",
+        text: "四になる前の一手が、守れる形を残した。",
+        marks: "K8",
+      },
+    ],
+  },
+  {
+    id: "broken-three",
+    tag: "09 / 離れた三も見る",
+    name: "隙間があっても、三。",
+    short: "飛び三を止める",
+    black: "A1 C1 E1",
+    white: "G8 I8 J8",
+    answers: "F8 H8 K8",
+    theme: "early-defense",
+    goal: "次の活四を防ぐ",
+    steps: [
+      {
+        move: "H8",
+        title: "隙間への一手を止める",
+        text: "白H8で両端の空いた四になる。隙間H8か、端のF8・K8を閉じる。",
+        marks: "H8 F8 K8",
+      },
+    ],
+  },
+].map((l) => ({
+  ...l,
+  black: p(l.black),
+  white: p(l.white),
+  answers: p(l.answers),
+  steps: l.steps.map((s) => ({ ...s, i: parse(s.move), marks: p(s.marks) })),
+}));
+
+export const trainingLessons = [...lessons, ...earlyDefenseLessons];

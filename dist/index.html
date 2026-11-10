@@ -12,17 +12,80 @@
       content="black-translucent"
     />
     <link rel="manifest" href="manifest.webmanifest" />
-    <meta name="theme-color" content="#101411" />
-    <title>VS ソカン — 五目道場</title>
+    <meta name="theme-color" content="#11151c" />
+    <title>VS 楚涵 | 五目並べ</title>
     <meta
       name="description"
       content="一手を研ぎ澄ませ。禁手なしの五目並べ、Rapfiとの対局、戦術の反復と棋譜検討。"
     />
-    <link rel="icon" href="assets/crest.svg" type="image/svg+xml" />
+    <link
+      rel="icon"
+      href="assets/branding/favicon-32.png"
+      type="image/png"
+      sizes="32x32"
+    />
+    <link
+      rel="apple-touch-icon"
+      href="assets/branding/apple-touch-icon.png"
+      sizes="180x180"
+    />
+    <meta name="apple-mobile-web-app-title" content="VS 楚涵" />
     <link rel="stylesheet" href="game-ui.css" />
   </head>
-  <body class="mobile-game" data-mode="play">
-    <div class="shell">
+  <body class="mobile-game title-visible" data-mode="play">
+    <section
+      id="title-screen"
+      class="title-screen"
+      aria-label="VS 楚涵 タイトル画面"
+    >
+      <div class="title-art">
+        <img
+          class="title-emblem"
+          src="assets/branding/emblem-source.png"
+          alt="五目並べの黒石と白石"
+          width="160"
+          height="160"
+        />
+        <h1>
+          <img
+            src="assets/branding/title.png"
+            alt="VS 楚涵"
+            width="600"
+            height="200"
+          />
+        </h1>
+      </div>
+      <div class="title-bottom">
+        <div class="loading-status">
+          <span class="loading-indicator" aria-hidden="true"></span
+          ><span id="loading-label" class="sr-only" role="status"
+            >読み込み中</span
+          ><span id="loading-percent">0%</span>
+        </div>
+        <div
+          id="loading-progress"
+          class="loading-track"
+          role="progressbar"
+          aria-label="読み込み"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="0"
+        >
+          <span id="loading-fill"></span>
+        </div>
+        <button
+          id="title-start"
+          class="primary"
+          data-action="title-start"
+          disabled
+        >
+          はじめる</button
+        ><button id="title-retry" class="secondary" data-action="retry" hidden>
+          再読み込み</button
+        ><button class="title-learn" data-action="title-learn">型を学ぶ</button>
+      </div>
+    </section>
+    <div class="shell" inert aria-hidden="true">
       <aside class="rail">
         <a href="#play" class="brand" aria-label="五目道場 ホーム"
           ><img src="assets/crest.svg" alt="" /><span
@@ -53,10 +116,22 @@
       </aside>
       <main>
         <header class="topbar">
-          <div class="breadcrumb">
-            <svg class="ui-icon" aria-hidden="true">
-              <use href="assets/ui-icons.svg#board" /></svg
-            >VS ソカン <b id="mode-label">対局</b>
+          <div class="game-brand" aria-label="VS 楚涵">
+            <img
+              class="game-emblem"
+              src="assets/branding/emblem.png"
+              alt=""
+              width="36"
+              height="36"
+            />
+            <img
+              class="game-wordmark"
+              src="assets/branding/title.png"
+              alt="VS 楚涵"
+              width="150"
+              height="50"
+            />
+            <b id="mode-label" class="sr-only">対局</b>
           </div>
           <div class="top-actions">
             <button
@@ -93,11 +168,26 @@
         <div id="arena" class="arena">
           <section class="board-column">
             <div class="match-strip">
+              <div class="board-status">
+                <span id="turn-status" role="status"
+                  ><i class="status-dot"></i> あなたの番</span
+                >
+                <div>
+                  <span id="move-count">000</span><small>手</small
+                  ><button
+                    id="numbers"
+                    class="text-button"
+                    aria-pressed="false"
+                  >
+                    手順番号
+                  </button>
+                </div>
+              </div>
+
               <div class="player">
                 <div class="stone-avatar black"></div>
                 <div>
-                  <span class="player-label">あなた</span
-                  ><strong>黒 <small>先手</small></strong>
+                  <span class="player-label">あなた</span><strong>黒</strong>
                 </div>
               </div>
               <span class="vs">VS</span>
@@ -126,23 +216,16 @@
                   viewBox="0 0 640 640"
                   aria-hidden="true"
                 ></svg>
-                <div id="intersections" class="intersections"></div>
+                <div
+                  id="intersections"
+                  class="intersections"
+                  role="rowgroup"
+                ></div>
                 <svg
                   id="board-overlay"
                   viewBox="0 0 640 640"
                   aria-hidden="true"
                 ></svg>
-              </div>
-            </div>
-            <div class="board-status">
-              <span id="turn-status" role="status"
-                ><i class="status-dot"></i> あなたの番</span
-              >
-              <div>
-                <span id="move-count">000</span><small>手</small
-                ><button id="numbers" class="text-button" aria-pressed="false">
-                  手順番号
-                </button>
               </div>
             </div>
             <div id="board-controls" class="board-controls"></div>
@@ -151,13 +234,13 @@
         </div>
         <section id="records-view" class="records-view" hidden></section>
         <footer>
-          <span>VS ソカン <b>五目道場</b></span
+          <span>VS 楚涵 <b>五目道場</b></span
           ><span>15 × 15 <i>·</i> 禁手なし <i>·</i> 五連以上で勝ち</span
           ><span class="footer-motto">一手ずつ、強く。</span>
         </footer>
       </main>
     </div>
-    <dialog id="modal">
+    <dialog id="modal" aria-label="操作ダイアログ">
       <button class="modal-close icon-button" aria-label="閉じる">
         <svg class="ui-icon" aria-hidden="true">
           <use href="assets/ui-icons.svg#close" />

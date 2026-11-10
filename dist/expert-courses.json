@@ -1,0 +1,5361 @@
+{
+  "version": 1,
+  "engine": {
+    "name": "Rapfi",
+    "version": "0.43.01",
+    "platform": "Wasm SIMD / single thread / Node.js generation",
+    "rule": 0,
+    "strength": 100,
+    "threads": 1,
+    "hashKiB": 65536,
+    "independentSides": true,
+    "source": "engine/SOURCE.txt",
+    "sha256": "e9ad428a43d6f99c2f5394ddfd05a7e6132408fb85463477a5a9aa173a12c386",
+    "banner": [
+      "name=\"Rapfi\", version=\"0.43.01 (clang++ 21.0.0 on Wasm WASM_SIMD SINGLE_THREAD)\", author=\"Rapfi developers (see AUTHORS file)\", country=\"China\""
+    ]
+  },
+  "rule": "freestyle15",
+  "limitations": [
+    "実際に終局まで打った特定の対局例。全応手の完全戦略ではない。",
+    "白は本アプリ最強と同じ strength 100・8000 ms。端末性能や探索状態で着手は変わる。",
+    "評価値と読み筋は着手時の探索記録であり、最短勝利や完全最適の証明ではない。",
+    "相手の初手を固定した教材は forcedOpening に明記。以後の白は最強設定で探索。",
+    "この教材だけで人間の最強CPUへの勝利・無敗・習得を保証しない。"
+  ],
+  "courses": [
+    {
+      "id": "max-natural",
+      "title": "最強CPU実戦・中央からの勝ち筋",
+      "openingKind": "natural",
+      "blackMs": 8000,
+      "whiteMs": 8000,
+      "forcedOpening": null,
+      "moves": [
+        {
+          "i": 112,
+          "side": 1,
+          "phase": "opening",
+          "title": "中央から始める",
+          "text": "黒H8。四方向へ伸ばす場所を残す。",
+          "kind": "opening",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": null
+          },
+          "info": {},
+          "searchMs": 8000,
+          "elapsedMs": 61,
+          "forced": false
+        },
+        {
+          "i": 126,
+          "side": 2,
+          "phase": "opening",
+          "title": "相手との距離",
+          "text": "白G7は黒H8から横1・縦1路。まだ自分の四はできていない。",
+          "kind": "placement",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 112
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "22",
+            "SELDEPTH": "25",
+            "NODES": "538980",
+            "TOTALNODES": "1078861",
+            "TOTALTIME": "5261",
+            "SPEED": "205067",
+            "EVAL": "-472",
+            "WINRATE": "0.0862742",
+            "BESTLINE": "7,8 8,9 8,7 9,6 9,8 7,6 8,5 8,8 6,6 10,6 8,6 8,4 9,7 6,4 7,3 11,9 9,9 9,11 10,10 11,10 11,11 9,3 9,4 11,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 8018,
+          "forced": false
+        },
+        {
+          "i": 141,
+          "side": 1,
+          "phase": "opening",
+          "title": "二方向の連結点を残す",
+          "text": "H7・H6・H5は、G6と別の自石を異なる方向から結べる空点。",
+          "kind": "prepare-connection",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              112
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              127,
+              142,
+              157,
+              109,
+              113,
+              144
+            ],
+            "nearestOpponent": 126
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "48",
+            "NODES": "1146836",
+            "TOTALNODES": "1190670",
+            "TOTALTIME": "4882",
+            "SPEED": "243889",
+            "EVAL": "488",
+            "WINRATE": "0.919827",
+            "BESTLINE": "6,9 7,8 8,8 9,9 5,7 4,7 4,9 5,9 9,7 8,7 10,6 11,5 6,10 7,9 6,6 7,5 3,8 5,5 5,10 6,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7973,
+          "forced": false
+        },
+        {
+          "i": 127,
+          "side": 2,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "H7からG7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              126
+            ],
+            "nearbyOwn": [
+              126
+            ],
+            "links": [
+              126
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 112
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "43",
+            "NODES": "395162",
+            "TOTALNODES": "1061363",
+            "TOTALTIME": "4540",
+            "SPEED": "233780",
+            "EVAL": "-484",
+            "WINRATE": "0.0816602",
+            "BESTLINE": "7,8 5,8 5,7 7,10 8,11 8,9 7,9 8,10 9,10 10,8 10,9 11,8 9,8 9,9 11,7 7,6 6,6 7,5 8,5 4,10 6,10 5,11 3,9 5,12 4,8 2,10 7,11 5,9 5,10 3,10"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7971,
+          "forced": false
+        },
+        {
+          "i": 125,
+          "side": 1,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "F7からG6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              141
+            ],
+            "nearbyOwn": [
+              112,
+              141
+            ],
+            "links": [
+              141
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 126
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "22",
+            "SELDEPTH": "46",
+            "NODES": "1569691",
+            "TOTALNODES": "1828905",
+            "TOTALTIME": "7678",
+            "SPEED": "238200",
+            "EVAL": "585",
+            "WINRATE": "0.949069",
+            "BESTLINE": "5,8 4,7 8,9 7,9 8,10 8,11 9,8 7,10 7,11 9,9 10,7 8,7 11,6 12,5 10,6 10,5 9,6 8,6 8,5 11,8 9,4 9,5"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7678,
+          "forced": false
+        },
+        {
+          "i": 109,
+          "side": 2,
+          "phase": "opening",
+          "title": "二方向の連結点を残す",
+          "text": "E9・F9・F8は、E8と別の自石を異なる方向から結べる空点。",
+          "kind": "prepare-connection",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              126
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              94,
+              95,
+              110,
+              79,
+              81,
+              111,
+              154
+            ],
+            "nearestOpponent": 125
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "49",
+            "NODES": "1205287",
+            "TOTALNODES": "1578994",
+            "TOTALTIME": "4713",
+            "SPEED": "335029",
+            "EVAL": "-596",
+            "WINRATE": "0.0483376",
+            "BESTLINE": "5,7 4,9 3,9 4,6 4,7 6,6 7,6 8,8 9,9 2,7 3,8 5,5 4,4 3,10 6,7 8,9 6,5 5,6 8,7 7,9 5,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7972,
+          "forced": false
+        },
+        {
+          "i": 143,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "I6からG6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              112,
+              141
+            ],
+            "links": [
+              141
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 127
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "22",
+            "SELDEPTH": "18",
+            "NODES": "8919",
+            "TOTALNODES": "45223",
+            "TOTALTIME": "153",
+            "SPEED": "295575",
+            "EVAL": "585",
+            "WINRATE": "0.949069",
+            "BESTLINE": "8,9 7,9 8,10 8,11 9,8 7,10 7,11 9,9 10,7 8,7 11,6 12,5 10,6 10,5 9,6 8,6 8,5"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7972,
+          "forced": false
+        },
+        {
+          "i": 142,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "H6からH7・G7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              126,
+              127
+            ],
+            "nearbyOwn": [
+              126,
+              127
+            ],
+            "links": [
+              127,
+              126
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 141
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "52",
+            "NODES": "309671",
+            "TOTALNODES": "2657244",
+            "TOTALTIME": "7297",
+            "SPEED": "364155",
+            "EVAL": "-524",
+            "WINRATE": "0.0678623",
+            "BESTLINE": "7,9 8,10 8,8 7,10 9,8 10,8 9,10 9,9 7,11 9,7 10,7 6,5 7,5 4,9 3,10 5,7 5,6 5,10 5,9 3,8 6,11 8,11 9,12 8,12 8,13 11,9 12,10"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7299,
+          "forced": false
+        },
+        {
+          "i": 158,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "I5からI6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              143
+            ],
+            "nearbyOwn": [
+              141,
+              143
+            ],
+            "links": [
+              143
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 142
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "46",
+            "NODES": "1758644",
+            "TOTALNODES": "1768012",
+            "TOTALTIME": "5058",
+            "SPEED": "349547",
+            "EVAL": "593",
+            "WINRATE": "0.950968",
+            "BESTLINE": "8,10 8,8 9,7 10,7 10,8 9,9 11,9 12,10 11,8 12,8 5,10 7,10 4,9 5,7 7,12 6,11 3,10 2,11 4,10 2,10 4,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7973,
+          "forced": false
+        },
+        {
+          "i": 157,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "H5からH6・H7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              142
+            ],
+            "nearbyOwn": [
+              126,
+              127,
+              142
+            ],
+            "links": [
+              142,
+              127
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 141
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "50",
+            "NODES": "790412",
+            "TOTALNODES": "1556457",
+            "TOTALTIME": "4473",
+            "SPEED": "347967",
+            "EVAL": "-522",
+            "WINRATE": "0.0684976",
+            "BESTLINE": "7,10 8,8 8,7 9,9 7,11 7,12 10,10 9,6 10,6 9,5 8,5 4,9 3,10 9,3 9,4 10,4 8,6 8,4 7,5 8,2 7,1 11,3 10,3 11,2 11,5 12,2 13,1 10,2 9,2 11,1 12,0"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7973,
+          "forced": false
+        },
+        {
+          "i": 128,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "I8・I4への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              112,
+              143
+            ],
+            "nearbyOwn": [
+              112,
+              141,
+              143,
+              158
+            ],
+            "links": [
+              143,
+              158,
+              112
+            ],
+            "nextOpenFours": [
+              113,
+              173
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 127
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "30",
+            "SELDEPTH": "35",
+            "NODES": "2085184",
+            "TOTALNODES": "3074220",
+            "TOTALTIME": "6692",
+            "SPEED": "459387",
+            "EVAL": "+M37",
+            "WINRATE": "1",
+            "BESTLINE": "8,8 7,11 7,12 8,7 10,10 9,9 10,9 8,11 10,11 10,12 11,10 9,10 11,9 9,11 9,12 12,9 10,8 10,7 11,8 11,11 12,8 9,8 9,7 6,11 5,11 12,10 13,8 14,8 13,9 9,13 8,14 13,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6693,
+          "forced": false
+        },
+        {
+          "i": 172,
+          "side": 2,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "H3で次に五連。黒はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              187
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              157
+            ],
+            "nearbyOwn": [
+              142,
+              157
+            ],
+            "links": [
+              157,
+              142,
+              127
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 158
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "32",
+            "SELDEPTH": "28",
+            "NODES": "2013233",
+            "TOTALNODES": "2241918",
+            "TOTALTIME": "6343",
+            "SPEED": "353447",
+            "EVAL": "-M32",
+            "WINRATE": "0",
+            "BESTLINE": "7,11 7,12 8,7 10,10 9,9 10,11 10,12 11,10 9,10 9,12 8,13 11,9 9,11 11,8 11,7 12,9 13,8 10,7 13,10 10,8 10,9 9,8 12,8 11,6 12,5 9,6 8,5"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6345,
+          "forced": false
+        },
+        {
+          "i": 187,
+          "side": 1,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "白がH3に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              187
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              158
+            ],
+            "links": [],
+            "nextOpenFours": [
+              113,
+              173
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              171,
+              173,
+              186,
+              188,
+              201,
+              203,
+              155,
+              159,
+              185,
+              139,
+              145,
+              190,
+              123,
+              131,
+              183,
+              191
+            ],
+            "nearestOpponent": 172
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "31",
+            "NODES": "48439",
+            "TOTALNODES": "48471",
+            "TOTALTIME": "118",
+            "SPEED": "414282",
+            "EVAL": "+M35",
+            "WINRATE": "1",
+            "BESTLINE": "7,12 8,7 10,9 8,11 10,10 9,9 10,11 10,12 11,10 9,10 11,9 9,11 9,12 12,9 10,8 10,7 11,8 11,11 12,8 9,8 9,7 6,11 5,11 12,10 13,8 14,8 13,9 9,13 8,14 13,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 118,
+          "forced": false
+        },
+        {
+          "i": 113,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒I8・I4から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              127
+            ],
+            "nearbyOwn": [
+              126,
+              127,
+              142
+            ],
+            "links": [
+              127
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              113,
+              173
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 112
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "26",
+            "NODES": "12695",
+            "TOTALNODES": "12747",
+            "TOTALTIME": "19",
+            "SPEED": "670894",
+            "EVAL": "-M30",
+            "WINRATE": "0",
+            "BESTLINE": "8,7 10,10 9,9 10,11 10,12 11,10 9,10 9,12 8,13 11,9 9,11 11,8 11,7 12,9 13,8 10,7 13,10 10,8 10,9 9,8 12,8 11,6 12,5 9,6 8,5"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 19,
+          "forced": false
+        },
+        {
+          "i": 145,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "K6からI6・H3へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              128,
+              143,
+              158
+            ],
+            "links": [
+              143,
+              187
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 113
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "29",
+            "NODES": "41657",
+            "TOTALNODES": "131506",
+            "TOTALTIME": "332",
+            "SPEED": "396102",
+            "EVAL": "+M33",
+            "WINRATE": "1",
+            "BESTLINE": "10,9 8,11 10,10 9,9 10,11 10,12 11,10 9,10 11,9 9,11 9,12 12,9 10,8 10,7 11,8 11,11 12,8 9,8 9,7 6,11 5,11 12,10 13,8 14,8 13,9 9,13 8,14 13,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 332,
+          "forced": false
+        },
+        {
+          "i": 173,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "I4からH4・H5へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              157,
+              172
+            ],
+            "nearbyOwn": [
+              142,
+              157,
+              172
+            ],
+            "links": [
+              172,
+              157
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 158
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "34",
+            "SELDEPTH": "24",
+            "NODES": "2653119",
+            "TOTALNODES": "2658408",
+            "TOTALTIME": "7221",
+            "SPEED": "368149",
+            "EVAL": "-M28",
+            "WINRATE": "0",
+            "BESTLINE": "8,11 10,10 9,9 10,11 10,12 11,10 9,10 12,9 9,12 9,11 11,12 13,12 10,13 11,14 9,8 12,11 14,13 13,8 14,7 10,7 10,8 13,11 11,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7221,
+          "forced": false
+        },
+        {
+          "i": 160,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "J6への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              145
+            ],
+            "nearbyOwn": [
+              128,
+              143,
+              145,
+              158
+            ],
+            "links": [
+              158,
+              145,
+              128,
+              112
+            ],
+            "nextOpenFours": [
+              144
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 173
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "27",
+            "NODES": "96500",
+            "TOTALNODES": "177933",
+            "TOTALTIME": "476",
+            "SPEED": "373808",
+            "EVAL": "+M31",
+            "WINRATE": "1",
+            "BESTLINE": "10,10 9,9 10,11 10,12 11,10 9,10 11,9 9,11 9,12 12,9 10,8 10,7 11,8 11,11 12,8 9,8 9,7 6,11 5,11 12,10 13,8 14,8 13,9 9,13 8,14 13,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 476,
+          "forced": false
+        },
+        {
+          "i": 144,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒J6から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              113,
+              127,
+              142,
+              157,
+              172,
+              173
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              144
+            ],
+            "connectionTargets": [
+              129,
+              159,
+              114,
+              116,
+              174,
+              99,
+              189,
+              204
+            ],
+            "nearestOpponent": 128
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "24",
+            "NODES": "29713",
+            "TOTALNODES": "29788",
+            "TOTALTIME": "55",
+            "SPEED": "541600",
+            "EVAL": "-M26",
+            "WINRATE": "0",
+            "BESTLINE": "9,9 10,11 10,12 11,10 9,10 12,9 9,12 9,11 8,12 12,11 9,8 12,10 9,6 9,7 10,5 11,4 10,13 11,14 12,12 11,12 13,11 11,9 11,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 55,
+          "forced": false
+        },
+        {
+          "i": 175,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "K7・K3への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              160
+            ],
+            "nearbyOwn": [
+              143,
+              145,
+              158,
+              160
+            ],
+            "links": [
+              160,
+              145,
+              143
+            ],
+            "nextOpenFours": [
+              130,
+              190
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 144
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "25",
+            "NODES": "174773",
+            "TOTALNODES": "260229",
+            "TOTALTIME": "676",
+            "SPEED": "384954",
+            "EVAL": "+M29",
+            "WINRATE": "1",
+            "BESTLINE": "10,11 10,12 11,10 9,10 11,9 9,11 9,12 12,9 10,8 10,7 11,8 11,11 12,8 9,8 9,7 6,11 5,11 12,10 13,8 14,8 13,9 9,13 8,14 13,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 677,
+          "forced": false
+        },
+        {
+          "i": 190,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒K7・K3から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              173
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              130,
+              190
+            ],
+            "connectionTargets": [
+              174,
+              189,
+              204,
+              205,
+              188,
+              218,
+              220
+            ],
+            "nearestOpponent": 175
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "20",
+            "NODES": "37451",
+            "TOTALNODES": "37501",
+            "TOTALTIME": "87",
+            "SPEED": "431045",
+            "EVAL": "-M24",
+            "WINRATE": "0",
+            "BESTLINE": "10,12 11,10 9,10 12,9 9,12 9,11 11,9 13,8 14,7 12,11 10,13 11,14 9,8 13,12 14,13 13,11 11,11 13,10 13,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 87,
+          "forced": false
+        },
+        {
+          "i": 161,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "L5からK5・I5・K6・K4へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              145,
+              160,
+              175
+            ],
+            "nearbyOwn": [
+              145,
+              160,
+              175
+            ],
+            "links": [
+              160,
+              158,
+              145,
+              175
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 144
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "23",
+            "NODES": "94451",
+            "TOTALNODES": "273294",
+            "TOTALTIME": "709",
+            "SPEED": "385464",
+            "EVAL": "+M27",
+            "WINRATE": "1",
+            "BESTLINE": "11,10 9,10 11,9 9,11 9,12 12,9 10,8 10,7 11,8 11,11 12,8 9,8 9,7 6,11 5,11 12,10 13,8 14,8 13,9 9,13 8,14 13,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 710,
+          "forced": false
+        },
+        {
+          "i": 159,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "J5からJ6・I4へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              144,
+              173
+            ],
+            "nearbyOwn": [
+              127,
+              142,
+              144,
+              157,
+              172,
+              173,
+              190
+            ],
+            "links": [
+              144,
+              173
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 143
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "19",
+            "NODES": "153995",
+            "TOTALNODES": "244455",
+            "TOTALTIME": "645",
+            "SPEED": "379000",
+            "EVAL": "-M20",
+            "WINRATE": "0",
+            "BESTLINE": "9,10 12,11 9,8 13,12 14,13 9,11 12,8 13,11 11,11 13,10 9,7 9,6 13,9 10,7 10,8 12,9 11,8 13,8"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 646,
+          "forced": false
+        },
+        {
+          "i": 147,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "N7・J3への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              161
+            ],
+            "nearbyOwn": [
+              145,
+              160,
+              161,
+              175
+            ],
+            "links": [
+              145,
+              161,
+              175
+            ],
+            "nextOpenFours": [
+              133,
+              189
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 144
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "19",
+            "NODES": "101029",
+            "TOTALNODES": "285409",
+            "TOTALTIME": "702",
+            "SPEED": "406565",
+            "EVAL": "+M21",
+            "WINRATE": "1",
+            "BESTLINE": "12,9 9,12 13,8 14,7 9,11 11,12 13,12 8,12 12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 703,
+          "forced": false
+        },
+        {
+          "i": 189,
+          "side": 2,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "J4への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              173,
+              190
+            ],
+            "nearbyOwn": [
+              157,
+              159,
+              172,
+              173,
+              190
+            ],
+            "links": [
+              190,
+              159,
+              144,
+              173,
+              157
+            ],
+            "nextOpenFours": [
+              174
+            ],
+            "stoppedOpenFours": [
+              133,
+              189
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 175
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "16",
+            "NODES": "139119",
+            "TOTALNODES": "139689",
+            "TOTALTIME": "330",
+            "SPEED": "423300",
+            "EVAL": "-M20",
+            "WINRATE": "0",
+            "BESTLINE": "9,12 9,11 11,9 13,8 14,7 12,11 10,13 11,14 9,8 13,12 14,13 13,11 11,11 13,10 13,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 331,
+          "forced": false
+        },
+        {
+          "i": 133,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "O8で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              119
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              147
+            ],
+            "nearbyOwn": [
+              147,
+              161
+            ],
+            "links": [
+              147,
+              161,
+              175
+            ],
+            "nextOpenFours": [
+              115,
+              130
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 144
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "17",
+            "NODES": "44514",
+            "TOTALNODES": "74453",
+            "TOTALTIME": "173",
+            "SPEED": "430364",
+            "EVAL": "+M19",
+            "WINRATE": "1",
+            "BESTLINE": "13,8 14,7 9,11 11,12 13,12 8,12 12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 173,
+          "forced": false
+        },
+        {
+          "i": 119,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がO8に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              119
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [
+              174
+            ],
+            "stoppedOpenFours": [
+              115,
+              130
+            ],
+            "connectionTargets": [
+              134,
+              71,
+              116
+            ],
+            "nearestOpponent": 133
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "16",
+            "NODES": "135505",
+            "TOTALNODES": "135549",
+            "TOTALTIME": "243",
+            "SPEED": "557814",
+            "EVAL": "-M18",
+            "WINRATE": "0",
+            "BESTLINE": "14,7 9,11 11,12 13,12 8,12 12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 11,9 14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 243,
+          "forced": false
+        },
+        {
+          "i": 174,
+          "side": 1,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "白J4から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              158,
+              160,
+              175
+            ],
+            "nearbyOwn": [
+              143,
+              145,
+              158,
+              160,
+              161,
+              175,
+              187
+            ],
+            "links": [
+              175,
+              158,
+              160
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              174
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 159
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "15",
+            "NODES": "16767",
+            "TOTALNODES": "34873",
+            "TOTALTIME": "74",
+            "SPEED": "471256",
+            "EVAL": "+M17",
+            "WINRATE": "1",
+            "BESTLINE": "9,11 11,12 13,12 8,12 12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 75,
+          "forced": false
+        },
+        {
+          "i": 191,
+          "side": 2,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "M3への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              190
+            ],
+            "nearbyOwn": [
+              159,
+              189,
+              190
+            ],
+            "links": [
+              190,
+              189
+            ],
+            "nextOpenFours": [
+              192
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 175
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "14",
+            "NODES": "18951",
+            "TOTALNODES": "28997",
+            "TOTALTIME": "51",
+            "SPEED": "568568",
+            "EVAL": "-M16",
+            "WINRATE": "0",
+            "BESTLINE": "11,12 13,12 8,12 12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 11,9 14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 52,
+          "forced": false
+        },
+        {
+          "i": 193,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "M4への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              161
+            ],
+            "links": [
+              133,
+              161,
+              145
+            ],
+            "nextOpenFours": [
+              177
+            ],
+            "stoppedOpenFours": [
+              192
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 191
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "13",
+            "NODES": "13292",
+            "TOTALNODES": "31389",
+            "TOTALTIME": "67",
+            "SPEED": "468492",
+            "EVAL": "+M15",
+            "WINRATE": "1",
+            "BESTLINE": "13,12 8,12 12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 68,
+          "forced": false
+        },
+        {
+          "i": 188,
+          "side": 2,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "M3で次に五連。黒はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              192
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              172,
+              173,
+              189
+            ],
+            "nearbyOwn": [
+              157,
+              159,
+              172,
+              173,
+              189,
+              190
+            ],
+            "links": [
+              189,
+              190,
+              191,
+              173,
+              172
+            ],
+            "nextOpenFours": [
+              205,
+              221
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 174
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "12",
+            "NODES": "15572",
+            "TOTALNODES": "16087",
+            "TOTALTIME": "30",
+            "SPEED": "536233",
+            "EVAL": "-M14",
+            "WINRATE": "0",
+            "BESTLINE": "8,12 12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 11,9 14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 30,
+          "forced": false
+        },
+        {
+          "i": 192,
+          "side": 1,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "白がM3に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              192
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              193
+            ],
+            "nearbyOwn": [
+              160,
+              161,
+              175,
+              193
+            ],
+            "links": [
+              193,
+              147,
+              160
+            ],
+            "nextOpenFours": [
+              177
+            ],
+            "stoppedOpenFours": [
+              205,
+              221
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 191
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "11",
+            "NODES": "19702",
+            "TOTALNODES": "19727",
+            "TOTALTIME": "37",
+            "SPEED": "533162",
+            "EVAL": "+M13",
+            "WINRATE": "1",
+            "BESTLINE": "12,12 12,11 13,10 10,13 11,14 10,7 13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 38,
+          "forced": false
+        },
+        {
+          "i": 177,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒M4から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              191
+            ],
+            "nearbyOwn": [
+              190,
+              191
+            ],
+            "links": [
+              191
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              177
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 161
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "10",
+            "NODES": "10682",
+            "TOTALNODES": "10891",
+            "TOTALTIME": "18",
+            "SPEED": "605055",
+            "EVAL": "-M12",
+            "WINRATE": "0",
+            "BESTLINE": "12,11 13,10 10,13 11,14 10,7 13,9 13,11 11,9 14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 19,
+          "forced": false
+        },
+        {
+          "i": 163,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "N5からL5・K5・N7・N3・M6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              147
+            ],
+            "nearbyOwn": [
+              133,
+              147,
+              161,
+              192,
+              193
+            ],
+            "links": [
+              161,
+              160,
+              133,
+              193,
+              147
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 177
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "9",
+            "NODES": "10132",
+            "TOTALNODES": "18818",
+            "TOTALTIME": "34",
+            "SPEED": "553470",
+            "EVAL": "+M11",
+            "WINRATE": "1",
+            "BESTLINE": "13,10 10,13 11,14 10,7 13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 35,
+          "forced": false
+        },
+        {
+          "i": 205,
+          "side": 2,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "L1で次に五連。黒はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              221
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              189,
+              190,
+              191
+            ],
+            "nearbyOwn": [
+              173,
+              177,
+              188,
+              189,
+              190,
+              191
+            ],
+            "links": [
+              190,
+              189,
+              173,
+              157,
+              191,
+              177
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 174
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "8",
+            "NODES": "11813",
+            "TOTALNODES": "12082",
+            "TOTALTIME": "18",
+            "SPEED": "671222",
+            "EVAL": "-M10",
+            "WINRATE": "0",
+            "BESTLINE": "10,13 11,14 10,7 13,9 13,11 11,9 14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 18,
+          "forced": false
+        },
+        {
+          "i": 221,
+          "side": 1,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "白がL1に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              221
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              192,
+              193
+            ],
+            "links": [
+              193
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 205
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "7",
+            "NODES": "14000",
+            "TOTALNODES": "14025",
+            "TOTALTIME": "19",
+            "SPEED": "738157",
+            "EVAL": "+M9",
+            "WINRATE": "1",
+            "BESTLINE": "11,14 10,7 13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 19,
+          "forced": false
+        },
+        {
+          "i": 115,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "K8からI8・O8へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              113,
+              144
+            ],
+            "links": [
+              113,
+              119
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 128
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "6",
+            "NODES": "9813",
+            "TOTALNODES": "9978",
+            "TOTALTIME": "13",
+            "SPEED": "767538",
+            "EVAL": "-M8",
+            "WINRATE": "0",
+            "BESTLINE": "10,7 13,9 13,11 11,9 14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 13,
+          "forced": false
+        },
+        {
+          "i": 148,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "N4で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              178
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              133,
+              147,
+              163
+            ],
+            "nearbyOwn": [
+              133,
+              147,
+              161,
+              163
+            ],
+            "links": [
+              147,
+              145,
+              133,
+              163,
+              193
+            ],
+            "nextOpenFours": [
+              103,
+              118,
+              146,
+              149,
+              162,
+              164
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 119
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "5",
+            "NODES": "3206",
+            "TOTALNODES": "27793",
+            "TOTALTIME": "51",
+            "SPEED": "544960",
+            "EVAL": "+M7",
+            "WINRATE": "1",
+            "BESTLINE": "13,9 13,11 13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 52,
+          "forced": false
+        },
+        {
+          "i": 178,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がN4に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              178
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              177
+            ],
+            "nearbyOwn": [
+              177,
+              191
+            ],
+            "links": [
+              177
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              103,
+              118,
+              146,
+              149,
+              162,
+              164
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 163
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "4",
+            "NODES": "4577",
+            "TOTALNODES": "4602",
+            "TOTALTIME": "4",
+            "SPEED": "1150500",
+            "EVAL": "-M6",
+            "WINRATE": "0",
+            "BESTLINE": "13,11 11,9 14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 5,
+          "forced": false
+        },
+        {
+          "i": 118,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "N9で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              103
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              133
+            ],
+            "nearbyOwn": [
+              133,
+              147,
+              148
+            ],
+            "links": [
+              133,
+              148,
+              163,
+              160,
+              174
+            ],
+            "nextOpenFours": [
+              132,
+              146,
+              149,
+              162,
+              164
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 119
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "3",
+            "NODES": "50",
+            "TOTALNODES": "11775",
+            "TOTALTIME": "20",
+            "SPEED": "588750",
+            "EVAL": "+M5",
+            "WINRATE": "1",
+            "BESTLINE": "13,7 13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 21,
+          "forced": false
+        },
+        {
+          "i": 103,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がN9に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              103
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              119
+            ],
+            "nearbyOwn": [
+              119
+            ],
+            "links": [
+              119
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              132,
+              149,
+              162,
+              164
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 118
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "1",
+            "SPEED": "50000",
+            "EVAL": "-M4",
+            "WINRATE": "0",
+            "BESTLINE": "13,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 146,
+          "side": 1,
+          "phase": "attack",
+          "title": "勝ち口を二つ以上に",
+          "text": "勝ち口はM7・O6。白には今すぐ五連にする手がない。",
+          "kind": "fork",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              132,
+              149
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              145,
+              147,
+              160,
+              161
+            ],
+            "nearbyOwn": [
+              118,
+              133,
+              145,
+              147,
+              148,
+              160,
+              161,
+              163,
+              174,
+              175
+            ],
+            "links": [
+              145,
+              147,
+              148,
+              161,
+              160,
+              174,
+              118
+            ],
+            "nextOpenFours": [
+              88,
+              96,
+              98,
+              104,
+              129,
+              130,
+              162,
+              164,
+              176,
+              202,
+              203,
+              206,
+              208,
+              209
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 115
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "0",
+            "SPEED": "50000",
+            "EVAL": "+M3",
+            "WINRATE": "1",
+            "BESTLINE": "11,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 149,
+          "side": 2,
+          "phase": "attack",
+          "title": "二つの勝ち口を受ける",
+          "text": "着手前から黒にM7・O6の勝ち口があり、一手では塞ぎ切れない。",
+          "kind": "forced-loss",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              132,
+              149
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [
+              132
+            ],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              119,
+              177,
+              178
+            ],
+            "links": [
+              119
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              88,
+              96,
+              98,
+              104,
+              129,
+              130,
+              176,
+              202,
+              203,
+              206,
+              208,
+              209
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 133
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "0",
+            "SPEED": "50000",
+            "EVAL": "-M2",
+            "WINRATE": "0",
+            "BESTLINE": "14,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 132,
+          "side": 1,
+          "phase": "finish",
+          "title": "五連を完成",
+          "text": "黒M7で五つ以上がつながる。",
+          "kind": "win",
+          "facts": {
+            "ownWinsBefore": [
+              132
+            ],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              104
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              118,
+              133,
+              146,
+              147,
+              148
+            ],
+            "nearbyOwn": [
+              118,
+              133,
+              145,
+              146,
+              147,
+              148,
+              160,
+              161,
+              163
+            ],
+            "links": [
+              128,
+              133,
+              147,
+              148,
+              146,
+              160,
+              174,
+              118
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 103
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "1",
+            "SELDEPTH": "0",
+            "NODES": "0",
+            "TOTALNODES": "0",
+            "TOTALTIME": "0",
+            "SPEED": "0",
+            "EVAL": "+M1",
+            "WINRATE": "1",
+            "BESTLINE": "12,8"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        }
+      ],
+      "result": "win"
+    },
+    {
+      "id": "max-white-h7",
+      "title": "最強CPU実戦・白H7分岐",
+      "openingKind": "forced-white-H7",
+      "blackMs": 8000,
+      "whiteMs": 8000,
+      "forcedOpening": {
+        "ply": 2,
+        "i": 127,
+        "side": 2
+      },
+      "moves": [
+        {
+          "i": 112,
+          "side": 1,
+          "phase": "opening",
+          "title": "中央から始める",
+          "text": "黒H8。四方向へ伸ばす場所を残す。",
+          "kind": "opening",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": null
+          },
+          "info": {},
+          "searchMs": 8000,
+          "elapsedMs": 59,
+          "forced": false
+        },
+        {
+          "i": 127,
+          "side": 2,
+          "phase": "opening",
+          "title": "相手との距離",
+          "text": "白H7は黒H8から横0・縦1路。まだ自分の四はできていない。",
+          "kind": "placement",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 112
+          },
+          "info": {
+            "SOURCE": "forced-opening"
+          },
+          "searchMs": 0,
+          "elapsedMs": 1,
+          "forced": true
+        },
+        {
+          "i": 141,
+          "side": 1,
+          "phase": "opening",
+          "title": "二方向の連結点を残す",
+          "text": "G7・F6・E8は、G6と別の自石を異なる方向から結べる空点。",
+          "kind": "prepare-connection",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              112
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              126,
+              140,
+              109,
+              111,
+              96,
+              144
+            ],
+            "nearestOpponent": 127
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "23",
+            "SELDEPTH": "51",
+            "NODES": "541940",
+            "TOTALNODES": "1777340",
+            "TOTALTIME": "6771",
+            "SPEED": "262492",
+            "EVAL": "494",
+            "WINRATE": "0.922012",
+            "BESTLINE": "6,9 6,7 8,9 7,9 9,8 7,10 8,10 8,8 9,7 9,6 7,11 9,9 8,6 6,8 7,5 6,4 10,7 11,7 10,5 10,8 6,5"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6772,
+          "forced": false
+        },
+        {
+          "i": 142,
+          "side": 2,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "H6からH7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              127
+            ],
+            "nearbyOwn": [
+              127
+            ],
+            "links": [
+              127
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 141
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "22",
+            "SELDEPTH": "32",
+            "NODES": "613359",
+            "TOTALNODES": "1383877",
+            "TOTALTIME": "5642",
+            "SPEED": "245281",
+            "EVAL": "-522",
+            "WINRATE": "0.0684976",
+            "BESTLINE": "6,8 8,8 8,9 9,10 9,9 10,9 8,11 10,7 10,8 9,7 8,7 10,6 11,5 8,10 7,10 9,6 6,11 5,12 8,5 11,6 12,6 12,5 11,7 13,5 13,4 9,4 9,5"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 8018,
+          "forced": false
+        },
+        {
+          "i": 125,
+          "side": 1,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "F7からG6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              141
+            ],
+            "nearbyOwn": [
+              112,
+              141
+            ],
+            "links": [
+              141
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 127
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "49",
+            "NODES": "1116231",
+            "TOTALNODES": "1305649",
+            "TOTALTIME": "5517",
+            "SPEED": "236659",
+            "EVAL": "546",
+            "WINRATE": "0.938774",
+            "BESTLINE": "5,8 4,7 6,7 6,8 8,10 9,7 4,9 3,10 8,8 9,9 9,8 8,9 10,9 11,10 5,10 5,9 5,4 7,6 4,4 6,6 3,4 6,4 7,10 9,10 2,7 3,8 4,5 3,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7972,
+          "forced": false
+        },
+        {
+          "i": 109,
+          "side": 2,
+          "phase": "opening",
+          "title": "二方向の連結点を残す",
+          "text": "E9・F9・F8は、E8と別の自石を異なる方向から結べる空点。",
+          "kind": "prepare-connection",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              94,
+              95,
+              110,
+              79,
+              111
+            ],
+            "nearestOpponent": 125
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "23",
+            "SELDEPTH": "50",
+            "NODES": "2136114",
+            "TOTALNODES": "2242861",
+            "TOTALTIME": "7588",
+            "SPEED": "295579",
+            "EVAL": "-526",
+            "WINRATE": "0.0672324",
+            "BESTLINE": "4,7 6,7 6,8 8,10 4,9 7,10 8,11 8,8 4,6 4,8 5,7 3,5 9,9 9,8 8,7 4,4 5,3 10,7 11,6 6,10 9,10 3,7 5,9 3,4 3,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7588,
+          "forced": false
+        },
+        {
+          "i": 111,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "G8からH8・G6・F7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              112,
+              125
+            ],
+            "nearbyOwn": [
+              112,
+              125,
+              141
+            ],
+            "links": [
+              112,
+              141,
+              125
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 127
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "21",
+            "SELDEPTH": "43",
+            "NODES": "756979",
+            "TOTALNODES": "779962",
+            "TOTALTIME": "2817",
+            "SPEED": "276876",
+            "EVAL": "589",
+            "WINRATE": "0.950027",
+            "BESTLINE": "6,7 6,8 8,10 5,7 8,8 8,9 9,9 10,10 7,11 10,8 6,10 10,11 10,9 9,10 11,12 4,6 3,5 4,9 4,8 5,9 8,5 7,6 9,5 6,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7971,
+          "forced": false
+        },
+        {
+          "i": 126,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "G7からH7・H6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              127,
+              142
+            ],
+            "nearbyOwn": [
+              109,
+              127,
+              142
+            ],
+            "links": [
+              127,
+              142
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 111
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "22",
+            "SELDEPTH": "54",
+            "NODES": "1727840",
+            "TOTALNODES": "1761549",
+            "TOTALTIME": "5494",
+            "SPEED": "320631",
+            "EVAL": "-588",
+            "WINRATE": "0.0502113",
+            "BESTLINE": "6,8 8,10 9,7 4,9 3,10 6,10 9,8 7,10 9,10 9,9 8,8 10,8 7,11 4,6 5,10 5,6 6,6 8,11 9,12 3,4 5,5 4,4 5,4 4,5 2,3 4,3 4,2 1,6 5,2 2,6 3,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7971,
+          "forced": false
+        },
+        {
+          "i": 158,
+          "side": 1,
+          "phase": "build",
+          "title": "二方向の連結点を残す",
+          "text": "J6・H5・I4は、I5と別の自石を異なる方向から結べる空点。",
+          "kind": "prepare-connection",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              141
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              144,
+              157,
+              173,
+              128,
+              156,
+              160,
+              186,
+              113,
+              116,
+              155,
+              98
+            ],
+            "nearestOpponent": 142
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "22",
+            "SELDEPTH": "45",
+            "NODES": "1240014",
+            "TOTALNODES": "1656219",
+            "TOTALTIME": "5054",
+            "SPEED": "327704",
+            "EVAL": "539",
+            "WINRATE": "0.936731",
+            "BESTLINE": "8,10 9,7 7,10 8,11 9,8 4,9 9,9 4,8 4,6 10,10 6,11 5,12 6,10 4,10 4,11 10,8 8,6 10,7 6,12 6,13 10,9 8,7 5,5 6,6 6,4 7,3"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7973,
+          "forced": false
+        },
+        {
+          "i": 94,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "E9からE8・G7・H6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              109
+            ],
+            "nearbyOwn": [
+              109,
+              126
+            ],
+            "links": [
+              109,
+              126,
+              142
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 111
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "22",
+            "SELDEPTH": "52",
+            "NODES": "178442",
+            "TOTALNODES": "2525240",
+            "TOTALTIME": "6585",
+            "SPEED": "383483",
+            "EVAL": "-633",
+            "WINRATE": "0.0405043",
+            "BESTLINE": "4,6 5,7 4,9 4,8 6,6 5,6 5,9 8,11 7,10 7,11 9,9 10,9 9,10 9,8 8,7 8,12 8,13 10,6 10,7 11,6 9,6 11,8 11,7 12,7 10,5 11,4"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6586,
+          "forced": false
+        },
+        {
+          "i": 128,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "I7からI5・H8へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              112
+            ],
+            "nearbyOwn": [
+              111,
+              112,
+              141,
+              158
+            ],
+            "links": [
+              158,
+              112
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 127
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "29",
+            "SELDEPTH": "49",
+            "NODES": "2896839",
+            "TOTALNODES": "3208253",
+            "TOTALTIME": "6348",
+            "SPEED": "505395",
+            "EVAL": "+M53",
+            "WINRATE": "1",
+            "BESTLINE": "8,8 5,7 3,5 8,9 9,9 10,10 9,7 4,8 4,9 7,6 9,8 9,6 10,8 4,5 4,4 11,7 11,9 8,6 6,6 5,5 8,11 9,11 7,10 9,12 5,10 6,10 7,12 6,11 10,9 10,6 11,6 11,8 7,11 6,12 6,13 9,10 3,10 2,11 7,14 7,13 4,11 5,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6349,
+          "forced": false
+        },
+        {
+          "i": 113,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "I8からH7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              127
+            ],
+            "nearbyOwn": [
+              126,
+              127,
+              142
+            ],
+            "links": [
+              127
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 112
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "30",
+            "SELDEPTH": "38",
+            "NODES": "897317",
+            "TOTALNODES": "3480044",
+            "TOTALTIME": "6752",
+            "SPEED": "515409",
+            "EVAL": "-M40",
+            "WINRATE": "0",
+            "BESTLINE": "8,7 9,9 10,10 7,11 6,12 8,11 5,7 3,5 4,9 4,8 9,12 6,11 9,11 5,5 6,6 8,12 8,9 8,13 8,14 4,5 2,5 5,11 4,11 5,10 6,10 5,12 5,9 7,12 9,14 9,10 6,13 10,8 11,7 9,7 8,6 11,8 10,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6753,
+          "forced": false
+        },
+        {
+          "i": 144,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "G9・K5への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              128,
+              158
+            ],
+            "nearbyOwn": [
+              112,
+              128,
+              158
+            ],
+            "links": [
+              128,
+              112,
+              158
+            ],
+            "nextOpenFours": [
+              96,
+              160
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 113
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "27",
+            "NODES": "193851",
+            "TOTALNODES": "278445",
+            "TOTALTIME": "738",
+            "SPEED": "377296",
+            "EVAL": "+M29",
+            "WINRATE": "1",
+            "BESTLINE": "9,9 5,7 3,5 10,10 7,11 6,12 8,11 4,9 4,5 6,6 7,10 9,12 8,12 8,9 6,10 4,10 4,8 5,9 9,10 5,10 9,8 3,11 2,12 9,11 11,8 7,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 737,
+          "forced": false
+        },
+        {
+          "i": 160,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒G9・K5から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              96,
+              160
+            ],
+            "connectionTargets": [
+              145,
+              159,
+              161,
+              175,
+              115,
+              202
+            ],
+            "nearestOpponent": 144
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "38",
+            "NODES": "17508",
+            "TOTALNODES": "17681",
+            "TOTALTIME": "23",
+            "SPEED": "768739",
+            "EVAL": "-M38",
+            "WINRATE": "0",
+            "BESTLINE": "10,10 7,11 6,12 8,11 5,7 3,5 4,9 4,8 9,12 6,11 9,11 5,5 6,6 8,12 8,9 8,13 8,14 4,5 2,5 5,11 4,11 5,10 6,10 5,12 5,9 7,12 9,14 9,10 6,13 10,8 11,7 9,7 8,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 23,
+          "forced": false
+        },
+        {
+          "i": 110,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "F8からG8・H8・F7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              111,
+              125
+            ],
+            "nearbyOwn": [
+              111,
+              112,
+              125,
+              141
+            ],
+            "links": [
+              111,
+              112,
+              125
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 94
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "21",
+            "NODES": "177003",
+            "TOTALNODES": "275998",
+            "TOTALTIME": "734",
+            "SPEED": "376019",
+            "EVAL": "+M25",
+            "WINRATE": "1",
+            "BESTLINE": "5,7 5,9 7,11 6,12 8,11 9,11 7,10 9,12 5,10 6,10 8,12 8,9 4,9 3,10 8,13 8,14 7,12 6,11 6,13 10,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 734,
+          "forced": false
+        },
+        {
+          "i": 96,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "G9からE9へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              94,
+              109,
+              113,
+              126,
+              127
+            ],
+            "links": [
+              94
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "38",
+            "SELDEPTH": "16",
+            "NODES": "2289652",
+            "TOTALNODES": "2686070",
+            "TOTALTIME": "6835",
+            "SPEED": "392987",
+            "EVAL": "-M20",
+            "WINRATE": "0",
+            "BESTLINE": "6,6 7,11 6,12 8,11 5,6 7,6 4,9 4,8 2,6 3,6 3,8 7,10 9,12 8,12 8,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6836,
+          "forced": false
+        },
+        {
+          "i": 172,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "K7・G3への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              158
+            ],
+            "nearbyOwn": [
+              141,
+              144,
+              158
+            ],
+            "links": [
+              158,
+              144
+            ],
+            "nextOpenFours": [
+              130,
+              186
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 142
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "17",
+            "NODES": "81656",
+            "TOTALNODES": "200991",
+            "TOTALTIME": "492",
+            "SPEED": "408518",
+            "EVAL": "+M19",
+            "WINRATE": "1",
+            "BESTLINE": "7,11 6,12 8,11 5,6 7,6 4,9 8,12 8,9 4,8 2,6 3,6 9,10 5,11 10,11 11,12 6,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 493,
+          "forced": false
+        },
+        {
+          "i": 186,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒K7・G3から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              130,
+              186
+            ],
+            "connectionTargets": [
+              170,
+              202,
+              154,
+              156,
+              184,
+              188,
+              216,
+              122,
+              182,
+              190
+            ],
+            "nearestOpponent": 172
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "14",
+            "NODES": "9840",
+            "TOTALNODES": "9890",
+            "TOTALTIME": "6",
+            "SPEED": "1648333",
+            "EVAL": "-M18",
+            "WINRATE": "0",
+            "BESTLINE": "6,12 8,11 5,6 7,6 4,9 4,8 2,6 3,6 3,8 7,10 9,12 8,12 8,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7,
+          "forced": false
+        },
+        {
+          "i": 173,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "I4からH4・I5・I7・G6・F7へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              158,
+              172
+            ],
+            "nearbyOwn": [
+              141,
+              144,
+              158,
+              172
+            ],
+            "links": [
+              172,
+              158,
+              128,
+              141,
+              125
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 142
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "15",
+            "NODES": "26164",
+            "TOTALNODES": "78879",
+            "TOTALTIME": "174",
+            "SPEED": "453327",
+            "EVAL": "+M17",
+            "WINRATE": "1",
+            "BESTLINE": "8,11 5,6 7,6 4,9 8,12 8,9 4,8 2,6 3,6 9,10 5,11 10,11 11,12 6,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 174,
+          "forced": false
+        },
+        {
+          "i": 95,
+          "side": 2,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "D9・H9への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              94,
+              96,
+              109
+            ],
+            "nearbyOwn": [
+              94,
+              96,
+              109,
+              126,
+              127
+            ],
+            "links": [
+              94,
+              96,
+              109
+            ],
+            "nextOpenFours": [
+              93,
+              97
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "12",
+            "NODES": "7071",
+            "TOTALNODES": "10296",
+            "TOTALTIME": "6",
+            "SPEED": "1716000",
+            "EVAL": "-M16",
+            "WINRATE": "0",
+            "BESTLINE": "5,6 7,6 4,9 4,8 2,6 3,6 3,8 7,10 9,12 8,12 8,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7,
+          "forced": false
+        },
+        {
+          "i": 97,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "I10・E6への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              111,
+              112
+            ],
+            "nearbyOwn": [
+              110,
+              111,
+              112,
+              125,
+              128
+            ],
+            "links": [
+              112,
+              111,
+              125
+            ],
+            "nextOpenFours": [
+              83,
+              139
+            ],
+            "stoppedOpenFours": [
+              93,
+              97
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 96
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "13",
+            "NODES": "32511",
+            "TOTALNODES": "51661",
+            "TOTALTIME": "93",
+            "SPEED": "555494",
+            "EVAL": "+M15",
+            "WINRATE": "1",
+            "BESTLINE": "7,6 4,9 8,12 8,9 4,8 2,6 3,6 9,10 5,11 10,11 11,12 6,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 94,
+          "forced": false
+        },
+        {
+          "i": 139,
+          "side": 2,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "E7への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              109,
+              126
+            ],
+            "links": [
+              109,
+              94
+            ],
+            "nextOpenFours": [
+              124
+            ],
+            "stoppedOpenFours": [
+              83,
+              139
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 125
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "10",
+            "NODES": "7691",
+            "TOTALNODES": "7791",
+            "TOTALTIME": "4",
+            "SPEED": "1947750",
+            "EVAL": "-M14",
+            "WINRATE": "0",
+            "BESTLINE": "4,9 4,8 2,6 3,6 3,8 7,10 9,12 8,12 8,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 5,
+          "forced": false
+        },
+        {
+          "i": 124,
+          "side": 1,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "白E7から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              110,
+              125
+            ],
+            "nearbyOwn": [
+              110,
+              111,
+              125,
+              141
+            ],
+            "links": [
+              125,
+              172,
+              110
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              124
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 109
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "9",
+            "NODES": "30973",
+            "TOTALNODES": "56947",
+            "TOTALTIME": "87",
+            "SPEED": "654563",
+            "EVAL": "+M13",
+            "WINRATE": "1",
+            "BESTLINE": "4,8 2,6 3,6 7,4 8,12 8,9 6,10 5,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 87,
+          "forced": false
+        },
+        {
+          "i": 92,
+          "side": 2,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "D9で次に五連。黒はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              93
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              94,
+              109
+            ],
+            "links": [
+              94,
+              95,
+              96
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 124
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "8",
+            "NODES": "4863",
+            "TOTALNODES": "8278",
+            "TOTALTIME": "6",
+            "SPEED": "1379666",
+            "EVAL": "-M12",
+            "WINRATE": "0",
+            "BESTLINE": "2,6 3,6 3,8 7,10 9,12 8,12 8,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 7,
+          "forced": false
+        },
+        {
+          "i": 93,
+          "side": 1,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "白がD9に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              93
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              110,
+              124,
+              125
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              108,
+              65,
+              121,
+              123,
+              138,
+              33,
+              37
+            ],
+            "nearestOpponent": 92
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "7",
+            "NODES": "17568",
+            "TOTALNODES": "17593",
+            "TOTALTIME": "29",
+            "SPEED": "606655",
+            "EVAL": "+M11",
+            "WINRATE": "1",
+            "BESTLINE": "3,6 7,4 8,12 8,9 6,10 5,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 30,
+          "forced": false
+        },
+        {
+          "i": 123,
+          "side": 2,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "G10・C6への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              109,
+              139
+            ],
+            "nearbyOwn": [
+              92,
+              94,
+              95,
+              109,
+              139
+            ],
+            "links": [
+              139,
+              109,
+              95
+            ],
+            "nextOpenFours": [
+              81,
+              137
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 124
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "6",
+            "NODES": "1929",
+            "TOTALNODES": "5607",
+            "TOTALTIME": "7",
+            "SPEED": "801000",
+            "EVAL": "-M10",
+            "WINRATE": "0",
+            "BESTLINE": "3,8 7,10 9,12 8,12 8,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 8,
+          "forced": false
+        },
+        {
+          "i": 188,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "I6で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              143
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              172,
+              173
+            ],
+            "nearbyOwn": [
+              158,
+              172,
+              173
+            ],
+            "links": [
+              173,
+              158,
+              128,
+              172,
+              124
+            ],
+            "nextOpenFours": [
+              69,
+              83,
+              116,
+              130,
+              140,
+              156,
+              157,
+              189,
+              203,
+              218
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 160
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "5",
+            "NODES": "4131",
+            "TOTALNODES": "21308",
+            "TOTALTIME": "35",
+            "SPEED": "608800",
+            "EVAL": "+M9",
+            "WINRATE": "1",
+            "BESTLINE": "8,12 8,9 6,10 5,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 36,
+          "forced": false
+        },
+        {
+          "i": 143,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がI6に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              143
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              127,
+              142
+            ],
+            "nearbyOwn": [
+              113,
+              126,
+              127,
+              142,
+              160
+            ],
+            "links": [
+              142,
+              127
+            ],
+            "nextOpenFours": [
+              81,
+              137
+            ],
+            "stoppedOpenFours": [
+              69,
+              83,
+              116,
+              130,
+              140,
+              156,
+              157,
+              189,
+              203,
+              218
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 128
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "4",
+            "NODES": "3422",
+            "TOTALNODES": "3448",
+            "TOTALTIME": "6",
+            "SPEED": "574666",
+            "EVAL": "-M8",
+            "WINRATE": "0",
+            "BESTLINE": "8,9 6,10 5,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6,
+          "forced": false
+        },
+        {
+          "i": 156,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "F6で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              140
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              141,
+              172
+            ],
+            "nearbyOwn": [
+              124,
+              125,
+              128,
+              141,
+              158,
+              172,
+              173,
+              188
+            ],
+            "links": [
+              158,
+              141,
+              124,
+              172,
+              188
+            ],
+            "nextOpenFours": [
+              69,
+              83,
+              116,
+              130,
+              157,
+              189,
+              203,
+              204,
+              218,
+              220
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 142
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "3",
+            "NODES": "50",
+            "TOTALNODES": "1775",
+            "TOTALTIME": "2",
+            "SPEED": "887500",
+            "EVAL": "+M7",
+            "WINRATE": "1",
+            "BESTLINE": "6,10 5,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 3,
+          "forced": false
+        },
+        {
+          "i": 140,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がF6に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              140
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              126,
+              139
+            ],
+            "nearbyOwn": [
+              109,
+              123,
+              126,
+              127,
+              139,
+              142
+            ],
+            "links": [
+              139,
+              126
+            ],
+            "nextOpenFours": [
+              81,
+              137
+            ],
+            "stoppedOpenFours": [
+              69,
+              83,
+              116,
+              130,
+              157,
+              189,
+              203,
+              204,
+              218,
+              220
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 124
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "0",
+            "SPEED": "50000",
+            "EVAL": "-M6",
+            "WINRATE": "0",
+            "BESTLINE": "5,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 157,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "J3で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              189
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              141,
+              156,
+              158,
+              172,
+              173
+            ],
+            "nearbyOwn": [
+              125,
+              128,
+              141,
+              144,
+              156,
+              158,
+              172,
+              173,
+              188
+            ],
+            "links": [
+              156,
+              158,
+              172,
+              141,
+              125,
+              173
+            ],
+            "nextOpenFours": [
+              69,
+              83,
+              116,
+              130,
+              154,
+              155,
+              159,
+              203,
+              204,
+              218,
+              220
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 142
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "3",
+            "NODES": "50",
+            "TOTALNODES": "863",
+            "TOTALTIME": "2",
+            "SPEED": "431500",
+            "EVAL": "+M5",
+            "WINRATE": "1",
+            "BESTLINE": "7,10 9,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 2,
+          "forced": false
+        },
+        {
+          "i": 189,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がJ3に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              189
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              160
+            ],
+            "links": [],
+            "nextOpenFours": [
+              81,
+              137
+            ],
+            "stoppedOpenFours": [
+              69,
+              83,
+              116,
+              130,
+              154,
+              159,
+              203,
+              204,
+              218,
+              220
+            ],
+            "connectionTargets": [
+              174,
+              175,
+              190,
+              203,
+              205,
+              159,
+              161,
+              191,
+              192
+            ],
+            "nearestOpponent": 173
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "0",
+            "SPEED": "50000",
+            "EVAL": "-M4",
+            "WINRATE": "0",
+            "BESTLINE": "9,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 155,
+          "side": 1,
+          "phase": "attack",
+          "title": "勝ち口を二つ以上に",
+          "text": "勝ち口はE5・J5。白には今すぐ五連にする手がない。",
+          "kind": "fork",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              154,
+              159
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              141,
+              156
+            ],
+            "nearbyOwn": [
+              124,
+              125,
+              141,
+              156,
+              157,
+              172
+            ],
+            "links": [
+              156,
+              157,
+              158,
+              141
+            ],
+            "nextOpenFours": [
+              69,
+              77,
+              80,
+              83,
+              108,
+              114,
+              116,
+              130,
+              153,
+              170,
+              171,
+              176,
+              200,
+              203,
+              204,
+              205,
+              218,
+              220
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 139
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "1",
+            "SPEED": "50000",
+            "EVAL": "+M3",
+            "WINRATE": "1",
+            "BESTLINE": "5,10"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 159,
+          "side": 2,
+          "phase": "attack",
+          "title": "二つの勝ち口を受ける",
+          "text": "着手前から黒にE5・J5の勝ち口があり、一手では塞ぎ切れない。",
+          "kind": "forced-loss",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              154,
+              159
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [
+              154
+            ],
+            "connectedOwn": [
+              143,
+              160
+            ],
+            "nearbyOwn": [
+              127,
+              142,
+              143,
+              160,
+              189
+            ],
+            "links": [
+              160,
+              189,
+              143,
+              127
+            ],
+            "nextOpenFours": [
+              81,
+              137
+            ],
+            "stoppedOpenFours": [
+              77,
+              80,
+              108,
+              114,
+              153,
+              170,
+              171,
+              176,
+              200,
+              205
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 144
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "1",
+            "SPEED": "50000",
+            "EVAL": "-M2",
+            "WINRATE": "0",
+            "BESTLINE": "9,10"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 154,
+          "side": 1,
+          "phase": "finish",
+          "title": "五連を完成",
+          "text": "黒E5で五つ以上がつながる。",
+          "kind": "win",
+          "facts": {
+            "ownWinsBefore": [
+              154
+            ],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              153
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              155
+            ],
+            "nearbyOwn": [
+              124,
+              125,
+              141,
+              155,
+              156
+            ],
+            "links": [
+              155,
+              156,
+              157,
+              158
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 139
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "1",
+            "SELDEPTH": "0",
+            "NODES": "0",
+            "TOTALNODES": "0",
+            "TOTALTIME": "0",
+            "SPEED": "0",
+            "EVAL": "+M1",
+            "WINRATE": "1",
+            "BESTLINE": "4,10"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 0,
+          "forced": false
+        }
+      ],
+      "result": "win"
+    },
+    {
+      "id": "max-white-h6",
+      "title": "最強CPU実戦・白H6分岐",
+      "openingKind": "forced-white-H6",
+      "blackMs": 8000,
+      "whiteMs": 8000,
+      "forcedOpening": {
+        "ply": 2,
+        "i": 142,
+        "side": 2
+      },
+      "moves": [
+        {
+          "i": 112,
+          "side": 1,
+          "phase": "opening",
+          "title": "中央から始める",
+          "text": "黒H8。四方向へ伸ばす場所を残す。",
+          "kind": "opening",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": null
+          },
+          "info": {},
+          "searchMs": 8000,
+          "elapsedMs": 62,
+          "forced": false
+        },
+        {
+          "i": 142,
+          "side": 2,
+          "phase": "opening",
+          "title": "相手との距離",
+          "text": "白H6は黒H8から横0・縦2路。まだ自分の四はできていない。",
+          "kind": "placement",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 112
+          },
+          "info": {
+            "SOURCE": "forced-opening"
+          },
+          "searchMs": 0,
+          "elapsedMs": 1,
+          "forced": true
+        },
+        {
+          "i": 111,
+          "side": 1,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "G8からH8へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              112
+            ],
+            "nearbyOwn": [
+              112
+            ],
+            "links": [
+              112
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 142
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "20",
+            "SELDEPTH": "52",
+            "NODES": "751978",
+            "TOTALNODES": "1940813",
+            "TOTALTIME": "6496",
+            "SPEED": "298770",
+            "EVAL": "595",
+            "WINRATE": "0.951432",
+            "BESTLINE": "6,7 5,7 6,8 6,6 4,8 7,8 4,9 4,10 8,6 9,5 5,8 3,10 4,7 3,6 6,10 2,8 8,7 8,5 7,11 3,7 3,8 6,9 5,10 6,11 2,7 1,6 4,6 4,5"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6497,
+          "forced": false
+        },
+        {
+          "i": 110,
+          "side": 2,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "F8からH6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              142
+            ],
+            "links": [
+              142
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 111
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "19",
+            "SELDEPTH": "60",
+            "NODES": "366249",
+            "TOTALNODES": "2731477",
+            "TOTALTIME": "6287",
+            "SPEED": "434464",
+            "EVAL": "-602",
+            "WINRATE": "0.0469761",
+            "BESTLINE": "5,7 6,8 6,9 5,9 8,6 4,8 5,8 4,7 4,6 5,6 3,8 5,5 4,5 8,8 6,6 7,11 6,10 9,9 10,8 10,10 11,11 9,10 9,7"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6333,
+          "forced": false
+        },
+        {
+          "i": 126,
+          "side": 1,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "G7からG8・H8へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              111,
+              112
+            ],
+            "nearbyOwn": [
+              111,
+              112
+            ],
+            "links": [
+              111,
+              112
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "29",
+            "SELDEPTH": "37",
+            "NODES": "2601453",
+            "TOTALNODES": "2784039",
+            "TOTALTIME": "6135",
+            "SPEED": "453796",
+            "EVAL": "+M29",
+            "WINRATE": "1",
+            "BESTLINE": "6,8 5,9 6,9 6,6 5,8 4,8 6,10 6,11 7,5 3,9 2,10 4,9 7,6 2,9 1,9 7,4 8,5 9,4 6,5 5,5 8,7 5,4 9,8 10,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6136,
+          "forced": false
+        },
+        {
+          "i": 141,
+          "side": 2,
+          "phase": "opening",
+          "title": "石の連携を増やす",
+          "text": "G6からH6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              142
+            ],
+            "nearbyOwn": [
+              110,
+              142
+            ],
+            "links": [
+              142
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 126
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "29",
+            "SELDEPTH": "24",
+            "NODES": "940852",
+            "TOTALNODES": "2527694",
+            "TOTALTIME": "6090",
+            "SPEED": "415056",
+            "EVAL": "-M26",
+            "WINRATE": "0",
+            "BESTLINE": "6,9 5,9 8,6 4,8 4,9 3,8 5,8 3,7 2,6 3,6 3,9 4,5 3,4 6,5 7,10 4,7 9,12 8,11 5,6 6,6 6,4"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 6090,
+          "forced": false
+        },
+        {
+          "i": 140,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "I9・E5への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              126
+            ],
+            "nearbyOwn": [
+              111,
+              112,
+              126
+            ],
+            "links": [
+              126,
+              112
+            ],
+            "nextOpenFours": [
+              98,
+              154
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 141
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "25",
+            "NODES": "215155",
+            "TOTALNODES": "245921",
+            "TOTALTIME": "648",
+            "SPEED": "379507",
+            "EVAL": "+M27",
+            "WINRATE": "1",
+            "BESTLINE": "5,9 8,6 4,8 7,8 6,10 7,11 4,10 3,11 4,9 4,11 5,10 7,10 7,12 6,11 5,11 5,8 4,7 4,6 6,12 8,11 9,12 9,11 10,11 7,13"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 650,
+          "forced": false
+        },
+        {
+          "i": 98,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒I9・E5から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              98,
+              154
+            ],
+            "connectionTargets": [
+              82,
+              99,
+              113,
+              114,
+              68,
+              96,
+              100,
+              128,
+              50,
+              95,
+              143,
+              146,
+              94,
+              158
+            ],
+            "nearestOpponent": 112
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "20",
+            "NODES": "56275",
+            "TOTALNODES": "56326",
+            "TOTALTIME": "135",
+            "SPEED": "417229",
+            "EVAL": "-M24",
+            "WINRATE": "0",
+            "BESTLINE": "8,6 4,8 4,9 3,8 5,8 3,7 2,6 3,6 3,9 4,5 3,4 6,5 7,10 4,7 9,12 8,11 5,6 6,6 6,4"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 136,
+          "forced": false
+        },
+        {
+          "i": 124,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "E7からG7・F6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              140
+            ],
+            "nearbyOwn": [
+              111,
+              126,
+              140
+            ],
+            "links": [
+              126,
+              140
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "17",
+            "NODES": "146759",
+            "TOTALNODES": "253050",
+            "TOTALTIME": "706",
+            "SPEED": "358427",
+            "EVAL": "+M21",
+            "WINRATE": "1",
+            "BESTLINE": "4,8 4,9 3,7 6,10 3,8 5,8 3,6 3,5 4,6 5,6 5,5 6,4 2,8 1,9 4,10 3,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 706,
+          "forced": false
+        },
+        {
+          "i": 139,
+          "side": 2,
+          "phase": "build",
+          "title": "二方向の連結点を残す",
+          "text": "F7・F5・C8は、E6と別の自石を異なる方向から結べる空点。",
+          "kind": "prepare-connection",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              110,
+              141
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [
+              125,
+              155,
+              107,
+              169,
+              171,
+              184,
+              187
+            ],
+            "nearestOpponent": 124
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "17",
+            "NODES": "142933",
+            "TOTALNODES": "174722",
+            "TOTALTIME": "454",
+            "SPEED": "384850",
+            "EVAL": "-M20",
+            "WINRATE": "0",
+            "BESTLINE": "4,9 3,8 5,8 3,7 2,6 3,6 3,9 4,5 3,4 5,5 8,11 4,7 4,6 6,5 9,12 7,10"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 455,
+          "forced": false
+        },
+        {
+          "i": 108,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "C9・G5への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              124
+            ],
+            "nearbyOwn": [
+              124,
+              140
+            ],
+            "links": [
+              124,
+              140
+            ],
+            "nextOpenFours": [
+              92,
+              156
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "15",
+            "NODES": "106476",
+            "TOTALNODES": "197090",
+            "TOTALTIME": "556",
+            "SPEED": "354478",
+            "EVAL": "+M19",
+            "WINRATE": "1",
+            "BESTLINE": "3,7 2,6 5,5 6,6 3,8 2,8 7,8 5,8 3,6 3,5 3,10 3,9 4,10 3,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 557,
+          "forced": false
+        },
+        {
+          "i": 92,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒C9・G5から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              92,
+              156
+            ],
+            "connectionTargets": [
+              77,
+              78,
+              91,
+              93,
+              107,
+              62,
+              94,
+              50,
+              95,
+              137,
+              96
+            ],
+            "nearestOpponent": 108
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "31",
+            "SELDEPTH": "12",
+            "NODES": "944182",
+            "TOTALNODES": "946862",
+            "TOTALTIME": "2479",
+            "SPEED": "381953",
+            "EVAL": "-M16",
+            "WINRATE": "0",
+            "BESTLINE": "2,6 5,5 6,6 4,10 3,11 5,10 7,10 2,8 4,6 5,8 3,8"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 2479,
+          "forced": false
+        },
+        {
+          "i": 80,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "F10からH8・D8へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              108,
+              111,
+              112
+            ],
+            "links": [
+              112,
+              108
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "13",
+            "NODES": "61755",
+            "TOTALNODES": "184070",
+            "TOTALTIME": "489",
+            "SPEED": "376421",
+            "EVAL": "+M17",
+            "WINRATE": "1",
+            "BESTLINE": "5,5 6,6 3,8 2,8 7,8 5,8 3,6 3,5 3,10 3,9 4,10 3,11"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 490,
+          "forced": false
+        },
+        {
+          "i": 96,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "G9からC9・I9・F8へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              110
+            ],
+            "nearbyOwn": [
+              98,
+              110
+            ],
+            "links": [
+              92,
+              98,
+              110
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 80
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "10",
+            "NODES": "3796",
+            "TOTALNODES": "6724",
+            "TOTALTIME": "11",
+            "SPEED": "611272",
+            "EVAL": "-M14",
+            "WINRATE": "0",
+            "BESTLINE": "6,6 4,10 3,11 5,10 7,10 2,8 4,6 5,8 3,8"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 12,
+          "forced": false
+        },
+        {
+          "i": 154,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "D4で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              168
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              140
+            ],
+            "nearbyOwn": [
+              124,
+              126,
+              140
+            ],
+            "links": [
+              140,
+              126,
+              112
+            ],
+            "nextOpenFours": [
+              156,
+              172
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 139
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "10",
+            "NODES": "29376",
+            "TOTALNODES": "147099",
+            "TOTALTIME": "409",
+            "SPEED": "359655",
+            "EVAL": "+M13",
+            "WINRATE": "1",
+            "BESTLINE": "4,10 3,11 5,10 3,10 5,11 5,8 2,8 2,11 1,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 409,
+          "forced": false
+        },
+        {
+          "i": 168,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がD4に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              168
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              139
+            ],
+            "links": [],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              156,
+              172
+            ],
+            "connectionTargets": [
+              152,
+              153,
+              167,
+              169,
+              183,
+              184,
+              136,
+              138,
+              170,
+              198,
+              120,
+              123,
+              171,
+              172
+            ],
+            "nearestOpponent": 154
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "8",
+            "NODES": "20235",
+            "TOTALNODES": "20260",
+            "TOTALTIME": "49",
+            "SPEED": "413469",
+            "EVAL": "-M12",
+            "WINRATE": "0",
+            "BESTLINE": "3,11 5,10 7,10 2,8 4,6 5,8 3,8"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 49,
+          "forced": false
+        },
+        {
+          "i": 155,
+          "side": 1,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "F5からE5・F6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              140,
+              154
+            ],
+            "nearbyOwn": [
+              124,
+              126,
+              140,
+              154
+            ],
+            "links": [
+              154,
+              140
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 139
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "8",
+            "NODES": "10034",
+            "TOTALNODES": "36461",
+            "TOTALTIME": "89",
+            "SPEED": "409674",
+            "EVAL": "+M11",
+            "WINRATE": "1",
+            "BESTLINE": "5,10 3,10 5,11 5,8 2,8 2,11 1,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 90,
+          "forced": false
+        },
+        {
+          "i": 157,
+          "side": 2,
+          "phase": "build",
+          "title": "石の連携を増やす",
+          "text": "H5からH6・G6へ、それぞれ相手の石を挟まない線が通る。",
+          "kind": "connect",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              141,
+              142
+            ],
+            "nearbyOwn": [
+              141,
+              142
+            ],
+            "links": [
+              142,
+              141
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 126
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "6",
+            "NODES": "9690",
+            "TOTALNODES": "9816",
+            "TOTALTIME": "20",
+            "SPEED": "490800",
+            "EVAL": "-M10",
+            "WINRATE": "0",
+            "BESTLINE": "7,10 2,8 4,6 5,8 3,8"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 22,
+          "forced": false
+        },
+        {
+          "i": 125,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "D7・H7への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              111,
+              124,
+              126,
+              140
+            ],
+            "nearbyOwn": [
+              108,
+              111,
+              112,
+              124,
+              126,
+              140,
+              154,
+              155
+            ],
+            "links": [
+              124,
+              126,
+              140,
+              155,
+              111
+            ],
+            "nextOpenFours": [
+              123,
+              127
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "5",
+            "NODES": "12287",
+            "TOTALNODES": "54411",
+            "TOTALTIME": "122",
+            "SPEED": "445991",
+            "EVAL": "+M9",
+            "WINRATE": "1",
+            "BESTLINE": "5,8 3,8 5,11 5,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 123,
+          "forced": false
+        },
+        {
+          "i": 123,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒D7・H7から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              139
+            ],
+            "nearbyOwn": [
+              92,
+              110,
+              139
+            ],
+            "links": [
+              168,
+              139
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              123,
+              127
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 108
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "4",
+            "NODES": "10821",
+            "TOTALNODES": "10886",
+            "TOTALTIME": "20",
+            "SPEED": "544300",
+            "EVAL": "-M8",
+            "WINRATE": "0",
+            "BESTLINE": "3,8 5,11 5,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 20,
+          "forced": false
+        },
+        {
+          "i": 170,
+          "side": 1,
+          "phase": "attack",
+          "title": "四で応手を絞る",
+          "text": "F3で次に五連。白はこの勝ち口への対応が必要。",
+          "kind": "four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              185
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              154,
+              155
+            ],
+            "nearbyOwn": [
+              140,
+              154,
+              155
+            ],
+            "links": [
+              155,
+              140,
+              125,
+              154
+            ],
+            "nextOpenFours": [
+              127,
+              128,
+              156,
+              172
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 139
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "3",
+            "NODES": "50",
+            "TOTALNODES": "20735",
+            "TOTALTIME": "42",
+            "SPEED": "493690",
+            "EVAL": "+M7",
+            "WINRATE": "1",
+            "BESTLINE": "5,11 5,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 43,
+          "forced": false
+        },
+        {
+          "i": 185,
+          "side": 2,
+          "phase": "attack",
+          "title": "四を受ける",
+          "text": "黒がF3に打つと五連。その交点を先に塞ぐ。",
+          "kind": "block",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              185
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              157,
+              168
+            ],
+            "links": [
+              157
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              127,
+              128,
+              156,
+              172
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 170
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "1",
+            "SPEED": "50000",
+            "EVAL": "-M6",
+            "WINRATE": "0",
+            "BESTLINE": "5,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 2,
+          "forced": false
+        },
+        {
+          "i": 122,
+          "side": 1,
+          "phase": "build",
+          "title": "二つの勝ち口を狙う",
+          "text": "E9・D6への一手で、勝ち口が二つ以上になる。",
+          "kind": "prepare-four",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              108
+            ],
+            "nearbyOwn": [
+              108,
+              124,
+              154
+            ],
+            "links": [
+              154,
+              170,
+              108,
+              80
+            ],
+            "nextOpenFours": [
+              94,
+              138
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 123
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "45",
+            "TOTALNODES": "10656",
+            "TOTALTIME": "16",
+            "SPEED": "666000",
+            "EVAL": "+M5",
+            "WINRATE": "1",
+            "BESTLINE": "2,8"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 16,
+          "forced": false
+        },
+        {
+          "i": 186,
+          "side": 2,
+          "phase": "build",
+          "title": "四になる前に受ける",
+          "text": "黒D6から二つの勝ち口を作る形を止める。",
+          "kind": "stop-three",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              185
+            ],
+            "nearbyOwn": [
+              157,
+              185
+            ],
+            "links": [
+              185,
+              141
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              138
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 170
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "24",
+            "TOTALNODES": "49",
+            "TOTALTIME": "1",
+            "SPEED": "49000",
+            "EVAL": "-M4",
+            "WINRATE": "0",
+            "BESTLINE": "6,12"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 94,
+          "side": 1,
+          "phase": "attack",
+          "title": "勝ち口を二つ以上に",
+          "text": "勝ち口はG11・B6。白には今すぐ五連にする手がない。",
+          "kind": "fork",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              66,
+              136
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              80,
+              108
+            ],
+            "nearbyOwn": [
+              80,
+              108,
+              111,
+              122,
+              124,
+              125,
+              126
+            ],
+            "links": [
+              124,
+              108,
+              122,
+              80
+            ],
+            "nextOpenFours": [
+              52,
+              76,
+              84,
+              95,
+              106,
+              109,
+              121,
+              127,
+              128,
+              138,
+              150,
+              156,
+              172,
+              182,
+              200
+            ],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 110
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "1",
+            "SPEED": "50000",
+            "EVAL": "+M3",
+            "WINRATE": "1",
+            "BESTLINE": "4,6"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 66,
+          "side": 2,
+          "phase": "attack",
+          "title": "二つの勝ち口を受ける",
+          "text": "着手前から黒にG11・B6の勝ち口があり、一手では塞ぎ切れない。",
+          "kind": "forced-loss",
+          "facts": {
+            "ownWinsBefore": [],
+            "opponentWinsBefore": [
+              66,
+              136
+            ],
+            "ownWinsAfter": [],
+            "opponentWinsAfter": [
+              136
+            ],
+            "connectedOwn": [],
+            "nearbyOwn": [
+              96,
+              98
+            ],
+            "links": [
+              96,
+              98
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [
+              52,
+              76,
+              84,
+              95,
+              109,
+              121,
+              150,
+              182,
+              200
+            ],
+            "connectionTargets": [],
+            "nearestOpponent": 80
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "26",
+            "SELDEPTH": "2",
+            "NODES": "25",
+            "TOTALNODES": "50",
+            "TOTALTIME": "1",
+            "SPEED": "50000",
+            "EVAL": "-M2",
+            "WINRATE": "0",
+            "BESTLINE": "6,4"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 1,
+          "forced": false
+        },
+        {
+          "i": 136,
+          "side": 1,
+          "phase": "finish",
+          "title": "五連を完成",
+          "text": "黒B6で五つ以上がつながる。",
+          "kind": "win",
+          "facts": {
+            "ownWinsBefore": [
+              136
+            ],
+            "opponentWinsBefore": [],
+            "ownWinsAfter": [
+              150
+            ],
+            "opponentWinsAfter": [],
+            "connectedOwn": [
+              122
+            ],
+            "nearbyOwn": [
+              108,
+              122
+            ],
+            "links": [
+              122,
+              108,
+              94,
+              80
+            ],
+            "nextOpenFours": [],
+            "stoppedOpenFours": [],
+            "connectionTargets": [],
+            "nearestOpponent": 123
+          },
+          "info": {
+            "PV": "DONE",
+            "NUMPV": "1",
+            "DEPTH": "1",
+            "SELDEPTH": "0",
+            "NODES": "0",
+            "TOTALNODES": "0",
+            "TOTALTIME": "0",
+            "SPEED": "0",
+            "EVAL": "+M1",
+            "WINRATE": "1",
+            "BESTLINE": "1,9"
+          },
+          "searchMs": 8000,
+          "elapsedMs": 0,
+          "forced": false
+        }
+      ],
+      "result": "win"
+    }
+  ]
+}
