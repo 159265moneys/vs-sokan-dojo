@@ -1,0 +1,53 @@
+{
+  "mode": "built-in image_gen",
+  "created": "2026-11-10",
+  "assets": [
+    {
+      "name": "board-luxury",
+      "transparent": false,
+      "prompt": "Use case: stylized-concept. Asset type: square 2D mobile gomoku board surface texture, production game sprite. An exquisite premium dark rosewood / walnut lacquer playing surface, perfectly flat orthographic overhead, square edge to edge, no perspective. Rich restrained espresso brown wood with fine elegant longitudinal grain and a warm satin polish, subtle hand-crafted depth, evenly lit, moderate brightness so both black and ivory stones remain readable. Quiet low-frequency texture appropriate underneath a precise gold grid that will be drawn separately by code. Entire image is just the usable material surface. No grid, no lines, no border, no stones, no objects, no lettering, no symbols, no highlights obscuring play, no watermark. Not a scene or mockup. Square.",
+      "source": "design/theme-sources/board-luxury.png",
+      "asset": "dist/assets/themes/board-luxury.jpg"
+    },
+    {
+      "name": "board-inferno",
+      "transparent": false,
+      "prompt": "Use case: stylized-concept. Asset type: square seamless-looking 2D mobile gomoku board surface texture, production game sprite. INFERNO theme: a pitch-black cooled volcanic obsidian playing surface, perfectly flat orthographic overhead, square edge to edge. Near-black charcoal and subtle deep burgundy stone, finely weathered dense volcanic microtexture, minimal subtle edge-vignette. The central 90 percent must be quiet, very dark, evenly lit and uncluttered; a glowing red-orange precise grid will be drawn over it separately by code. Luxurious ominous polished basalt, restrained infernal mood. Entire image is bare material. No grid, no lines, no bright cracks, no lava river, no flames, no border, no stones or objects, no text, no symbols, no perspective, no watermark. Square.",
+      "source": "design/theme-sources/board-inferno.png",
+      "asset": "dist/assets/themes/board-inferno.jpg"
+    },
+    {
+      "name": "stone-luxury-black",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: ONE standalone 2D top-down gomoku stone sprite, transparent background. A single circular domed polished black obsidian Go stone with a delicate champagne-gold beveled rim. Refined luxury board game craftsmanship, lustrous charcoal face and a crisp restrained upper-left pearl reflection, subtle organic mineral depth. Direct orthographic overhead, perfectly circular, centered. The solid stone occupies 88 percent of the square canvas diameter; transparent padding on every edge. Strong clean silhouette readable at 22px. Thin gold outline remains clear on dark walnut. Only the single stone, no board, no text, no backdrop, no pedestal, no other objects, no drop shadow outside the canvas. Genuine transparent alpha. Square.",
+      "source": "design/theme-sources/stone-luxury-black.png",
+      "asset": "dist/assets/themes/stone-luxury-black.png"
+    },
+    {
+      "name": "stone-luxury-white",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: ONE standalone 2D top-down gomoku stone sprite, transparent background. A single circular domed ivory mother-of-pearl Go stone with a delicate champagne-gold beveled rim. Refined luxury board game craftsmanship, luminous creamy pearl face and a crisp restrained upper-left white reflection, subtle shell iridescence. Direct orthographic overhead, perfectly circular, centered. The solid stone occupies 88 percent of the square canvas diameter; transparent padding on every edge. Strong clean silhouette readable at 22px. Only the single stone, no board, no text, no backdrop, no pedestal, no other objects, no drop shadow outside the canvas. Genuine transparent alpha. Square.",
+      "source": "design/theme-sources/stone-luxury-white.png",
+      "asset": "dist/assets/themes/stone-luxury-white.png"
+    },
+    {
+      "name": "stone-inferno-red",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: ONE standalone 2D top-down INFERNO gomoku stone sprite, transparent background. A single perfectly circular domed ruby-red energy Go stone. Deep saturated crimson glass body with vivid luminous red-magenta edges, a razor thin white-hot pale red bevel and one bright upper-left reflection, subtle molten light trapped inside. The face is clearly RED, not mostly black. Visually powerful but clean, smooth, minimal, no decorative rune. Direct orthographic overhead, centered. Solid disk occupies 88 percent of square canvas diameter, compact red glow kept inside transparent padding, readable at22px. Only one stone, no ground, no board, no text, no flames, no sparks, no background, no perspective, no watermark. Genuine transparent alpha. Square.",
+      "source": "design/theme-sources/stone-inferno-red.png",
+      "asset": "dist/assets/themes/stone-inferno-red.png"
+    },
+    {
+      "name": "stone-inferno-blue",
+      "transparent": true,
+      "prompt": "Use case: stylized-concept. Asset type: ONE standalone 2D top-down INFERNO gomoku stone sprite, transparent background. A single perfectly circular domed electric-blue energy Go stone. Deep saturated cobalt glass body with vivid luminous cyan-blue edges, a razor thin white-hot pale cyan bevel and one bright upper-left reflection, subtle plasma light trapped inside. The face is clearly BLUE, not mostly black. Visually powerful but clean, smooth, minimal, no decorative rune. Direct orthographic overhead, centered. Solid disk occupies 88 percent of square canvas diameter, compact cyan glow kept inside transparent padding, readable at22px. Only one stone, no ground, no board, no text, no flames, no sparks, no background, no perspective, no watermark. Genuine transparent alpha. Square.",
+      "source": "design/theme-sources/stone-inferno-blue.png",
+      "asset": "dist/assets/themes/stone-inferno-blue.png"
+    }
+  ],
+  "notes": [
+    "Opaque board textures contain no grid. Exact 15×15 intersections and magma glow are drawn in SVG.",
+    "Runtime stone sprites preserve alpha and are downscaled to 192×192. Board textures use optimized JPEG.",
+    "Normal difficulty retains the original assets. No rules, engine settings, or stage dimensions are changed."
+  ]
+}

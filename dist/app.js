@@ -26,6 +26,7 @@ import {
   removeTacticalMistake,
 } from "./training-progress.js";
 import { Engine } from "./engine-client.js";
+import { boardSkin, stoneSprite, stoneName, skinText } from "./board-themes.js";
 import { Sounds } from "./sound.js";
 import {
   makeMatePuzzle,
@@ -271,11 +272,21 @@ function stats() {
     total: done.length,
   };
 }
+function currentSkin() {
+  return boardSkin({
+    mode,
+    level,
+    gameLevel: game.level,
+    started: game.moves.length > 0,
+    reviewLevel: review?.level,
+  });
+}
 function initBoard() {
-  let svg = "";
+  let svg = "",
+    grid = "";
   for (let j = 0; j < 15; j++) {
     const p = 40 + j * 40;
-    svg += `<path d="M40 ${p}H600 M${p} 40V600" fill="none" stroke="#706d4e" stroke-width=".8"/>`;
+    grid += `<path d="M40 ${p}H600 M${p} 40V600" fill="none" stroke="#706d4e" stroke-width=".8"/>`;
     svg += `<text x="${p}" y="18" text-anchor="middle">${String.fromCharCode(65 + j)}</text><text x="18" y="${p + 3}" text-anchor="middle">${15 - j}</text><text x="${p}" y="628" text-anchor="middle">${String.fromCharCode(65 + j)}</text><text x="624" y="${p + 3}" text-anchor="middle">${15 - j}</text>`;
   }
   for (const [x, y] of [
@@ -286,7 +297,8 @@ function initBoard() {
     [11, 11],
   ])
     svg += `<circle cx="${40 + x * 40}" cy="${40 + y * 40}" r="3" fill="#626443"/>`;
-  $("#board-lines").innerHTML = svg;
+  $("#board-lines").innerHTML =
+    `<defs><linearGradient id="inferno-grid-heat" x1="40" y1="40" x2="600" y2="600" gradientUnits="userSpaceOnUse"><stop stop-color="#4a1e21"/><stop offset=".23" stop-color="#70332a"/><stop offset=".43" stop-color="#a24b37"/><stop offset=".57" stop-color="#512126"/><stop offset=".8" stop-color="#893d30"/><stop offset="1" stop-color="#421a20"/></linearGradient><filter id="inferno-grid-glow" x="0" y="0" width="640" height="640" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="1.8"/></filter></defs><g class="grid-bloom" filter="url(#inferno-grid-glow)">${grid}</g><g class="grid-lines">${grid}</g><g class="grid-heat" stroke="url(#inferno-grid-heat)">${grid}</g>${svg}`;
   $("#intersections").innerHTML = Array.from(
     { length: 15 },
     (_, row) =>
@@ -444,6 +456,11 @@ function viewPosition() {
   };
 }
 function renderBoard() {
+  const skin = currentSkin();
+  $("#board").setAttribute(
+    "aria-label",
+    skin === "inferno" ? "15×15の五目盤。赤が先手、青が後手" : "15×15の五目盤",
+  );
   const v = viewPosition(),
     order = new Map(v.moves.map((m, j) => [m.i, j + 1]));
   $$("[data-cell]").forEach((el, i) => {
@@ -452,7 +469,7 @@ function renderBoard() {
     el.className = `intersection ${c ? "occupied" : ""} ${preview ? "preview" : ""} ${i === v.last ? "last" : ""} ${numbers ? "numbered" : ""} ${v.marks?.includes(i) && !c ? "hint" : ""} ${mode === "drill" && drill?.lastWrong === i && !drill.showRefutation && !drill.replay ? "mistake-point" : ""}`;
     el.setAttribute(
       "aria-label",
-      `${coord(i)} ${c === 1 ? "黒" : c === 2 ? "白" : "空点"}${i === v.last ? " 最新手" : ""}${preview ? " 選択中" : ""}${v.marks?.includes(i) ? (mode === "drill" && drill.wrong && !drill.showHint ? (drill.refutationColor === 1 ? " 勝ち手" : " 白の応手") : " 推奨点") : ""}`,
+      `${coord(i)} ${c ? stoneName(skin, c) : "空点"}${i === v.last ? " 最新手" : ""}${preview ? " 選択中" : ""}${v.marks?.includes(i) ? (mode === "drill" && drill.wrong && !drill.showHint ? (drill.refutationColor === 1 ? " 勝ち手" : " 白の応手") : " 推奨点") : ""}`,
     );
     el.setAttribute("aria-selected", String(preview));
     const previous = el.dataset.stone;
@@ -521,7 +538,7 @@ function renderBoard() {
         ? "変化手順"
         : `棋譜 · ${reviewStep} / ${review?.moves.length || 0}手`;
   $("#turn-status").innerHTML =
-    `<i class="status-dot ${busy ? "busy" : ""}"></i>${text}`;
+    `<i class="status-dot ${busy ? "busy" : ""}"></i>${skinText(text, currentSkin())}`;
 }
 const actionIcons = {
   precision: "target",
@@ -804,6 +821,7 @@ function renderPanel() {
   const scrollTop =
     panelKey === lastPanelKey ? $("#panel-content")?.scrollTop || 0 : 0;
   lastPanelKey = panelKey;
+  html = skinText(html, currentSkin());
   $("#panel").innerHTML =
     `<div id="panel-content" class="panel-content" role="region" aria-label="解説と情報" tabindex="0">${html}</div><div class="panel-actions"></div>`;
   const content = $("#panel-content"),
@@ -908,6 +926,7 @@ function render() {
       stats: "積み重ねが、<em>強さになる。</em>",
     };
   document.body.dataset.mode = mode;
+  document.body.dataset.skin = currentSkin();
   renderContext();
   $("#sound").innerHTML = icon(sound ? "sound" : "mute");
   $("#sound").setAttribute("aria-pressed", String(sound));
@@ -936,7 +955,8 @@ function render() {
           : game.guided
             ? "最強 · 解説"
             : levels[game.moves.length ? game.level : level].label;
-  $("#opponent-label").innerHTML = "CPU <small>白</small>";
+  $("#opponent-label").innerHTML =
+    `CPU <small>${stoneName(currentSkin(), 2)}</small>`;
   if (mode === "stats") renderStats();
   else {
     renderBoard();
@@ -1415,7 +1435,7 @@ function renderPrecision() {
     for (let dx = -1; dx <= 1; dx++) {
       const i = (y + dy) * 15 + x + dx,
         c = v.board[i];
-      cells += `<button data-action="precise-pick" data-index="${i}" class="precise-cell ${i === pendingMove ? "chosen" : ""}" aria-label="${coord(i)} ${c === 1 ? "黒" : c === 2 ? "白" : "空点"}" aria-pressed="${i === pendingMove}" ${c || !editable ? "disabled" : ""}>${c ? `<img src="assets/stone-${c === 1 ? "black" : "white"}.svg" alt="">` : '<span class="precision-cross"></span>'}<b>${coord(i)}</b></button>`;
+      cells += `<button data-action="precise-pick" data-index="${i}" class="precise-cell ${i === pendingMove ? "chosen" : ""}" aria-label="${coord(i)} ${c ? stoneName(currentSkin(), c) : "空点"}" aria-pressed="${i === pendingMove}" ${c || !editable ? "disabled" : ""}>${c ? `<img src="${stoneSprite(currentSkin(), c)}" alt="">` : '<span class="precision-cross"></span>'}<b>${coord(i)}</b></button>`;
     }
   openModal(
     `<h2>${editable ? "交点を選ぶ" : "周囲を拡大"}</h2><div class="precision-grid">${cells}</div><div class="precision-pan">${[-15, -1, 1, 15].map((d, j) => `<button data-action="precision-pan" data-delta="${d}" aria-label="${["上", "左", "右", "下"][j]}へ">${["↑", "←", "→", "↓"][j]}</button>`).join("")}</div>`,

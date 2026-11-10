@@ -1,0 +1,306 @@
+/* Paint-only difficulty skins. The stage dimensions are owned by game-ui.css. */
+.grid-bloom,
+.grid-heat {
+  display: none;
+}
+
+body[data-skin="luxury"] {
+  --skin-black: url("assets/themes/stone-luxury-black.png");
+  --skin-white: url("assets/themes/stone-luxury-white.png");
+}
+body[data-skin="inferno"] {
+  --skin-black: url("assets/themes/stone-inferno-red.png");
+  --skin-white: url("assets/themes/stone-inferno-blue.png");
+}
+body:is([data-skin="luxury"], [data-skin="inferno"]) .black {
+  background-image: var(--skin-black);
+}
+body:is([data-skin="luxury"], [data-skin="inferno"]) .white {
+  background-image: var(--skin-white);
+}
+
+body[data-skin="luxury"] .board-frame {
+  background: linear-gradient(
+    135deg,
+    #735335,
+    #24170f 30%,
+    #4c321d 72%,
+    #956c3f
+  );
+  border-color: #b78b51;
+  box-shadow:
+    inset 0 0 0 1px #cba46566,
+    inset 0 0 10px #080403,
+    0 6px 18px #0008;
+}
+body[data-skin="luxury"] .board {
+  background: #4b2517 url("assets/themes/board-luxury.jpg") center/cover;
+  box-shadow:
+    inset 0 0 0 1px #ddb97688,
+    inset 0 0 26px #08040144;
+}
+body[data-skin="luxury"] .board svg path {
+  stroke: #d7ad6b;
+  stroke-width: 1.15;
+}
+body[data-skin="luxury"] .board svg text {
+  fill: #efd6a2;
+}
+body[data-skin="luxury"] .board svg circle {
+  fill: #e7c386;
+}
+body[data-skin="luxury"] .stone {
+  filter: drop-shadow(0 1px 1px #0009);
+}
+body[data-skin="luxury"] .intersection.hint:before {
+  border-color: #8affd0;
+  background: #8affd022;
+  box-shadow: 0 0 0 2px #102b22cc;
+}
+body[data-skin="luxury"] .intersection.hint:not(.occupied):after {
+  background: #8affd0;
+}
+body[data-skin="luxury"] .intersection.preview:after {
+  border-color: #fff1bc;
+  box-shadow: 0 0 0 1px #4b2a12;
+}
+body[data-skin="luxury"] #board-overlay polyline {
+  stroke: #79f1c3;
+  opacity: 0.95;
+}
+
+body[data-skin="inferno"] .board-frame {
+  background: linear-gradient(
+    135deg,
+    #3d2528,
+    #0c0c11 26%,
+    #201217 75%,
+    #572922
+  );
+  border-color: #8f4538;
+  box-shadow:
+    inset 0 0 0 1px #e5774f33,
+    inset 0 0 8px #000,
+    0 0 18px #eb321814,
+    0 6px 18px #000a;
+}
+body[data-skin="inferno"] .board {
+  background: #100d11 url("assets/themes/board-inferno.jpg") center/cover;
+  box-shadow:
+    inset 0 0 0 1px #c15b3f66,
+    inset 0 0 24px #0008;
+}
+body[data-skin="inferno"] .grid-bloom {
+  display: inline;
+}
+body[data-skin="inferno"] .board .grid-bloom path {
+  stroke: #bd432e;
+  stroke-width: 2;
+  opacity: 0.16;
+}
+body[data-skin="inferno"] .grid-lines {
+  display: none;
+}
+body[data-skin="inferno"] .grid-heat {
+  display: inline;
+}
+body[data-skin="inferno"] .board .grid-heat path {
+  stroke: inherit;
+  stroke-width: 1.25;
+  opacity: 0.74;
+}
+body[data-skin="inferno"] .board svg text {
+  fill: #f2c5b6;
+}
+body[data-skin="inferno"] .board svg circle {
+  fill: #a75b42;
+}
+body[data-skin="inferno"] .stone.black {
+  filter: drop-shadow(0 0 2px #ff315a99);
+}
+body[data-skin="inferno"] .stone.white {
+  filter: drop-shadow(0 0 2px #1d9dffbb);
+  color: #fff;
+}
+body[data-skin="inferno"] .stone {
+  text-shadow:
+    0 1px 2px #000,
+    1px 0 1px #000,
+    -1px 0 1px #000;
+}
+body[data-skin="inferno"] .intersection.last .stone:after {
+  background: #fff6d5;
+  border-color: #301d0b;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  box-shadow: 0 0 2px #000;
+}
+body[data-skin="inferno"] .intersection.hint:before {
+  border-color: #fff291;
+  background: #e7c44933;
+  box-shadow:
+    0 0 0 2px #332704,
+    0 0 6px #ffe46b88;
+}
+body[data-skin="inferno"] .intersection.hint:not(.occupied):after {
+  background: #fff291;
+}
+body[data-skin="inferno"] .intersection.preview .stone {
+  opacity: 0.8;
+}
+body[data-skin="inferno"] .intersection.preview:after {
+  border-color: #fff1a5;
+  border-style: dashed;
+  box-shadow: 0 0 0 1px #251a09;
+}
+body[data-skin="inferno"] #board-overlay polyline {
+  stroke: #fff1a5;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 2px #ffd646);
+}
+
+body[data-skin="luxury"] .precision-grid {
+  background: #442619 url("assets/themes/board-luxury.jpg") center/cover;
+}
+body[data-skin="luxury"] .precise-cell {
+  background: #4a2b1bd9;
+  color: #ffe6b5;
+}
+body[data-skin="luxury"] .precision-cross {
+  background:
+    linear-gradient(#d7ad6b, #d7ad6b) center/1px 100% no-repeat,
+    linear-gradient(#d7ad6b, #d7ad6b) center/100% 1px no-repeat;
+}
+body[data-skin="luxury"] .precise-cell.chosen {
+  border-color: #8affd0;
+  background: #254439;
+}
+body[data-skin="inferno"] .precision-grid {
+  background: #100d11 url("assets/themes/board-inferno.jpg") center/cover;
+}
+body[data-skin="inferno"] .precise-cell {
+  background: #1b1117eb;
+  color: #f7d6ca;
+}
+body[data-skin="inferno"] .precision-cross {
+  background:
+    linear-gradient(#ff784c, #ff784c) center/2px 100% no-repeat,
+    linear-gradient(#ff784c, #ff784c) center/100% 2px no-repeat;
+  filter: drop-shadow(0 0 3px #ff351b);
+}
+body[data-skin="inferno"] .precise-cell.chosen {
+  border-color: #fff291;
+  background: #3c2b1d;
+}
+
+body[data-skin="inferno"] .intersection:focus-visible {
+  outline-color: #fff291;
+}
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  .intersection.hint.preview:before {
+  display: none;
+}
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  .intersection.hint.preview:after {
+  inset: -4%;
+  width: auto;
+  height: auto;
+  background: none;
+  transform: none;
+  border-radius: 50%;
+}
+/* UI accents are scoped away from the bottom navigation. */
+body[data-skin="luxury"] :is(.shell main, #modal) {
+  --surface: #25211c;
+  --raised: #393026;
+  --line: #594936;
+  --gold: #e5c68c;
+  --green: #a9d8b8;
+  --ink: #f6f0e5;
+  --muted: #bdb3a5;
+}
+body[data-skin="inferno"] :is(.shell main, #modal) {
+  --surface: #000;
+  --raised: #000;
+  --line: #353535;
+  --gold: #efa18c;
+  --green: #f0dc9b;
+  --ink: #f9eff2;
+  --muted: #c4aeb6;
+}
+body[data-skin="luxury"] .shell main {
+  background: linear-gradient(155deg, #211b16, #141210 65%);
+}
+body[data-skin="inferno"] .shell main {
+  background: #000;
+}
+body:is([data-skin="luxury"], [data-skin="inferno"]) :is(.shell main, #modal) {
+  color: var(--ink);
+}
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  .top-actions
+  :is(.icon-button, .new-top-button) {
+  color: var(--muted);
+}
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  .top-actions
+  .icon-button[aria-pressed="true"] {
+  color: var(--gold);
+}
+body[data-skin="luxury"] .difficulties {
+  background: #17130f;
+}
+body[data-skin="inferno"] .difficulties {
+  background: #000;
+}
+body[data-skin="luxury"] .difficulty.active {
+  background: #5d4b33;
+  color: #fff1ce;
+  box-shadow: inset 0 0 0 1px #b4975944;
+}
+body[data-skin="inferno"] .difficulty.active {
+  background: #603740;
+  color: #fff0eb;
+  box-shadow: inset 0 0 0 1px #c8797444;
+}
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  .difficulty:not(.active):not(:disabled) {
+  color: var(--muted);
+}
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  .board-controls
+  .place-button:disabled {
+  background: var(--raised);
+  color: var(--muted);
+}
+body[data-skin="luxury"] .assist-toggle[aria-checked="true"] .toggle-track {
+  background: #9f7e47;
+}
+body[data-skin="inferno"] .assist-toggle[aria-checked="true"] .toggle-track {
+  background: #a65355;
+}
+body:is([data-skin="luxury"], [data-skin="inferno"]) .badge {
+  border-color: var(--line);
+  background: #ffffff05;
+}
+body[data-skin="luxury"] .panel-content .lesson-explanation {
+  color: #e9dfcd;
+}
+body[data-skin="inferno"] .panel-content .lesson-explanation {
+  color: #eadde3;
+}
+body[data-skin="inferno"] .rival #opponent-label small {
+  color: #9acbff;
+}
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  :is(.shell main, #modal)
+  .secondary {
+  border-color: var(--line);
+  color: var(--ink);
+}
+body:is([data-skin="luxury"], [data-skin="inferno"]) #modal,
+body:is([data-skin="luxury"], [data-skin="inferno"])
+  .board-controls
+  .place-button:disabled {
+  border-color: var(--line);
+}
