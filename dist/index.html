@@ -30,8 +30,9 @@
       sizes="180x180"
     />
     <meta name="apple-mobile-web-app-title" content="VS 楚涵" />
-    <link rel="stylesheet" href="game-ui.css?v=board-first-20261111" />
+    <link rel="stylesheet" href="game-ui.css?v=learning-rebuild-20261111" />
     <link rel="stylesheet" href="board-themes.css" />
+    <link rel="stylesheet" href="rebuild-ui.css?v=learning-rebuild-20261111" />
     <link rel="preload" as="image" href="assets/themes/board-luxury.jpg" />
     <link rel="preload" as="image" href="assets/themes/board-inferno.jpg" />
     <link
@@ -98,10 +99,10 @@
           data-action="title-start"
           disabled
         >
-          はじめる</button
+          対局する</button
         ><button id="title-retry" class="secondary" data-action="retry" hidden>
           再読み込み</button
-        ><button class="title-learn" data-action="title-learn">型を学ぶ</button>
+        ><button class="title-learn" data-action="title-learn">学ぶ</button>
       </div>
     </section>
     <div class="shell" inert aria-hidden="true">
@@ -112,21 +113,23 @@
           ></a
         >
         <nav aria-label="モード">
-          <button data-mode="play" class="nav active">
-            <span class="nav-icon">✣</span
-            ><span>対局<small>PLAY</small></span></button
-          ><button data-mode="learn" class="nav">
-            <span class="nav-icon">◈</span
-            ><span>型を学ぶ<small>LEARN</small></span></button
-          ><button data-mode="drill" class="nav">
-            <span class="nav-icon">◎</span
-            ><span>反復練習<small>TRAIN</small></span></button
-          ><button data-mode="review" class="nav">
-            <span class="nav-icon">↶</span
-            ><span>棋譜検討<small>REVIEW</small></span></button
-          ><button data-mode="stats" class="nav">
-            <span class="nav-icon">▥</span
-            ><span>戦績<small>RECORDS</small></span>
+          <button data-mode="learn" class="nav">
+            <span class="nav-icon"
+              ><svg class="ui-icon" aria-hidden="true">
+                <use href="assets/ui-icons.svg#learn" /></svg></span
+            ><span>学ぶ</span>
+          </button>
+          <button data-mode="play" class="nav">
+            <span class="nav-icon"
+              ><svg class="ui-icon" aria-hidden="true">
+                <use href="assets/ui-icons.svg#board" /></svg></span
+            ><span>対局</span>
+          </button>
+          <button data-mode="review" class="nav">
+            <span class="nav-icon"
+              ><svg class="ui-icon" aria-hidden="true">
+                <use href="assets/ui-icons.svg#review" /></svg></span
+            ><span>振り返り</span>
           </button>
         </nav>
         <div class="rail-bottom">
@@ -251,7 +254,7 @@
           </section>
           <aside id="panel" class="panel"></aside>
         </div>
-        <section id="records-view" class="records-view" hidden></section>
+        <section id="library-view" class="library-view" hidden></section>
         <footer>
           <span>VS 楚涵 <b>五目道場</b></span
           ><span>15 × 15 <i>·</i> 禁手なし <i>·</i> 五連以上で勝ち</span
@@ -274,6 +277,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="app.js?v=board-first-20261111"></script>
+    <script type="module" src="app.js?v=learning-rebuild-20261111"></script>
   </body>
 </html>
