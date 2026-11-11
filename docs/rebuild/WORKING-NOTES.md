@@ -65,3 +65,11 @@
 ## 追加指摘への対応（2026-11-11）
 
 事実報告に偏った検討と2石の無意味な発光を修正。新review-patterns.js、要点/実戦/改善の3画面、反実仮想の提案、型名/二方向の発光/関連教材を追加。新規9件＋既存65件が成功。詳細PATTERN-REVIEW.md。公開作業中。
+
+## 追加対応と新規の教材評価
+
+型レビュー0401a48を公開(run42982601986成功)後、公開版既存22手棋譜で改善0件を発見。三を連続させる攻撃(VCT)を9半手/静かな探索深さ2まで全合法応手で検証し、13手目L6→K4を抽出できた。15手目以降の避けられない受けは責めない。全76件成功、ブラウザでもK4/飛び三/次の三三まで説明確認。修正版v2を公開作業中。
+
+新ユーザー要求: 修正完了後、新規の非常に厳しい教材評価者で『小中学校に売れる教材か』『最初から順当に・確実に・寄り道なし・最短で最強CPU完封まで導けるか』を評価。UIUX/デザインは対象外。新規agent /root/school_curriculum_audit_20261111 起動済み、fork none。成果所有docs/rebuild/SCHOOL-CURRICULUM-AUDIT.md、production編集禁止。rootは結果を待ち、学校販売可能/到達保証の根拠不足を正直に報告する。実証なしのAAAや人間の棋力向上保証はしない。
+
+所有server: session31347 PORT4175 phone-preview。ブラウザID3、tab1、var tab/reviewBrowser/shotFs。viewport393×852 override中、最終公開URLへ戻してreset＋completion_summaryが必要。新しいUI証拠: artifacts/review-pattern-comparison.jpg。

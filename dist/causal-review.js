@@ -4,7 +4,7 @@ import {
   patternOpportunities,
   provePatternMove,
   sequencePattern,
-} from "./review-patterns.js";
+} from "./review-patterns.js?v=patterns-20261111-v2";
 import {
   coord,
   winningLine,
@@ -22,7 +22,7 @@ const DIRECTIONS = [
 ];
 const NAMES = ["横", "縦", "斜め", "斜め"];
 const COLOR = ["", "黒", "白"];
-const PROOF_LIMIT = { maxPly: 7, maxNodes: 450 };
+const PROOF_LIMIT = { maxPly: 9, maxNodes: 450, quietDepth: 2 };
 const WINDOWS = { 5: [], 6: [] };
 for (const length of [5, 6]) {
   for (let y = 0; y < 15; y++)
@@ -421,6 +421,18 @@ function proofFrames(input, evidence, { prefix = "", focusColor = 1 } = {}) {
   return result;
 }
 
+function winningAttack(board, color, limits = PROOF_LIMIT, preferred = []) {
+  const direct = proof(board, color, limits);
+  if (direct.status === "proven" || limits.maxNodes === 0) return direct;
+  const candidate = patternOpportunities(board, color, {
+    ...limits,
+    maxQuietChecks: 2,
+    preferred,
+  })[0];
+  return candidate
+    ? { ...candidate.proof, pattern: candidate.pattern }
+    : direct;
+}
 function alternativeAssessment(before, point, evidence, limits = PROOF_LIMIT) {
   const b = Uint8Array.from(before);
   if (!legal(b, point)) return { status: "illegal" };
@@ -432,6 +444,44 @@ function alternativeAssessment(before, point, evidence, limits = PROOF_LIMIT) {
       proof: own,
     };
   b[point] = 1;
+  if (evidence.scope?.startsWith("all-replies")) {
+    const same = provePatternMove(b, 2, evidence.line[0], {
+      ...limits,
+      allowQuiet: true,
+      preferred: evidence.preferred || [],
+    });
+    if (same) return { status: "refuted", proof: same };
+    const other = winningAttack(b, 2, limits);
+    if (other.status === "proven") return { status: "refuted", proof: other };
+    if (point === evidence.line[0])
+      return {
+        status: "accepted",
+        scope: "line-prevented",
+        overall: "unknown",
+        obstruction: { reason: "occupied-attack", point, board: Array.from(b) },
+      };
+    const future = Uint8Array.from(b);
+    future[evidence.line[0]] = 2;
+    const remains = recognizePatterns(future).some(
+      (p) =>
+        p.color === 2 &&
+        p.type === evidence.pattern?.type &&
+        evidence.pattern.cells.every((i) => p.cells.includes(i)),
+    );
+    if (!remains && evidence.pattern)
+      return {
+        status: "accepted",
+        scope: "line-prevented",
+        overall: "unknown",
+        obstruction: {
+          reason: "broken-pattern",
+          point: evidence.line[0],
+          patternName: evidence.pattern.name,
+          board: Array.from(future),
+        },
+      };
+    return { status: "unknown" };
+  }
   const obstruction = inspectCertificate(b, 2, evidence.line);
   if (obstruction.holds) return { status: "refuted", proof: evidence };
   const counter = proof(b, 2, limits);
@@ -467,7 +517,11 @@ function findAlternatives(before, actual, evidence, ownProof, limits) {
     const verdict = alternativeAssessment(before, point, evidence, limits);
     if (verdict.status === "accepted")
       details.push({ move: point, ...verdict });
-    if (details.length === 8) break;
+    if (
+      details.length === 8 ||
+      (evidence.scope?.startsWith("all-replies") && details.length)
+    )
+      break;
   }
   return details;
 }
@@ -477,12 +531,11 @@ function improvementFrames(before, detail, evidence = null) {
     return [
       frame(before, {
         title: "打ち直す前",
-        text:
-          detail.proof.scope === "all-replies-then-vcf"
-            ? `黒${coord(detail.move)}で攻めを準備する。白の応手を見て、残る方向から四をつなげる。`
-            : detail.proof.plies === 1
-              ? `黒${coord(detail.move)}なら、この一手で五が完成します。`
-              : `黒${coord(detail.move)}で四を作ると、白の受けを強制して勝ちまで続けられます。`,
+        text: detail.proof.scope?.startsWith("all-replies")
+          ? `黒${coord(detail.move)}で攻めを準備する。白の応手を見て、残る方向から四をつなげる。`
+          : detail.proof.plies === 1
+            ? `黒${coord(detail.move)}なら、この一手で五が完成します。`
+            : `黒${coord(detail.move)}で四を作ると、白の受けを強制して勝ちまで続けられます。`,
         extra: [{ points: [detail.move], tone: "good" }],
       }),
       ...proofFrames(before, detail.proof),
@@ -501,6 +554,8 @@ function improvementFrames(before, detail, evidence = null) {
   } else if (plannedIndex >= 0) {
     text = `白の四を受ける予定の${coord(detail.move)}へ、先に黒を置きます。白がその線を五に伸ばす道をふさぎます。`;
     claims = [{ type: "occupied-plan-point", color: 1, point: detail.move }];
+  } else if (obstruction?.reason === "broken-pattern") {
+    text = `黒${coord(detail.move)}で、白の${obstruction.patternName}の伸び先を消す。白${coord(obstruction.point)}に置いても、同じ${obstruction.patternName}は作れない。`;
   } else if (obstruction?.reason === "counter-win") {
     text = `黒${coord(detail.move)}で反撃を用意します。白${coord(obstruction.point)}と予定どおり攻めると、黒${coord(obstruction.counterPoints[0])}で五が完成します。`;
   } else if (obstruction?.reason === "no-four") {
@@ -544,6 +599,13 @@ function improvementFrames(before, detail, evidence = null) {
 }
 
 function classifyMoment(before, actual, after, whiteProof, blackProof) {
+  if (whiteProof.scope?.startsWith("all-replies") && whiteProof.pattern)
+    return {
+      kind: "allowed-pattern",
+      title: `${whiteProof.pattern.name}を作らせた`,
+      text: `白${coord(whiteProof.line[0])}で${whiteProof.pattern.name}を作られると、一方を受けても別の方向の攻めが残る。`,
+      skillId: "defense",
+    };
   if (whiteProof.plies === 1)
     return {
       kind: "miss-block",
@@ -659,6 +721,7 @@ export async function scanRecord(
   const limits = {
     maxPly: proofLimits.maxPly ?? PROOF_LIMIT.maxPly,
     maxNodes: proofLimits.maxNodes ?? PROOF_LIMIT.maxNodes,
+    quietDepth: proofLimits.quietDepth ?? PROOF_LIMIT.quietDepth,
   };
   const b = new Uint8Array(SIZE),
     moments = [];
@@ -669,14 +732,20 @@ export async function scanRecord(
     unavoidablePlies: [],
     provenMoments: 0,
     complete: false,
-    scope: "bounded-continuous-four-with-local-improvements",
+    scope: "bounded-tactics-with-verified-pattern-opportunities",
     limits,
   };
+  let forcedBefore = false;
   for (let j = 0; j < valid.moves.length; j++) {
     const actual = valid.moves[j].i,
       color = (j % 2) + 1,
       ply = j + 1;
     if (color === 1) {
+      const futureWhite = valid.moves
+        .slice(j + 1)
+        .filter((_, i) => i % 2 === 0)
+        .map((m) => m.i);
+      let candidateWhiteProof = null;
       const previousCount = moments.length;
       coverage.scannedBlackMoves++;
       const ownWins = winPoints(b, 1),
@@ -687,9 +756,15 @@ export async function scanRecord(
         /* Terminal wins need no correction. */
       } else if (ownWins.length)
         moments.push(immediateWinMoment(b, actual, ply, ownWins));
-      else if (danger.length >= 2) coverage.unavoidablePlies.push(ply);
+      else if (danger.length >= 2 || forcedBefore)
+        coverage.unavoidablePlies.push(ply);
       else {
-        const whiteProof = proof(next, 2, limits);
+        const whiteProof = (candidateWhiteProof = winningAttack(
+          next,
+          2,
+          limits,
+          futureWhite,
+        ));
         if (whiteProof.status === "proven") {
           const blackProof = proof(b, 1, limits);
           const details = findAlternatives(
@@ -745,12 +820,23 @@ export async function scanRecord(
         moments.length === previousCount &&
         limits.maxNodes > 0 &&
         danger.length < 2 &&
+        !forcedBefore &&
         !winningLine(next, actual).length &&
         !ownWins.length
       ) {
         const opportunity = learningOpportunity(b, actual, ply, limits);
         if (opportunity) moments.push(opportunity);
       }
+      forcedBefore =
+        limits.maxNodes > 0 && valid.moves[j + 1]
+          ? (candidateWhiteProof?.status === "proven" &&
+              candidateWhiteProof.line[0] === valid.moves[j + 1].i) ||
+            !!provePatternMove(next, 2, valid.moves[j + 1].i, {
+              ...limits,
+              allowQuiet: true,
+              preferred: futureWhite,
+            })
+          : false;
     }
     b[actual] = color;
     onProgress({
@@ -938,7 +1024,7 @@ function winningPlanText(pattern, evidence, move) {
     return `${coord(move)}が二つの三の交点。白が一方を止めても、もう一方を両端の四にできる。例えば白${coord(line[1])}には黒${coord(line[2])}。`;
   if (pattern?.type === "double-four" || pattern?.type === "open-four")
     return `${coord(move)}で${pattern.name}を作り、別々の勝ち口を残せる。白が${coord(line[1])}を止めても、${coord(line[2])}で五になる。`;
-  if (evidence?.scope === "all-replies-then-vcf")
+  if (evidence?.scope?.startsWith("all-replies"))
     return `${coord(move)}で${pattern?.name || "次の攻め"}を作る。白${coord(line[1])}には黒${coord(line[2])}から四をつなぐ。相手の別の受けにも勝ち筋が残る。`;
   if (line.length >= 5)
     return `${coord(move)}の四で白を${coord(line[1])}に受けさせる。その受け石の位置を利用し、${coord(line[2])}の四へつないで勝ち切れる。`;
@@ -975,6 +1061,10 @@ function decorateMoment(m) {
         ? `${coord(best)}で${pattern?.name || "勝ち筋"}を作れた`
         : `${coord(best)}なら${pattern?.name || "この一手"}で勝てた`;
     text = winningPlanText(pattern, own, best);
+    if (m.kind === "winning-chance" && m.actualWinningProof) {
+      title = `${coord(best)}からも${pattern?.name || "この手順"}で勝てる`;
+      text = `実戦${coord(m.actual)}も勝ちにつながる。` + text;
+    }
 
     pattern = projectedPattern(pattern, m.before, best, "aim");
   } else {
@@ -1007,7 +1097,25 @@ function decorateMoment(m) {
       ["counter-four", "reverse-four"].includes(pattern?.type)
     )
       text = `${coord(best)}は、白が${pattern.type === "counter-four" ? "守りながら四を作れる" : "四で攻め返せる"}急所。先に黒で取れば、この反撃を防げた。実戦${coord(m.actual)}では白${coord(first)}に守らされ、自分の攻めが止まる。`;
-    else if (best === first && pattern?.type === "double-four")
+    else if (
+      best === first &&
+      ["open-three", "broken-three"].includes(pattern?.type) &&
+      m.evidence.scope?.startsWith("all-replies")
+    )
+      text = `${coord(best)}を先に取れば、白の${pattern.name}から始まる連続攻撃を防げた。実戦${coord(m.actual)}には、例えば白${m.evidence.line
+        .filter((_, i) => i % 2 === 0)
+        .slice(0, 3)
+        .map(coord)
+        .join("→")}と三をつながれ、最後は二つの勝ち口を残される。`;
+    else if (best === first && pattern?.type === "double-three") {
+      const arms = pattern.groups
+        .map(
+          (g) =>
+            `${directionName(g.axis)}の${g.cells.every((v, j) => !j || Math.abs(v - g.cells[j - 1]) === Math.abs(DIRECTIONS[g.axis][1] * 15 + DIRECTIONS[g.axis][0])) ? "活三" : "飛び三"}`,
+        )
+        .join("と");
+      text = `${coord(best)}を先に取れば、白の${arms}が同時にできるのを防げた。実戦${coord(m.actual)}では白${coord(first)}の三三を許し、一方を受けても他方で四を作られる。`;
+    } else if (best === first && pattern?.type === "double-four")
       text = `${coord(best)}は二方向を同時につなぐ交点。先に塞げば四四を作らせずに済んだ。実戦${coord(m.actual)}では、白${coord(first)}で二つの勝ち口ができて受け切れない。`;
     else if (
       best === first &&
@@ -1073,17 +1181,21 @@ function learningOpportunity(before, actual, ply, limits) {
     ...limits,
     allowQuiet: true,
   });
-  const chosen = actualPlan
-    ? {
-        move: actual,
-        proof: actualPlan,
-        pattern: candidates.find((c) => c.move === actual)?.pattern,
-      }
-    : candidates[0];
+  const preferAlternative =
+    actualPlan && candidates[0].proof.plies < actualPlan.plies;
+  const chosen =
+    actualPlan && !preferAlternative
+      ? {
+          move: actual,
+          proof: actualPlan,
+          pattern: candidates.find((c) => c.move === actual)?.pattern,
+        }
+      : candidates[0];
   if (chosen.proof.plies < 3) return null;
   const after = Uint8Array.from(before);
   after[actual] = 1;
-  const kind = actualPlan ? "pattern-play" : "winning-chance";
+  const kind =
+    actualPlan && !preferAlternative ? "pattern-play" : "winning-chance";
   return {
     id: `${ply}:${kind}`,
     ply,
@@ -1116,5 +1228,6 @@ function learningOpportunity(before, actual, ply, limits) {
     evidence: chosen.proof,
     priorWinningProof: chosen.proof,
     plannedPattern: chosen.pattern || null,
+    actualWinningProof: actualPlan || null,
   };
 }

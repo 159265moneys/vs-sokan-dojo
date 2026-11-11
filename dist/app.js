@@ -9,7 +9,7 @@ import {
 import { Engine } from "./engine-client.js";
 import { Sounds } from "./sound.js";
 import { boardSkin, stoneName, stoneSprite, skinText } from "./board-themes.js";
-import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111";
+import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111-v2";
 import { units, problems } from "./curriculum.js";
 import {
   createAttempt,
@@ -29,8 +29,8 @@ import {
 import {
   describeMove,
   judgeReviewMove,
-} from "./causal-review.js?v=patterns-20261111";
-import { patternHighlights } from "./review-patterns.js";
+} from "./causal-review.js?v=patterns-20261111-v2";
+import { patternHighlights } from "./review-patterns.js?v=patterns-20261111-v2";
 
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
@@ -1215,7 +1215,7 @@ function scanReview() {
   reviewScan = { state: "running", done: 0, total: review.moves.length };
   render();
   reviewWorker = new Worker(
-    new URL("./review-worker.js?v=patterns-20261111", import.meta.url),
+    new URL("./review-worker.js?v=patterns-20261111-v2", import.meta.url),
     {
       type: "module",
     },

@@ -177,3 +177,42 @@ test("a successful pattern is picked up in a winning game rather than returning 
   assert.equal(m.coach.motifs[0].purpose, "aim");
   framesValid([m.coach, ...m.frames, ...m.improvementFrames]);
 });
+
+test("a real-length loss is traced back before the flying-three and double-three chain becomes unavoidable", async () => {
+  const moves = ps(
+    "H8 H7 I7 J8 G9 J6 H6 J5 F10 E11 J7 K7 L6 K4 I6 I5 L8 K5 K6 H5 G5 L5",
+  );
+  const r = { rule: "freestyle15", moves };
+  const result = await scanRecord(r);
+  const m = result.find((m) => m.ply === 13);
+  assert(m, "the preventable earlier turn is found");
+  assert.equal(m.actual, parse("L6"));
+  assert.equal(m.coach.selectedMove, parse("K4"));
+  assert.equal(m.evidence.scope, "all-replies-threat-sequence");
+  assert.match(m.coach.text, /K4.*I5.*K5/);
+  assert(
+    [15, 17, 19, 21].every((p) => result.coverage.unavoidablePlies.includes(p)),
+  );
+  assert.equal(
+    result.some((m) => m.ply >= 15),
+    false,
+    "later forced defenses are not blamed",
+  );
+  const b = boardFrom(moves.slice(0, 13));
+  const policy = provePatternMove(b, 2, parse("K4"), {
+    maxPly: 9,
+    quietDepth: 2,
+    allowQuiet: true,
+    preferred: ps("K4 I5 K5 H5 L5"),
+  });
+  assert(policy);
+  assert.equal(policy.branches, 211);
+  assert(policy.plies <= 9);
+  framesValid([m.coach, ...m.frames, ...m.improvementFrames]);
+});
+
+test("threat proof respects the requested horizon instead of accepting a longer hidden fork", () => {
+  const b = board("F8 G8 H8");
+  assert.equal(provePatternMove(b, 1, parse("I8"), { maxPly: 1 }), null);
+  assert.equal(provePatternMove(b, 1, parse("I8"), { maxPly: 3 }).plies, 3);
+});

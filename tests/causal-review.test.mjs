@@ -209,16 +209,30 @@ test("review identifies allowing an open four before the two-point loss exists",
   ]);
 });
 
-test("a double four explains its two distinct completion points and validates every caption claim", async () => {
-  const ms = await scanRecord(
-    record("D8 H4 A1 C3 E1 N3", "E8 F8 G8 H5 H6 H7", "A3"),
+test("a later double four is recognized without blaming an already forced loss", async () => {
+  const r = record("D8 H4 A1 C3 E1 N3", "E8 F8 G8 H5 H6 H7", "A3");
+  const ms = await scanRecord(r);
+  assert(
+    ms.some((m) => m.ply === 11),
+    "the earlier avoidable setup is identified",
   );
-  const m = ms.find((m) => m.ply === 13);
-  assert.equal(m.kind, "allowed-fork");
-  assert.equal(m.title, "四四を許した");
-  assert.match(m.text, /一度に両方を止められません/);
-  assert(m.text.includes("H9") && m.text.includes("I8"));
-  validateFrames([...m.frames, ...m.improvementFrames]);
+  assert.equal(
+    ms.some((m) => m.ply === 13),
+    false,
+  );
+  assert(ms.coverage.unavoidablePlies.includes(13));
+  const b = board("D8 H4 A1 C3 E1 N3 A3", "E8 F8 G8 H5 H6 H7");
+  const f = describeMove(b, parse("H8"), 2).at(-1);
+  const pattern = f.motifs.find(
+    (m) => m.type === "double-four" && m.color === 2,
+  );
+  assert(pattern);
+  assert(
+    pattern.points.includes(parse("H9")) &&
+      pattern.points.includes(parse("I8")),
+  );
+  assert.equal(pattern.groups.length, 2);
+  validateFrames([f]);
 });
 
 test("an already existing double completion is not blamed on the last unavoidable move", async () => {

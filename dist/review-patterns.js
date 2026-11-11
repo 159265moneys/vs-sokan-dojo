@@ -325,10 +325,16 @@ export function provePatternMove(
   input,
   color,
   point,
-  { maxPly = 7, maxNodes = 450, allowQuiet = false } = {},
+  {
+    maxPly = 7,
+    maxNodes = 450,
+    allowQuiet = false,
+    quietDepth = 1,
+    preferred = [],
+  } = {},
 ) {
   const b = copy(input);
-  if (b[point] || winner(b)) return null;
+  if (b[point] || winner(b) || maxPly < 1) return null;
   b[point] = color;
   if (winningLine(b, point).length)
     return {
@@ -341,16 +347,34 @@ export function provePatternMove(
   if (completionPoints(b, 3 - color).length) return null;
   const wins = completionPoints(b, color);
   if (wins.length >= 2)
-    return {
-      status: "proven",
-      attacker: color,
-      line: [point, wins[0], wins[1]],
-      plies: 3,
-      scope: "continuous-four",
-    };
+    return maxPly < 3
+      ? null
+      : {
+          status: "proven",
+          attacker: color,
+          line: [point, wins[0], wins[1]],
+          plies: 3,
+          scope: "continuous-four",
+        };
   if (wins.length === 1) {
+    if (maxPly < 3) return null;
     b[wins[0]] = 3 - color;
-    const proof = proveVCF(b, color, { maxPly: maxPly - 2, maxNodes });
+    let proof = proveVCF(b, color, { maxPly: maxPly - 2, maxNodes });
+    if (!proof.proven && quietDepth > 0 && maxPly >= 7) {
+      const next = patternOpportunities(b, color, {
+        maxPly: maxPly - 2,
+        maxNodes,
+        maxQuietChecks: 2,
+        quietDepth: quietDepth - 1,
+        preferred,
+      })[0];
+      if (next)
+        proof = {
+          ...next.proof,
+          proven: true,
+          scope: "all-replies-threat-sequence",
+        };
+    }
     return proof.proven
       ? {
           ...proof,
@@ -361,11 +385,12 @@ export function provePatternMove(
         }
       : null;
   }
-  if (!allowQuiet) return null;
+  if (!allowQuiet || maxPly < 5) return null;
   // A three is not a win certificate. Verify every legal defensive reply.
   let representative = null,
     branches = 0;
   const plans = [];
+  let nested = false;
   const defensivePoints = new Set(
     lineShapes(b, color)
       .filter((g) => g.kind === "three")
@@ -378,7 +403,20 @@ export function provePatternMove(
         b[reply] = 0;
         return null;
       }
-      const proof = proveVCF(b, color, { maxPly: maxPly - 2, maxNodes });
+      let proof = proveVCF(b, color, { maxPly: maxPly - 2, maxNodes });
+      if (!proof.proven && quietDepth > 0 && maxPly >= 7) {
+        const next = patternOpportunities(b, color, {
+          maxPly: maxPly - 2,
+          maxNodes,
+          maxQuietChecks: 2,
+          quietDepth: quietDepth - 1,
+          preferred,
+        })[0];
+        if (next) {
+          proof = { ...next.proof, proven: true };
+          nested = true;
+        }
+      }
       b[reply] = 0;
       if (!proof.proven) return null;
       branches++;
@@ -399,16 +437,17 @@ export function provePatternMove(
         attacker: color,
         line: [point, representative.reply, ...representative.line],
         plies: representative.plies + 2,
-        scope: "all-replies-then-vcf",
+        scope: nested ? "all-replies-threat-sequence" : "all-replies-then-vcf",
         branches,
         plans,
+        preferred,
       }
     : null;
 }
 export function patternOpportunities(
   input,
   color,
-  { maxQuietChecks = 2, ...limits } = {},
+  { maxQuietChecks = 2, preferred = [], ...limits } = {},
 ) {
   const b = copy(input);
   if (winner(b)) return [];
@@ -429,9 +468,14 @@ export function patternOpportunities(
     }).filter(
       (m) =>
         m.cells.includes(i) &&
-        ["open-four", "double-four", "four-three", "double-three"].includes(
-          m.type,
-        ),
+        [
+          "open-four",
+          "double-four",
+          "four-three",
+          "double-three",
+          "open-three",
+          "broken-three",
+        ].includes(m.type),
     );
     if (
       !shapes.length &&
@@ -459,6 +503,8 @@ export function patternOpportunities(
   }
   possibilities.sort(
     (a, z) =>
+      (preferred.includes(a.move) ? preferred.indexOf(a.move) : 999) -
+        (preferred.includes(z.move) ? preferred.indexOf(z.move) : 999) ||
       z.pattern.groups.length - a.pattern.groups.length ||
       z.pattern.cells.length - a.pattern.cells.length ||
       z.pattern.rank - a.pattern.rank,
@@ -466,12 +512,18 @@ export function patternOpportunities(
   const found = [];
   let quietChecks = 0;
   for (const item of possibilities) {
-    const quiet = ["double-three", "double-plan"].includes(item.pattern.type);
+    const quiet = [
+      "double-three",
+      "double-plan",
+      "open-three",
+      "broken-three",
+    ].includes(item.pattern.type);
     if (quiet && quietChecks >= maxQuietChecks) continue;
     if (quiet) quietChecks++;
     const proof = provePatternMove(b, color, item.move, {
       ...limits,
       allowQuiet: quiet,
+      preferred,
     });
     if (proof) {
       item.pattern.confirmedWin = true;
