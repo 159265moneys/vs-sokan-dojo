@@ -55,3 +55,9 @@
 5研究、教材/レビュー/UI再構築、独立2担当による監査修正が完了。新教材9単元21課題19系列。65単体テスト、実Rapfi smoke、独立Python、研究3局面620応手照合成功。root実画面で出題無印、誤答反証、最後までの継続、別解F10、見本から途中復帰、次単元進行、CPU思考中タブ移動、因果レビューを確認。safe59/34の393x852でboard389×389, y145固定, panel162/nav下端852。limited793でもboard389/nav下端793。実機iOS未検証。
 
 次: 最新の表示スクリーンショット、公開前差分確認、commit/push、手動GitHub Pages deploy、公開版確認。所有server sessions84715(4173)と50109(4175)は最終に停止。ブラウザーtabを公開URLへ戻しviewport overrideをreset。
+
+## 作業完了
+
+2026-11-11、実装・検証・commit/push・GitHub Pages公開・公開版操作確認まで完了。実装f97ad89、CIのローカルartifact参照修正e07f173。成功run42969298936。https://159265moneys.github.io/vs-sokan-dojo/ に新UI反映済み。全65件のCIテスト、実Rapfi、Python証明が成功。ブラウザを公開URLに戻しdeliverable指定、viewport override解除。調査や監査担当は全員完了、未完の実装はない。
+
+最終画面証拠はローカルartifacts/rebuild-published-lesson.jpg と rebuild-review-final.jpg。実機iOS/長期の人間学習効果/全最適戦略は未実証であり、AAAや無敗を認定していない。作業の継続が必要な場合は本節を現在の状態として扱う。
