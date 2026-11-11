@@ -9,7 +9,7 @@ import {
 import { Engine } from "./engine-client.js";
 import { Sounds } from "./sound.js";
 import { boardSkin, stoneName, stoneSprite, skinText } from "./board-themes.js";
-import { initBoard, renderBoard } from "./board-view.js";
+import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111";
 import { units, problems } from "./curriculum.js";
 import {
   createAttempt,
@@ -26,7 +26,11 @@ import {
   recordLessonView,
   getLearningStats,
 } from "./learning.js";
-import { describeMove, judgeReviewMove } from "./causal-review.js";
+import {
+  describeMove,
+  judgeReviewMove,
+} from "./causal-review.js?v=patterns-20261111";
+import { patternHighlights } from "./review-patterns.js";
 
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
@@ -131,7 +135,7 @@ let review = null,
   reviewStep = 0,
   moments = [],
   momentIndex = 0,
-  reviewPhase = "actual",
+  reviewPhase = "advice",
   reviewFrame = 0,
   reviewRetry = null,
   reviewScan = { state: "idle", done: 0, total: 0 },
@@ -283,7 +287,8 @@ function restoreFocus(selector) {
   )
     e.focus({ preventScroll: true });
 }
-function getFrame() {
+let selectedReviewPattern = null;
+function rawFrame() {
   if (mode === "play")
     return {
       board: Array.from(boardFrom(game.moves)),
@@ -307,8 +312,9 @@ function getFrame() {
   if (!review) return emptyFrame();
   if (reviewRetry) return reviewRetry.frame;
   if (reviewScreen === "moment" && moments.length) {
-    const m = moments[momentIndex],
-      frames = reviewPhase === "better" ? m.improvementFrames : m.frames;
+    const m = moments[momentIndex];
+    if (reviewPhase === "advice") return m.coach;
+    const frames = reviewPhase === "better" ? m.improvementFrames : m.frames;
     return (
       frames?.[Math.min(reviewFrame, (frames?.length || 1) - 1)] || {
         board: m.before,
@@ -336,10 +342,45 @@ function getFrame() {
     board: Array.from(b),
     last: moves.at(-1)?.i ?? null,
     history: moves,
-    title: description.title || `${reviewStep}手目`,
-    text: description.text === "五の完成点なし" ? "" : description.text || "",
+    title:
+      moments.find((m) => m.ply === reviewStep)?.coach?.title ||
+      description.title ||
+      `${reviewStep}手目`,
+    text:
+      moments.find((m) => m.ply === reviewStep)?.coach?.text ||
+      (description.text === "五の完成点なし" ? "" : description.text || ""),
+    motifs: description.motifs || [],
     highlights: description.highlights || [],
   };
+}
+function getFrame() {
+  const f = rawFrame();
+  if (mode !== "review" || reviewRetry?.status === "choose") return f;
+  const motif =
+    f.motifs?.find((p) => p.id === selectedReviewPattern) || f.motifs?.[0];
+  const switched =
+    motif && selectedReviewPattern === motif.id && f.motifs[0]?.id !== motif.id;
+  return {
+    ...f,
+    selectedMotif: motif,
+    title: switched
+      ? `${motif.color === 1 ? "黒" : "白"}の${motif.name}`
+      : f.title,
+    text: switched ? motif.text + (motif.caution || "") : f.text,
+    highlights: motif ? patternHighlights(motif, f.board) : f.highlights || [],
+  };
+}
+function reviewFrames() {
+  const m = moments[momentIndex];
+  return (
+    reviewRetry?.frames ||
+    (reviewPhase === "advice"
+      ? [m?.coach]
+      : reviewPhase === "better"
+        ? m?.improvementFrames
+        : m?.frames) ||
+    []
+  );
 }
 function canPlace() {
   if (mode === "play")
@@ -455,6 +496,23 @@ function render() {
       mode === "play"
         ? `<span class='context-status' role='status'><i class='status-dot ${cpuBusy ? "busy" : ""}'></i>${esc(present(statusText()))}</span><button class='opponent-pill' data-action='match-menu'>${esc(levels[game.moves.length ? game.level : level].label)} <strong>CPU</strong> ${esc(stoneName(skin(), 2))}</button>`
         : `${ib(mode === "learn" ? "learn-library" : "review-library", "chevron-left", mode === "learn" ? "教材一覧" : "対局一覧")}<strong class='context-title'>${esc(heading)}</strong><span class='context-status' role='status'>${esc(statusText())}</span>`;
+    if (mode === "review") {
+      const f = getFrame();
+      if (f.selectedMotif) {
+        const p = f.selectedMotif,
+          verb =
+            p.purpose === "aim"
+              ? "狙う"
+              : p.purpose === "prevent"
+                ? "防ぐ"
+                : p.color === 1
+                  ? "自分"
+                  : "相手";
+        const node = $("#context-bar .context-title");
+        if (node)
+          node.outerHTML = `<button class='context-title pattern-trigger ${p.color === 1 ? "good" : "danger"}' data-action='review-patterns'>${esc(verb + (p.purpose ? "型：" : "の型：") + p.name)} ${icon("chevron-right")}</button>`;
+      }
+    }
     renderBoard(getFrame(), {
       skin: skin(),
       numbers,
@@ -610,17 +668,12 @@ function renderControls() {
     if (reviewRetry?.status === "choose")
       html = placeControl() + ib("precision", "target", "盤面を拡大");
     else if (reviewScreen === "moment") {
-      const frames =
-        reviewRetry?.frames ||
-        (reviewPhase === "better"
-          ? moments[momentIndex]?.improvementFrames
-          : moments[momentIndex]?.frames) ||
-        [];
+      const frames = reviewFrames();
       html =
         ib("review-frame-prev", "chevron-left", "前の一手", reviewFrame === 0) +
         (reviewRetry
           ? `<span class='place-prompt'>${reviewFrame + 1} / ${frames.length || 1}</span>`
-          : `<div class='review-phases'>${button("review-actual", "実戦", reviewPhase === "actual" ? "active" : "", `aria-pressed='${reviewPhase === "actual"}'`)}${button("review-better", "改善", reviewPhase === "better" ? "active" : "", `aria-pressed='${reviewPhase === "better"}'`)}</div>`) +
+          : `<div class='review-phases'>${button("review-advice", "要点", reviewPhase === "advice" ? "active" : "", `aria-pressed='${reviewPhase === "advice"}'`)}${button("review-actual", "実戦", reviewPhase === "actual" ? "active" : "", `aria-pressed='${reviewPhase === "actual"}'`)}${button("review-better", "改善", reviewPhase === "better" ? "active" : "", `aria-pressed='${reviewPhase === "better"}'`)}</div>`) +
         ib(
           "review-frame-next",
           "chevron-right",
@@ -743,7 +796,7 @@ function renderPanel() {
   } else if (review) {
     if (reviewScreen === "moment" && moments.length) {
       const m = moments[momentIndex];
-      content = `<div class='lesson-kicker'>場面 ${momentIndex + 1}/${moments.length}${reviewRetry ? (reviewRetry.status === "choose" ? " · 試し直し" : reviewRetry.accepted ? " · この手の続き" : reviewRetry.verdictStatus === "refuted" ? " · 相手の返し" : " · 選んだ手") : reviewPhase === "actual" && reviewFrame >= 2 ? " · 相手が使えた手順" : reviewPhase === "better" ? " · 改善した手順" : ""}</div><h2 class='lesson-heading'>${esc(present(reviewRetry?.title || frame.title || m.title))}</h2><p class='lesson-copy'>${esc(present((reviewRetry?.status === "choose" ? reviewRetry.text : frame.text) || reviewRetry?.text || m.text))}</p>`;
+      content = `<div class='lesson-kicker'>場面 ${momentIndex + 1}/${moments.length}${reviewPhase === "advice" && m.kind !== "pattern-play" && !reviewRetry ? ` · 実戦${coord(m.actual)} → ${coord(m.coach.selectedMove)}` : ""}${reviewRetry ? (reviewRetry.status === "choose" ? " · 試し直し" : reviewRetry.accepted ? " · この手の続き" : reviewRetry.verdictStatus === "refuted" ? " · 相手の返し" : " · 選んだ手") : reviewPhase === "actual" && reviewFrame >= 2 ? " · 相手が使えた手順" : reviewPhase === "better" ? " · 改善した手順" : ""}</div><h2 class='lesson-heading'>${esc(present(reviewRetry?.title || frame.title || m.title))}</h2><p class='lesson-copy'>${esc(present((reviewRetry?.status === "choose" ? reviewRetry.text : frame.text) || reviewRetry?.text || m.text))}</p>`;
 
       if (reviewRetry?.status === "choose")
         actions = button("review-cancel-retry", "解説に戻る");
@@ -753,7 +806,9 @@ function renderPanel() {
           button("review-related", "似た形を学ぶ");
       else
         actions =
-          button("review-retry", "この局面で試す", "primary") +
+          (reviewPhase === "advice"
+            ? button("review-better", "手順で確かめる", "primary")
+            : button("review-retry", "この局面で試す", "primary")) +
           button(
             "next-moment",
             "次の場面",
@@ -768,13 +823,15 @@ function renderPanel() {
         content += `<p class='lesson-copy'>振り返りを確認できませんでした</p>`;
       else if (reviewScan.state === "done" && !moments.length)
         content += `<p class='lesson-copy'>具体的な勝ち筋を示せる場面は見つかりませんでした。</p>`;
-      actions = moments.length
-        ? button("show-moments", "大事な場面を見る", "primary")
-        : reviewScan.state === "running"
-          ? button("cancel-scan", "確認を止める")
-          : reviewScan.state === "done"
-            ? button("go-play", "対局へ", "primary")
-            : button("scan-review", "大事な場面を探す", "primary");
+      actions = moments.some((m) => m.ply === reviewStep)
+        ? button("review-this-moment", "この手を比較する", "primary")
+        : moments.length
+          ? button("show-moments", "大事な場面を見る", "primary")
+          : reviewScan.state === "running"
+            ? button("cancel-scan", "確認を止める")
+            : reviewScan.state === "done"
+              ? button("go-play", "対局へ", "primary")
+              : button("scan-review", "大事な場面を探す", "primary");
       actions += button(
         "export",
         icon("download"),
@@ -1128,12 +1185,12 @@ function loadReview(record) {
   pending.review = null;
   momentIndex = 0;
   reviewFrame = 0;
-  reviewPhase = "actual";
+  reviewPhase = "advice";
   moments = [];
   const cached = reviewCache.get(recordKey(review));
   if (cached && cached.length === review.moves.length) {
     moments = cached.moments;
-    reviewFrame = 1;
+    reviewFrame = 0;
     reviewScan = {
       state: "done",
       done: review.moves.length,
@@ -1157,9 +1214,12 @@ function scanReview() {
   reviewAutoOpen = true;
   reviewScan = { state: "running", done: 0, total: review.moves.length };
   render();
-  reviewWorker = new Worker(new URL("./review-worker.js", import.meta.url), {
-    type: "module",
-  });
+  reviewWorker = new Worker(
+    new URL("./review-worker.js?v=patterns-20261111", import.meta.url),
+    {
+      type: "module",
+    },
+  );
   reviewWorker.onmessage = ({ data }) => {
     if (data.id !== reviewJob || !review || recordKey(review) !== cacheKey)
       return;
@@ -1183,8 +1243,8 @@ function scanReview() {
       if (moments.length && reviewAutoOpen) {
         reviewScreen = "moment";
         momentIndex = 0;
-        reviewFrame = 1;
-        reviewPhase = "actual";
+        reviewFrame = 0;
+        reviewPhase = "advice";
       }
       reviewWorker.terminate();
       reviewWorker = null;
@@ -1208,12 +1268,13 @@ function scanReview() {
   reviewWorker.postMessage({ type: "scan", id, record: scanningRecord });
 }
 function openMoment(n) {
+  selectedReviewPattern = null;
   if (!moments.length) return;
   momentIndex = (n + moments.length) % moments.length;
   reviewScreen = "moment";
   reviewRetry = null;
-  reviewPhase = "actual";
-  reviewFrame = 1;
+  reviewPhase = "advice";
+  reviewFrame = 0;
   pending.review = null;
   render();
 }
@@ -1257,6 +1318,7 @@ function submitReview(i) {
   render();
 }
 function setReviewStep(n) {
+  selectedReviewPattern = null;
   reviewAutoOpen = false;
   reviewScreen = "record";
   reviewRetry = null;
@@ -1264,11 +1326,8 @@ function setReviewStep(n) {
   render();
 }
 function reviewFrameStep(delta) {
-  const m = moments[momentIndex],
-    frames =
-      reviewRetry?.frames ||
-      (reviewPhase === "better" ? m?.improvementFrames : m?.frames) ||
-      [];
+  selectedReviewPattern = null;
+  const frames = reviewFrames();
   reviewFrame = Math.max(0, Math.min(frames.length - 1, reviewFrame + delta));
   if (reviewRetry) reviewRetry.frame = frames[reviewFrame];
   render();
@@ -1484,11 +1543,32 @@ const actions = {
   "show-moments": () => openMoment(0),
   "next-moment": () => openMoment(momentIndex + 1),
   "review-actual": () => {
+    selectedReviewPattern = null;
     reviewPhase = "actual";
+    reviewFrame = 1;
+    render();
+  },
+  "review-advice": () => {
+    reviewPhase = "advice";
     reviewFrame = 0;
+    selectedReviewPattern = null;
+    render();
+  },
+  "review-this-moment": () =>
+    openMoment(moments.findIndex((m) => m.ply === reviewStep)),
+  "review-patterns": () => {
+    const f = getFrame();
+    openModal(
+      `<h2>この局面の型</h2><div class='menu-list'>${(f.motifs || []).map((p) => button("select-review-pattern", esc(present((p.color === 1 ? "黒" : "白") + "の" + p.name)), "secondary", `data-pattern='${esc(p.id)}'`)).join("")}</div><p class='lesson-copy'>${esc(present(f.selectedMotif?.lesson))}</p>${button("review-related", "この型を学ぶ", "primary")}`,
+    );
+  },
+  "select-review-pattern": (el) => {
+    selectedReviewPattern = el.dataset.pattern;
+    closeModal();
     render();
   },
   "review-better": () => {
+    selectedReviewPattern = null;
     reviewPhase = "better";
     reviewFrame = 0;
     render();
@@ -1508,7 +1588,8 @@ const actions = {
     render();
   },
   "review-related": () => {
-    const skill = moments[momentIndex]?.skillId,
+    const skill =
+        getFrame().selectedMotif?.skillId || moments[momentIndex]?.skillId,
       target =
         {
           shape: "conditions",
@@ -1516,6 +1597,7 @@ const actions = {
           preparation: "prepare",
           real: "practice",
         }[skill] || skill;
+    closeModal();
     mode = "learn";
     save("view-v2", mode);
     learnSection = "lessons";

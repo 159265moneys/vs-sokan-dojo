@@ -952,3 +952,62 @@ body[data-screen="library"] #library-view {
   line-height: 1.4;
   white-space: normal;
 }
+
+/* Only a recognized tactical pattern receives a glow. */
+#board-overlay .motif-link {
+  fill: none;
+  stroke-width: 11;
+  stroke-linecap: round;
+  opacity: 0.26;
+  filter: drop-shadow(0 0 5px currentColor);
+}
+#board-overlay .motif-glow.good,
+#board-overlay .motif-link.good {
+  color: #5ff5ce;
+}
+#board-overlay .motif-glow.danger,
+#board-overlay .motif-link.danger {
+  color: #ffb4a2;
+}
+#board-overlay .motif-glow {
+  stroke: currentColor;
+  filter: drop-shadow(0 0 3px currentColor) drop-shadow(0 0 1px #000);
+}
+#board-overlay .motif-link {
+  stroke: currentColor;
+}
+#context-bar .pattern-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 3px;
+  padding: 0 4px;
+  min-width: 0;
+  background: transparent;
+  font-size: 13px;
+}
+.pattern-trigger.good {
+  color: var(--green);
+}
+.pattern-trigger.danger {
+  color: var(--red);
+}
+.pattern-trigger .ui-icon {
+  width: 15px;
+  height: 15px;
+}
+#board-controls .review-phases {
+  gap: 3px;
+}
+#board-controls .review-phases button {
+  padding-inline: 2px;
+}
+
+#board-overlay .shape-point.motif-critical {
+  stroke-width: 4;
+  fill: #173b33;
+}
+
+#board-overlay .shape-point.motif-critical.danger {
+  fill: #3a1d16;
+}

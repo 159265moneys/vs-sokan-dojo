@@ -61,3 +61,7 @@
 2026-11-11、実装・検証・commit/push・GitHub Pages公開・公開版操作確認まで完了。実装f97ad89、CIのローカルartifact参照修正e07f173。成功run42969298936。https://159265moneys.github.io/vs-sokan-dojo/ に新UI反映済み。全65件のCIテスト、実Rapfi、Python証明が成功。ブラウザを公開URLに戻しdeliverable指定、viewport override解除。調査や監査担当は全員完了、未完の実装はない。
 
 最終画面証拠はローカルartifacts/rebuild-published-lesson.jpg と rebuild-review-final.jpg。実機iOS/長期の人間学習効果/全最適戦略は未実証であり、AAAや無敗を認定していない。作業の継続が必要な場合は本節を現在の状態として扱う。
+
+## 追加指摘への対応（2026-11-11）
+
+事実報告に偏った検討と2石の無意味な発光を修正。新review-patterns.js、要点/実戦/改善の3画面、反実仮想の提案、型名/二方向の発光/関連教材を追加。新規9件＋既存65件が成功。詳細PATTERN-REVIEW.md。公開作業中。

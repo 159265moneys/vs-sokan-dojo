@@ -1,4 +1,4 @@
-import { scanRecord } from "./causal-review.js";
+import { scanRecord } from "./causal-review.js?v=patterns-20261111";
 
 export async function handleReviewMessage(data, post) {
   if (data?.type !== "scan") return;

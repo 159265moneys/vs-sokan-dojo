@@ -72,17 +72,21 @@ export function renderBoard(
     const tone = ["focus", "danger", "good"].includes(group.tone)
       ? group.tone
       : "focus";
+    if (group.motif)
+      for (const line of group.lines || []) {
+        overlay += `<polyline class="motif-link ${tone}" points="${line.map((i) => xy(i).join(",")).join(" ")}"/>`;
+      }
     for (const i of group.cells || []) {
       if (!board[i]) continue;
       const [x, y] = xy(i);
-      overlay += `<circle class="shape-ring ${tone}" cx="${x}" cy="${y}" r="20"/>`;
+      overlay += `<circle class="shape-ring ${tone} ${group.motif ? "motif-glow" : ""}" cx="${x}" cy="${y}" r="20"/>`;
     }
     (group.points || []).forEach((i, j) => {
       if (board[i] || markedPoints.has(i)) return;
       const label = String.fromCharCode(65 + markedPoints.size);
       markedPoints.add(i);
       const [x, y] = xy(i);
-      overlay += `<circle class="shape-point ${tone}" cx="${x}" cy="${y}" r="15"/><text class="shape-letter" x="${x}" y="${y + 6}" text-anchor="middle">${label}</text>`;
+      overlay += `<circle class="shape-point ${tone} ${group.motif ? "motif-glow" : ""} ${group.critical === i ? "motif-critical" : ""}" cx="${x}" cy="${y}" r="${group.critical === i ? 18 : 15}"/><text class="shape-letter" x="${x}" y="${y + 6}" text-anchor="middle">${label}</text>`;
     });
   }
   const line =
