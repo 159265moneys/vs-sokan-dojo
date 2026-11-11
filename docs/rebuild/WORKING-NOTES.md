@@ -73,3 +73,9 @@
 新ユーザー要求: 修正完了後、新規の非常に厳しい教材評価者で『小中学校に売れる教材か』『最初から順当に・確実に・寄り道なし・最短で最強CPU完封まで導けるか』を評価。UIUX/デザインは対象外。新規agent /root/school_curriculum_audit_20261111 起動済み、fork none。成果所有docs/rebuild/SCHOOL-CURRICULUM-AUDIT.md、production編集禁止。rootは結果を待ち、学校販売可能/到達保証の根拠不足を正直に報告する。実証なしのAAAや人間の棋力向上保証はしない。
 
 所有server: session31347 PORT4175 phone-preview。ブラウザID3、tab1、var tab/reviewBrowser/shotFs。viewport393×852 override中、最終公開URLへ戻してreset＋completion_summaryが必要。新しいUI証拠: artifacts/review-pattern-comparison.jpg。
+
+## 今回の作業完了
+
+型と改善の振り返り修正v2はc9749a8で公開完了。成功run42987711424。公開既存22手の対局を読み、13手目L6→K4/飛び三→活三→三三の連鎖/15手目以降の不可避を確認。全76件・実Rapfi・Python成功。公開画面証拠artifacts/review-actual-game-pattern.jpg。server PID34135(port4175)停止済み。ブラウザID3 tab1は公開URL、viewport解除、deliverable指定、CUA completion_summary実施済み。
+
+新規school_curriculum_audit_20261111の監査が完了。docs/rebuild/SCHOOL-CURRICULUM-AUDIT.md(352行)に基準commitc9749a8、全21課題対応表、再現コード、優先改善・到達試験を記録。結論は要求された学校教材/最強CPU安定勝利への道筋として未達。主要欠落: 空盤からの構築なし、未見バンクなし、固定回答41判断で21課題完了、事前見本閲覧を初見自力に数える、即時同盤再入力で復習終了、対局継続・再転用・人間の最強実戦評価不足。教材コードは監査中に変更せず、指摘は未修正のまま記録した。最新ユーザー依頼は厳格な評価なので、評価結果を正直に報告してこの作業を完了する。

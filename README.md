@@ -61,6 +61,8 @@ gh workflow run pages.yml --ref main
 
 [5担当の調査を統合した再構築仕様](docs/rebuild/REBUILD-SPEC.md) · [教材API](docs/rebuild/learning-api.md) · [レビューAPI](docs/rebuild/review-api.md) · [表示契約](docs/rebuild/visual-contract.md) · [検証記録](docs/rebuild/VALIDATION.md)
 
+学校教材として最強CPUへの安定勝利まで導けるかは、[独立教材監査](docs/rebuild/SCHOOL-CURRICULUM-AUDIT.md)で未達と判定。現状は戦術比較と限定的な自戦の振り返りを行う補助教材であり、課程完了を汎用棋力の認定には使わない。
+
 調査は五目教材、オセロ等の教育設計、UI/UX、人気CPU製品、知識と問題の証明を別々に担当した。一次資料の取得範囲と未確認点は各報告に記載。ブラウザーで操作が通ることと、人間が長期に上達することを混同しない。
 
 Rapfiの著作者・GPL-3.0・固定ソースは `dist/engine/` に同梱。外部問題集の図や解説文は転載していない。過去の教材・検証資料は履歴資産として残すが、新UIの教材や達成判定には使用しない。
