@@ -281,13 +281,27 @@ function currentSkin() {
     reviewLevel: review?.level,
   });
 }
+function syncCanvasViewport() {
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    navigator.standalone === true;
+  // iOS 27 can expose a WebView shorter than the physical display. Keep the
+  // navigation tappable in that viewport; the board width never depends on it.
+  if (standalone && window.innerWidth <= 600) {
+    document.documentElement.style.setProperty(
+      "--available-app-height",
+      `${window.innerHeight}px`,
+    );
+  } else
+    document.documentElement.style.removeProperty("--available-app-height");
+}
 function initBoard() {
   let svg = "",
     grid = "";
   for (let j = 0; j < 15; j++) {
     const p = 40 + j * 40;
     grid += `<path d="M40 ${p}H600 M${p} 40V600" fill="none" stroke="#706d4e" stroke-width=".8"/>`;
-    svg += `<text x="${p}" y="18" text-anchor="middle">${String.fromCharCode(65 + j)}</text><text x="18" y="${p + 3}" text-anchor="middle">${15 - j}</text><text x="${p}" y="628" text-anchor="middle">${String.fromCharCode(65 + j)}</text><text x="624" y="${p + 3}" text-anchor="middle">${15 - j}</text>`;
+    svg += `<text x="${p}" y="18" text-anchor="middle">${String.fromCharCode(65 + j)}</text><text class="row-coordinate" x="11" y="${p + 5}" text-anchor="middle">${15 - j}</text><text x="${p}" y="634" text-anchor="middle">${String.fromCharCode(65 + j)}</text><text class="row-coordinate" x="629" y="${p + 5}" text-anchor="middle">${15 - j}</text>`;
   }
   for (const [x, y] of [
     [3, 3],
@@ -541,6 +555,8 @@ function renderBoard() {
     `<i class="status-dot ${busy ? "busy" : ""}"></i>${skinText(text, currentSkin())}`;
 }
 const actionIcons = {
+  "start-set": "target",
+  "open-expert-course": "learn",
   precision: "target",
   cancel: "pause",
   undo: "undo",
@@ -715,6 +731,7 @@ function renderPanel() {
         )
         .join("")}</div>`;
     }
+    if (!l.isCourse) html += btn("practice-lesson", "この型を練習", "primary");
     controls =
       btn("lesson-first", "最初へ", "") +
       btn("lesson-prev", "前の手", "grow", !lessonStep) +
@@ -839,8 +856,10 @@ function renderPanel() {
           ? reviewAnalysis
             ? ".analysis-buttons"
             : '[data-action="analyze-review"],[data-action="scan"]'
-          : mode === "learn" && studyCourseId
-            ? ".course-phases"
+          : mode === "learn"
+            ? studyCourseId
+              ? ".course-phases"
+              : '[data-action="practice-lesson"]'
             : null;
   if (selector)
     content.querySelectorAll(selector).forEach((el) => footer.append(el));
@@ -897,7 +916,7 @@ function renderStats() {
 function renderContext() {
   let html = "";
   if (mode === "learn")
-    html = `<select id="lesson-select" aria-label="学ぶ型・攻略棋譜"><optgroup label="基礎の型">${lessons.map((l, j) => `<option value="${j}" ${!studyCourseId && j === lessonIndex ? "selected" : ""}>${j + 1}. ${l.short}${getThemeStats(training, l.id).status === "passed" ? " ✓" : ""}</option>`).join("")}</optgroup>${expertCourses.length ? `<optgroup label="最強CPUの攻略棋譜">${expertCourses.map((c, j) => `<option value="course:${c.id}" ${studyCourseId === c.id ? "selected" : ""}>${j + 1}. ${c.openingKind === "natural" ? "自然対局" : `白${coord(c.forcedOpening.i)}分岐`} · ${c.moves.length}手</option>`).join("")}</optgroup>` : ""}</select><button class="icon-button" data-action="${studyCourseId ? "expert-menu" : "practice-lesson"}" aria-label="${studyCourseId ? "最強CPUに挑む" : "この型を練習"}">${icon(studyCourseId ? "play" : "target")}</button>`;
+    html = `<select id="lesson-select" aria-label="学ぶ型・攻略棋譜"><optgroup label="基礎の型">${lessons.map((l, j) => `<option value="${j}" ${!studyCourseId && j === lessonIndex ? "selected" : ""}>${j + 1}. ${l.short}${getThemeStats(training, l.id).status === "passed" ? " ✓" : ""}</option>`).join("")}</optgroup>${expertCourses.length ? `<optgroup label="最強CPUの攻略棋譜">${expertCourses.map((c, j) => `<option value="course:${c.id}" ${studyCourseId === c.id ? "selected" : ""}>${j + 1}. ${c.openingKind === "natural" ? "自然対局" : `白${coord(c.forcedOpening.i)}分岐`} · ${c.moves.length}手</option>`).join("")}</optgroup>` : ""}</select>${studyCourseId ? `<button class="icon-button" data-action="expert-menu" aria-label="最強CPUに挑む">${icon("play")}</button>` : ""}`;
   if (mode === "drill" && drill) {
     const summary = getSessionSummary(training);
     html = `<select id="practice-track" aria-label="練習の種類"><option value="mixed" ${practiceTrack === "mixed" ? "selected" : ""}>${drillFixed ? drill.label : drill.queueId ? "実戦の一手" : "5問練習"}</option><option value="attack" ${practiceTrack === "attack" ? "selected" : ""}>詰める</option><option value="survive" ${practiceTrack === "survive" ? "selected" : ""}>受け切る</option></select>${practiceTrack !== "mixed" ? `<select id="mate-length" aria-label="黒が打つ手数">${[1, 2, 3].map((n) => `<option value="${n}" ${n === mateMoves ? "selected" : ""}>黒${n}手</option>`).join("")}</select>` : ""}<button class="icon-button" data-action="show-training-record" aria-label="練習記録">${icon("stats")}</button>`;
@@ -2131,6 +2150,9 @@ const navIcons = {
 $$(".nav[data-mode]").forEach((el) => {
   el.querySelector(".nav-icon").innerHTML = icon(navIcons[el.dataset.mode]);
 });
+syncCanvasViewport();
+window.addEventListener("resize", syncCanvasViewport);
+window.visualViewport?.addEventListener("resize", syncCanvasViewport);
 initBoard();
 render();
 if (recoveredTraining.interrupted) toast("中断した問題を記録しました");

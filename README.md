@@ -1,6 +1,6 @@
 # VS 楚涵 — 五目並べ
 
-スマホ向けの縦持ち五目並べ。固定アスペクト比を持たず、端末の画面いっぱいに表示する。盤面は利用できる高さと幅で縮尺を変え、セーフエリアにも追従する。素のHTML / CSS / JavaScript + Rapfi WebAssembly。外部ゲームエンジンやサーバー計算は不要。
+スマホ向けの縦持ち五目並べ。iPhone 15相当の393×852（約19.5:9）を基準に、盤面を横幅いっぱいへ配置する。盤本体は389×389で画面面積の45.2%。説明欄の分量や画面高を理由に盤を縮めない。ホーム画面版では実際に利用できる高さを上限とし、下部操作を画面内へ保つ。素のHTML / CSS / JavaScript + Rapfi WebAssembly。外部ゲームエンジンやサーバー計算は不要。
 
 [ゲームを開く](https://159265moneys.github.io/vs-sokan-dojo/)
 
@@ -64,3 +64,5 @@ python3 tests/shortest.py
 自動テストは勝敗ルール、基礎教材・別配置、全防御応手の証明、進捗・中断復元、最強攻略棋譜、致命的クイズの全誤答、読み込み状態、棋譜検証。後者は配布するRapfi WASMそのものを起動し、即勝ち・防御・遠方の四・長連を検証する。[VALIDATION.md](docs/VALIDATION.md) に実画面の確認範囲を記載。
 
 教材の仕様: [練習記録](docs/TRAINING-PROGRESS.md) · [最強攻略棋譜](docs/EXPERT-COURSES.md) · [詰める・受け切る](docs/MATE-PUZZLES.md)。監査結果: [評価レポート](docs/REVIEW-REPORT.md)。
+
+画面サイズとiOSホーム画面版の制約: [IOS-LAYOUT.md](docs/IOS-LAYOUT.md)。
