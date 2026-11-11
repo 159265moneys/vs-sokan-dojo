@@ -576,15 +576,12 @@ test("progress records starts, is idempotent, and separates first exposure, hint
 });
 
 test("the three practical boards reproduce their original full histories", () => {
+  const { courses } = JSON.parse(
+    readFileSync(new URL("../dist/expert-courses.json", import.meta.url)),
+  );
   for (const p of problems.filter((p) => p.evidence.source === "record")) {
-    const record = JSON.parse(
-      readFileSync(
-        new URL(
-          `../artifacts/expert-course-${p.evidence.sourceId}.json`,
-          import.meta.url,
-        ),
-      ),
-    );
+    const record = courses.find((course) => course.id === p.evidence.sourceId);
+    assert(record, `published source record exists: ${p.evidence.sourceId}`);
     const source = record.moves.slice(0, p.sourceMoves.length);
     assert.deepEqual(
       p.sourceMoves,
