@@ -2,8 +2,10 @@ import {
   priorityDefenseLesson,
   priorityDefenseFrames,
 } from "./priority-defense-lesson.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v4-20261112";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage1-20261112";
 import { parse, coord, winningMoves, winningLine } from "./game.js";
+import { conditionsPracticeLessons } from "./assessment-conditions-v5.js";
+import { counterPracticeProblems } from "./assessment-counter-v5.js";
 
 export const curriculumVersion = "2026-11-11.2";
 const points = (s = "") => s.split(/\s+/).filter(Boolean).map(parse);
@@ -1198,7 +1200,13 @@ function freeze(x) {
   }
   return x;
 }
-export const problems = freeze([...bank, ...assessmentProblems]);
+const lessons = [
+  ...bank,
+  ...conditionsPracticeLessons,
+  ...counterPracticeProblems,
+];
+export const baseLessonProblems = freeze(bank);
+export const problems = freeze([...lessons, ...assessmentProblems]);
 const prerequisites = {
   priority: [],
   conditions: ["priority"],
@@ -1216,7 +1224,7 @@ export const units = freeze(
     title,
     goal,
     prerequisites: prerequisites[id],
-    problemIds: bank.filter((p) => p.unitId === id).map((p) => p.id),
+    problemIds: lessons.filter((p) => p.unitId === id).map((p) => p.id),
     lessonFrames,
   })),
 );

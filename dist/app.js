@@ -10,9 +10,12 @@ import { Engine } from "./engine-client.js";
 import { Sounds } from "./sound.js";
 import { boardSkin, stoneName, stoneSprite, skinText } from "./board-themes.js";
 import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111-v2";
-import { units, problems } from "./curriculum.js?v=curriculum-v4-20261112";
+import {
+  units,
+  problems,
+} from "./curriculum.js?v=curriculum-v5-stage1-20261112";
 import { positionMoves, reviewStartPly } from "./training-sessions.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v4-20261112";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage1-20261112";
 import {
   createPathProgress,
   noteExposure,
@@ -23,7 +26,7 @@ import {
   recordPracticalResult,
   getExamStatus,
   recordReviewFindings,
-} from "./learning-path.js?v=curriculum-v4-20261112";
+} from "./learning-path.js?v=curriculum-v5-stage1-20261112";
 import {
   journeyTracks,
   createJourney,
@@ -52,7 +55,7 @@ import {
   recordLessonView,
   recordBoardExposure,
   getLearningStats,
-} from "./learning.js?v=curriculum-v4-20261112";
+} from "./learning.js?v=curriculum-v5-stage1-20261112";
 import {
   describeMove,
   judgeReviewMove,
@@ -572,7 +575,11 @@ function statusText() {
           ? "できた"
           : learning?.status === "feedback"
             ? "答え合わせ"
-            : "黒の番";
+            : learning &&
+                currentProblem()?.questionHighlights &&
+                getLearningView(learning).input === "choice"
+              ? "予測する"
+              : "黒の番";
   return reviewRetry
     ? "同じ局面で試す"
     : reviewScan.state === "running"
@@ -847,6 +854,8 @@ function goRecommended(id = null) {
     learning?.status === "choose" &&
     step.kind === "assessment" &&
     step.reason !== "review-transfer" &&
+    (!step.assessmentDomain ||
+      step.assessmentDomain === currentProblem()?.assessmentDomain) &&
     step.unitId === currentProblem()?.unitId
   ) {
     mode = "learn";
@@ -885,7 +894,7 @@ function goRecommended(id = null) {
   save("view-v2", mode);
   learnSection = "lessons";
   if (step.kind === "assessment") {
-    startAssessment(step.unitId);
+    startAssessment(step.unitId, step.phase || "initial");
     return;
   }
   if (step.kind === "lesson") {
@@ -1024,7 +1033,11 @@ function startAssessment(id, phase = "initial") {
     if (
       phase === "retention" &&
       Date.now() -
-        Date.parse(unitStatus(pathProgress, id).initialAt || nowISO()) <
+        Date.parse(
+          unitStatus(pathProgress, id).coverageInitialAt ||
+            unitStatus(pathProgress, id).initialAt ||
+            nowISO(),
+        ) <
         86400000
     ) {
       learnScreen = "library";
@@ -1409,7 +1422,7 @@ function renderLibrary() {
           .map((u) => {
             const st = unitStatus(pathProgress, u.id);
             const eligible =
-              st.initialConfirmed &&
+              st.currentConfirmed &&
               selectAssessment(pathProgress, u.id, assessmentProblems, {
                 phase: "retention",
                 at: nowISO(),
@@ -1419,6 +1432,16 @@ function renderLibrary() {
               action = button(
                 "unit-next",
                 st.reviewPending ? "自分の局面へ" : "つまずきを練習",
+                "primary",
+                `data-unit-id='${u.id}'`,
+              );
+            else if (
+              st.baselineConfirmed &&
+              st.pendingAssessmentDomains?.length
+            )
+              action = button(
+                "unit-next",
+                "追加の確認へ",
                 "primary",
                 `data-unit-id='${u.id}'`,
               );
@@ -1436,8 +1459,9 @@ function renderLibrary() {
                 "primary",
                 `data-unit-id='${u.id}'`,
               );
-            else if (st.initialConfirmed) {
-              const ready = Date.parse(st.initialAt) + 86400000;
+            else if (st.currentConfirmed) {
+              const ready =
+                Date.parse(st.coverageInitialAt || st.initialAt) + 86400000;
               action =
                 Date.now() < ready
                   ? `<span class='retention-date'>${new Date(ready).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}から保持確認</span>`
@@ -1461,10 +1485,7 @@ function renderLibrary() {
       }</div>`;
     else {
       const list = problems.filter(
-        (p) =>
-          p.role !== "assessment" &&
-          p.kind === "play" &&
-          p.unitId !== units[0]?.id,
+        (p) => p.role !== "assessment" && p.unitId !== units[0]?.id,
       );
       content = `<div class='library-start'>${button("mixed-start", "練習する", "primary")}</div><div class='problem-list'>${list.map((p, j) => `<button class='problem-card' data-problem='${p.id}'><span class='unit-number'>${String(j + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>問題 ${j + 1}</strong><span>${esc(p.goal)}</span></span>${icon("chevron-right")}</button>`).join("")}</div>`;
     }
@@ -1712,7 +1733,11 @@ function renderPanel() {
                 "lesson-replay-close",
                 learning.status === "solved"
                   ? "答え合わせへ"
-                  : "次の手を考える",
+                  : currentProblem()?.questionHighlights &&
+                      learning.exercise &&
+                      !learning.history.length
+                    ? "元の盤で選ぶ"
+                    : "次の手を考える",
                 "primary",
               );
     } else if (learning) {
@@ -1735,7 +1760,13 @@ function renderPanel() {
       else if (learning.status === "feedback")
         actions =
           (v.refutationFrames.length
-            ? button("learning-refutation", "相手の返しを見る", "primary")
+            ? button(
+                "learning-refutation",
+                currentProblem()?.questionHighlights && !learning.exercise
+                  ? "図で確かめる"
+                  : "相手の返しを見る",
+                "primary",
+              )
             : "") +
           (learningRole === "assessment"
             ? button("assessment-remedial", "ここを学ぶ")
@@ -1745,7 +1776,14 @@ function renderPanel() {
           (v.input === "choice"
             ? button("learning-hint", "ヒント")
             : v.transitionFrames.length
-              ? button("learning-transition", "直前の応手を見る")
+              ? button(
+                  "learning-transition",
+                  currentProblem()?.questionHighlights &&
+                    learning.exercise &&
+                    !learning.history.length
+                    ? "予測した手順を見る"
+                    : "直前の応手を見る",
+                )
               : "") + button("learning-demo", "見本を見る");
     }
   } else if (review) {
@@ -1887,7 +1925,13 @@ function submitLearning(i = null, choice = null) {
   let transitions = getLearningView(learning).transitionFrames;
   if (transitions.length && learning.feedback.correct === true) {
     if (learning.status === "choose") {
-      if (learningRole !== "assessment" && learnSection === "lessons")
+      if (
+        learningRole !== "assessment" &&
+        (learnSection === "lessons" ||
+          (currentProblem()?.questionHighlights &&
+            learning.exercise &&
+            !learning.history.length))
+      )
         learning = markLearningGuidance(learning);
       else
         transitions = transitions.map((f) => ({
@@ -2530,10 +2574,12 @@ const actions = {
   },
   "mixed-start": () => {
     const ids = problems
-      .filter((p) =>
-        learnSection === "retry"
-          ? needsRetry(p.id)
-          : p.kind === "play" && p.unitId !== units[0]?.id,
+      .filter(
+        (p) =>
+          p.role !== "assessment" &&
+          (learnSection === "retry"
+            ? needsRetry(p.id)
+            : p.unitId !== units[0]?.id),
       )
       .map((p) => p.id);
     if (ids.length) startProblem(ids[0], { queue: ids });

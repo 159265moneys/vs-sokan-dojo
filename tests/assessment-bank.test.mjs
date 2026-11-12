@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { assessmentProblems as assessments } from "../dist/assessment-bank.js";
+import { baseAssessmentProblems as assessments } from "../dist/assessment-bank.js";
 import { units, problems } from "../dist/curriculum.js";
 import { parse, coord, winner, winningMoves, proveVCF } from "../dist/game.js";
 import {

@@ -3,13 +3,17 @@ import { lineShapes } from "./review-patterns.js";
 import {
   problems as curriculumProblems,
   units as curriculumUnits,
-} from "./curriculum.js?v=curriculum-v4-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage1-20261112";
 
 // Evidence is supplied by the caller. This module reads no clock and schedules nothing.
 export const pathSchemaVersion = 3;
 export const initialFamilyTarget = 2;
 export const examGameTarget = 10;
 export const retentionMinimumMs = 24 * 60 * 60 * 1000;
+export const requiredAssessmentDomains = Object.freeze({
+  conditions: Object.freeze(["conditions-positive", "conditions-negative"]),
+  counter: Object.freeze(["counter-threat", "counter-clear"]),
+});
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const roles = new Set([
   "lesson",
@@ -183,6 +187,84 @@ const curriculumFingerprints = new Set([
     unit.lessonFrames.map((frame) => positionFingerprint(frame.board)),
   ),
 ]);
+const curriculumById = new Map(
+  curriculumProblems.map((problem) => [problem.id, problem]),
+);
+// Domain claims come from the shipped curriculum, never from caller-supplied tags.
+function domainProblem(value) {
+  const authored = curriculumById.get(value.problemId || value.id);
+  return authored?.role === "assessment" &&
+    requiredAssessmentDomains[authored.unitId]?.includes(
+      authored.assessmentDomain,
+    )
+    ? authored
+    : null;
+}
+function trustedAssessmentDomain(value) {
+  const authored = domainProblem(value);
+  if (!authored) return null;
+  const key = identity(value);
+  return authored.kind === "compare" &&
+    key.unitId === authored.unitId &&
+    key.family === authored.family &&
+    key.fingerprint === positionFingerprint(authored.board)
+    ? authored.assessmentDomain
+    : null;
+}
+function domainEvidenceValid(value) {
+  const domain = trustedAssessmentDomain(value);
+  if (!domain || integer(value.acceptedDecisions) < 1) return false;
+  if (!domain.startsWith("counter-")) return true;
+  const authored = domainProblem(value);
+  return (
+    value.acceptedDecisions >= 2 &&
+    Array.isArray(value.history) &&
+    value.history.length === 1 &&
+    value.history[0]?.side === 1 &&
+    Number.isInteger(value.history[0].i) &&
+    value.history[0].i >= 0 &&
+    value.history[0].i < 225 &&
+    authored.board[value.history[0].i] === 0
+  );
+}
+const baselineIndependent = (value) =>
+  independent(value) && !domainProblem(value);
+const domainOf = (value) => trustedAssessmentDomain(value);
+function teachesRequiredDomain(value, domain) {
+  if (!domain) return true;
+  const authored = curriculumById.get(value.problemId || value.id);
+  if (authored?.role !== "lesson") return false;
+  const key = identity(value);
+  return (
+    [].concat(authored.teachesAssessmentDomain || []).includes(domain) &&
+    key.unitId === authored.unitId &&
+    key.family === authored.family &&
+    key.fingerprint === positionFingerprint(authored.board)
+  );
+}
+function remediationLesson(unit, completedIds, domain = null) {
+  const candidates = (unit.problemIds || []).filter(
+    (id) =>
+      !domain || teachesRequiredDomain(curriculumById.get(id) || {}, domain),
+  );
+  return candidates.find((id) => !completedIds.has(id)) || candidates[0];
+}
+function assessmentBundle(rows, domains = [], baseline = true) {
+  const selected = [];
+  if (baseline) {
+    const first = rows.find(([, attempt]) => baselineIndependent(attempt));
+    if (!first) return [];
+    selected.push(first);
+  }
+  for (const domain of domains) {
+    const first = rows.find(([, attempt]) => domainOf(attempt) === domain);
+    if (!first) return [];
+    selected.push(first);
+  }
+  return selected.sort(
+    ([, a], [, b]) => a.completedOrdinal - b.completedOrdinal,
+  );
+}
 
 function identity(value) {
   if (!value || typeof value !== "object") value = {};
@@ -297,6 +379,8 @@ export function createPathProgress(
     )
       continue;
     result.attempts[id] = clone(attempt);
+    // Re-derive capability identity on restore without discarding historical rows.
+    result.attempts[id].assessmentDomain = trustedAssessmentDomain(attempt);
     if (assessmentExclusion(attempt.problemId))
       result.attempts[id].assessmentExclusion = assessmentExclusion(
         attempt.problemId,
@@ -629,7 +713,9 @@ export function recordAttemptEvidence(progress, attempt, metadata = {}) {
     prior?.completedOrdinal ||
     (status === "solved" ? next.nextOrdinal++ : null);
   const requiresBranch =
-    prior?.requiresBranch ?? metadata.requiresBranch !== false;
+    prior?.requiresBranch ??
+    domainProblem(key)?.requiresBranch ??
+    metadata.requiresBranch !== false;
   const row = {
     ...key,
     ...(assessmentExclusion(key.problemId)
@@ -647,6 +733,14 @@ export function recordAttemptEvidence(progress, attempt, metadata = {}) {
     status,
     family: prior?.family || key.family,
     fingerprint: prior?.fingerprint || key.fingerprint,
+    assessmentDomain: trustedAssessmentDomain(key),
+    acceptedDecisions: Math.max(
+      integer(prior?.acceptedDecisions),
+      integer(attempt.metrics?.acceptedDecisions ?? attempt.acceptedDecisions),
+    ),
+    history: Array.isArray(attempt.history)
+      ? clone(attempt.history)
+      : clone(prior?.history || []),
     branchId:
       prior?.branchId || text(metadata.branchId || metadata.requiredBranch),
     requiresBranch,
@@ -701,6 +795,7 @@ function independent(a) {
     a.fingerprint &&
     a.branchId &&
     a.branchHandled &&
+    (!domainProblem(a) || domainEvidenceValid(a)) &&
     !a.exposureSeen &&
     !a.hints &&
     !a.guidanceSeen &&
@@ -1318,17 +1413,25 @@ function reviewStages(progress, unitId = null) {
       const recovery = records.find((record) =>
         recoveryMatches(record, finding),
       );
-      const assessment =
-        recovery &&
-        assessments.find(
-          ([, a]) =>
-            a.unitId === finding.unitId &&
-            matchesCondition(a, requiredCondition) &&
-            date(a.startedAt) &&
-            date(a.completedAt) &&
-            a.ordinal > recovery.completedOrdinal &&
-            a.completedOrdinal > recovery.completedOrdinal,
-        );
+      const requiredDomains = requiredAssessmentDomains[finding.unitId] || [];
+      const candidates = recovery
+        ? assessments.filter(
+            ([, a]) =>
+              a.unitId === finding.unitId &&
+              matchesCondition(a, requiredCondition) &&
+              date(a.startedAt) &&
+              date(a.completedAt) &&
+              a.ordinal > recovery.completedOrdinal &&
+              a.completedOrdinal > recovery.completedOrdinal,
+          )
+        : [];
+      const assessmentEvidence = assessmentBundle(candidates, requiredDomains);
+      const assessment = assessmentEvidence.at(-1);
+      const domainEvidence = assessmentBundle(
+        candidates,
+        requiredDomains,
+        false,
+      );
       const gameEvidence = practicalConfirmations(progress, finding.unitId);
       const transferGames = recovery
         ? practicalPair(
@@ -1339,11 +1442,20 @@ function reviewStages(progress, unitId = null) {
             requiredCondition,
           )
         : [];
-      const useGames =
+      const gameTransfer =
         transferGames.length === 2 &&
+        (!requiredDomains.length ||
+          domainEvidence.length === requiredDomains.length)
+          ? [transferGames[1], domainEvidence.at(-1)?.[1]]
+              .filter(Boolean)
+              .sort((a, b) => a.completedOrdinal - b.completedOrdinal)
+              .at(-1)
+          : null;
+      const useGames =
+        !!gameTransfer &&
         (!assessment ||
-          transferGames[1].completedOrdinal < assessment[1].completedOrdinal);
-      const transfer = useGames ? transferGames[1] : assessment?.[1];
+          gameTransfer.completedOrdinal < assessment[1].completedOrdinal);
+      const transfer = useGames ? gameTransfer : assessment?.[1];
       const practical =
         transfer &&
         gameEvidence.find(
@@ -1360,6 +1472,14 @@ function reviewStages(progress, unitId = null) {
         kind: finding.kind,
         ordinal: finding.ordinal,
         requiredCondition,
+        requiredDomains,
+        pendingDomains: requiredDomains.filter(
+          (domain) =>
+            !candidates.some(([, attempt]) => domainOf(attempt) === domain),
+        ),
+        baselinePending:
+          !candidates.some(([, attempt]) => baselineIndependent(attempt)) &&
+          transferGames.length !== 2,
         stage: !recovery
           ? "recovery"
           : !transfer
@@ -1369,6 +1489,14 @@ function reviewStages(progress, unitId = null) {
               : "resolved",
         recoveryId: recovery?.source.id || null,
         assessmentId: (!useGames && assessment?.[0]) || null,
+        assessmentEvidence: (useGames
+          ? domainEvidence
+          : assessmentEvidence
+        ).map(([attemptId, attempt]) => ({
+          attemptId,
+          problemId: attempt.problemId,
+          assessmentDomain: domainOf(attempt),
+        })),
         practicalRecordId: practical?.recordId || null,
         transferMethod: transfer
           ? useGames
@@ -1446,21 +1574,37 @@ function assessmentReviewStates(progress, unitId, initial, practicalEvidence) {
     }));
   const latest = new Map();
   for (const failure of failures
-    .filter((item) => item.ordinal > initial.completedOrdinal)
+    .filter(
+      (item) =>
+        domainOf(item.attempt) || item.ordinal > initial.completedOrdinal,
+    )
     .sort((a, b) => a.ordinal - b.ordinal))
     latest.set(
-      unitId === "priority" ? priorityCondition(failure.attempt.family) : null,
+      domainOf(failure.attempt) ||
+        (unitId === "priority"
+          ? priorityCondition(failure.attempt.family)
+          : null),
       failure,
     );
   return [...latest]
     .sort(([, a], [, b]) => a.ordinal - b.ordinal)
-    .map(([requiredCondition, failure]) => {
+    .map(([requirement, failure]) => {
+      const requiredDomain = requiredAssessmentDomains[unitId]?.includes(
+        requirement,
+      )
+        ? requirement
+        : null;
+      const requiredCondition = requiredDomain ? null : requirement;
+      const requiredDomains = requiredDomain
+        ? [requiredDomain]
+        : requiredAssessmentDomains[unitId] || [];
       const failureAt = text(failure.attempt.lastFailureAt);
       const remediation = rows
         .filter(
           ([, attempt]) =>
             attempt.role === "lesson" &&
             attempt.status === "solved" &&
+            teachesRequiredDomain(attempt, requiredDomain) &&
             attempt.completedOrdinal > failure.ordinal &&
             date(attempt.startedAt) &&
             datedAfter(attempt.completedAt, failureAt),
@@ -1473,6 +1617,7 @@ function assessmentReviewStates(progress, unitId, initial, practicalEvidence) {
       for (const record of Object.values(progress.practicalResults)) {
         const source = record.source;
         if (
+          requiredDomain ||
           !(record.completedOrdinal > failure.ordinal) ||
           source.completed !== true ||
           !datedAfter(record.completedAt, failureAt) ||
@@ -1498,7 +1643,7 @@ function assessmentReviewStates(progress, unitId, initial, practicalEvidence) {
       }
       remediation.sort((a, b) => a.ordinal - b.ordinal);
       const remedial = remediation[0];
-      const assessments = remedial
+      const candidates = remedial
         ? rows
             .filter(
               ([, attempt]) =>
@@ -1511,6 +1656,16 @@ function assessmentReviewStates(progress, unitId, initial, practicalEvidence) {
             )
             .sort(([, a], [, b]) => a.completedOrdinal - b.completedOrdinal)
         : [];
+      const assessments = assessmentBundle(
+        candidates,
+        requiredDomains,
+        !requiredDomain,
+      );
+      const domainAssessments = assessmentBundle(
+        candidates,
+        requiredDomains,
+        false,
+      );
       const games = remedial
         ? practicalPair(
             practicalEvidence.filter(
@@ -1523,20 +1678,52 @@ function assessmentReviewStates(progress, unitId, initial, practicalEvidence) {
             requiredCondition,
           )
         : [];
-      const useGames =
+      const gameResolution =
+        !requiredDomain &&
         games.length === 2 &&
-        (!assessments.length ||
-          games[1].completedOrdinal < assessments[0][1].completedOrdinal);
-      const resolution = useGames ? games[1] : assessments[0]?.[1];
+        (!requiredDomains.length ||
+          domainAssessments.length === requiredDomains.length)
+          ? [games[1], domainAssessments.at(-1)?.[1]]
+              .filter(Boolean)
+              .sort((a, b) => a.completedOrdinal - b.completedOrdinal)
+              .at(-1)
+          : null;
+      const assessmentResolution = assessments.at(-1)?.[1];
+      const useGames =
+        !!gameResolution &&
+        (!assessmentResolution ||
+          gameResolution.completedOrdinal <
+            assessmentResolution.completedOrdinal);
+      const resolution = useGames ? gameResolution : assessmentResolution;
+      const previousDomainEvidence = requiredDomain
+        ? rows.find(
+            ([, attempt]) =>
+              independent(attempt) &&
+              domainOf(attempt) === requiredDomain &&
+              attempt.completedOrdinal < failure.ordinal,
+          )?.[1]
+        : initial;
       return {
         attemptId: failure.id,
         problemId: failure.attempt.problemId,
         failureOrdinal: failure.ordinal,
         failureAt,
         requiredCondition,
-        kind: laterDay(failureAt, initial.completedAt)
-          ? "retention"
-          : "confirmation",
+        requiredDomain,
+        requiredDomains,
+        baselinePending:
+          !requiredDomain &&
+          !candidates.some(([, attempt]) => baselineIndependent(attempt)) &&
+          games.length !== 2,
+        pendingDomains: requiredDomains.filter(
+          (domain) =>
+            !candidates.some(([, attempt]) => domainOf(attempt) === domain),
+        ),
+        kind:
+          previousDomainEvidence &&
+          laterDay(failureAt, previousDomainEvidence.completedAt)
+            ? "retention"
+            : "confirmation",
         stage: !remedial
           ? "remediation"
           : !resolution
@@ -1550,20 +1737,36 @@ function assessmentReviewStates(progress, unitId, initial, practicalEvidence) {
             : "assessment"
           : null,
         resolutionOrdinal: resolution?.completedOrdinal || null,
+        baselineResolutionOrdinal:
+          resolution && !requiredDomain
+            ? useGames
+              ? games[1].completedOrdinal
+              : assessments.find(([, attempt]) =>
+                  baselineIndependent(attempt),
+                )?.[1].completedOrdinal || null
+            : null,
         resolvedAt: resolution?.completedAt || null,
+        domainResolutionEvidence: (useGames ? domainAssessments : assessments)
+          .filter(([, attempt]) => domainOf(attempt))
+          .map(([attemptId, attempt]) => ({
+            attemptId,
+            problemId: attempt.problemId,
+            assessmentDomain: domainOf(attempt),
+            completedOrdinal: attempt.completedOrdinal,
+            completedAt: attempt.completedAt,
+          })),
         resolutionEvidence: useGames
           ? games.map(({ recordId, ply, conditionId }) => ({
               recordId,
               ply,
               conditionId,
             }))
-          : assessments[0]
-            ? [
-                {
-                  attemptId: assessments[0][0],
-                  problemId: assessments[0][1].problemId,
-                },
-              ]
+          : assessments.length
+            ? assessments.map(([attemptId, attempt]) => ({
+                attemptId,
+                problemId: attempt.problemId,
+                assessmentDomain: domainOf(attempt),
+              }))
             : [],
       };
     });
@@ -1577,11 +1780,16 @@ export function unitStatus(progress, unitId) {
   const qualifying = rows
     .filter(independent)
     .sort((a, b) => a.completedOrdinal - b.completedOrdinal);
+  const baselineQualifying = qualifying.filter(baselineIndependent);
+  const requiredDomains = requiredAssessmentDomains[unitId] || [];
+  const domainInitialEvidence = requiredDomains
+    .map((domain) => qualifying.find((attempt) => domainOf(attempt) === domain))
+    .filter(Boolean);
   const families = new Set(),
     branches = new Set(),
     firstEvidence = [];
   let initial = null;
-  for (const row of qualifying) {
+  for (const row of baselineQualifying) {
     families.add(row.family);
     branches.add(row.branchId);
     firstEvidence.push(row);
@@ -1614,7 +1822,7 @@ export function unitStatus(progress, unitId) {
       : firstEvidence.map((e) => e.fingerprint);
   const initialDay = date(initial?.completedAt);
   const assessmentRetention = initialDay
-    ? qualifying.find(
+    ? baselineQualifying.find(
         (a) =>
           a.ordinal > initial.completedOrdinal &&
           a.completedOrdinal > initial.completedOrdinal &&
@@ -1658,13 +1866,24 @@ export function unitStatus(progress, unitId) {
   const assessmentReviewPending = assessmentReviews.some(
     (review) => review.stage !== "resolved",
   );
+  const baselineReviews = assessmentReviews.filter(
+    (review) => !review.requiredDomain,
+  );
+  const baselineReview =
+    baselineReviews.find((review) => review.stage !== "resolved") ||
+    [...baselineReviews]
+      .sort((a, b) => a.resolutionOrdinal - b.resolutionOrdinal)
+      .at(-1);
   const retentionFloor =
-    assessmentReview?.resolutionOrdinal || initial?.completedOrdinal || 0;
+    baselineReview?.baselineResolutionOrdinal ||
+    baselineReview?.resolutionOrdinal ||
+    initial?.completedOrdinal ||
+    0;
   const currentAssessmentRetention =
-    initialDay && !assessmentReviewPending
-      ? qualifying.find(
+    initialDay && !baselineReviews.some((review) => review.stage !== "resolved")
+      ? baselineQualifying.find(
           (a) =>
-            matchesCondition(a, assessmentReview?.requiredCondition) &&
+            matchesCondition(a, baselineReview?.requiredCondition) &&
             a.completedOrdinal >= retentionFloor &&
             a.ordinal > initial.completedOrdinal &&
             laterDay(a.completedAt, initial.completedAt) &&
@@ -1672,18 +1891,18 @@ export function unitStatus(progress, unitId) {
         )
       : null;
   const currentPracticalRetention =
-    initialDay && !assessmentReviewPending
+    initialDay && !baselineReviews.some((review) => review.stage !== "resolved")
       ? practicalEvidence.find(
           (e) =>
-            (!assessmentReview?.requiredCondition ||
-              e.conditionId === assessmentReview.requiredCondition) &&
+            (!baselineReview?.requiredCondition ||
+              e.conditionId === baselineReview.requiredCondition) &&
             e.completedOrdinal >= retentionFloor &&
             e.ordinal > initial.completedOrdinal &&
             laterDay(e.completedAt, initial.completedAt) &&
             !initialFingerprints.includes(e.fingerprint),
         )
       : null;
-  const retentionMethod =
+  const baselineRetentionMethod =
     currentPracticalRetention &&
     (!currentAssessmentRetention ||
       currentPracticalRetention.completedOrdinal <
@@ -1692,8 +1911,8 @@ export function unitStatus(progress, unitId) {
       : currentAssessmentRetention
         ? "assessment"
         : null;
-  const retention =
-    retentionMethod === "practical"
+  const baselineRetention =
+    baselineRetentionMethod === "practical"
       ? currentPracticalRetention
       : currentAssessmentRetention;
   const reviewFindings = reviewStages(p, unitId);
@@ -1703,6 +1922,62 @@ export function unitStatus(progress, unitId) {
   const practicalPending = reviewFindings.filter(
     (finding) => finding.stage === "practical",
   ).length;
+  const coverageInitial =
+    initial && domainInitialEvidence.length === requiredDomains.length
+      ? [initial, ...domainInitialEvidence]
+          .sort((a, b) => a.completedOrdinal - b.completedOrdinal)
+          .at(-1)
+      : null;
+  const confirmedDomains = domainInitialEvidence.map(domainOf);
+  const pendingDomains = requiredDomains.filter(
+    (domain) =>
+      !confirmedDomains.includes(domain) ||
+      assessmentReviews.some(
+        (review) =>
+          review.stage !== "resolved" && review.pendingDomains.includes(domain),
+      ) ||
+      reviewFindings.some(
+        (finding) =>
+          ["recovery", "assessment"].includes(finding.stage) &&
+          finding.pendingDomains?.includes(domain),
+      ),
+  );
+  const domainRetentionEvidence = coverageInitial
+    ? requiredDomains
+        .map((domain) => {
+          const domainReviewFloor = Math.max(
+            0,
+            ...assessmentReviews
+              .filter((review) => review.requiredDomains.includes(domain))
+              .map(
+                (review) =>
+                  review.domainResolutionEvidence.find(
+                    (evidence) => evidence.assessmentDomain === domain,
+                  )?.completedOrdinal || review.failureOrdinal,
+              ),
+          );
+          return qualifying.find(
+            (attempt) =>
+              domainOf(attempt) === domain &&
+              attempt.ordinal > coverageInitial.completedOrdinal &&
+              attempt.completedOrdinal >= domainReviewFloor &&
+              laterDay(attempt.completedAt, coverageInitial.completedAt),
+          );
+        })
+        .filter(Boolean)
+    : [];
+  const retainedDomains = domainRetentionEvidence.map(domainOf);
+  const currentConfirmed =
+    !!coverageInitial && !assessmentReviewPending && !reviewPending;
+  const retention =
+    (!requiredDomains.length || currentConfirmed) &&
+    baselineRetention &&
+    domainRetentionEvidence.length === requiredDomains.length
+      ? [baselineRetention, ...domainRetentionEvidence]
+          .sort((a, b) => a.completedOrdinal - b.completedOrdinal)
+          .at(-1)
+      : null;
+  const retentionMethod = retention ? baselineRetentionMethod : null;
   const latestTransfer = Math.max(
     0,
     ...assessmentReviews.map(
@@ -1729,7 +2004,7 @@ export function unitStatus(progress, unitId) {
     currentSuccesses.length > 0;
   const practiced = rows.some((a) => a.status === "solved");
   const viewed = p.exposures.some((e) => e.unitId === unitId);
-  const countedFamilies = qualifying
+  const countedFamilies = baselineQualifying
     .map((a) => a.family)
     .filter(
       (family) =>
@@ -1750,10 +2025,32 @@ export function unitStatus(progress, unitId) {
     viewed,
     practiced,
     initialConfirmed: !!initial,
+    baselineConfirmed: !!initial,
+    baselineRetained: !!baselineRetention,
     retained: !!retention,
     initialMethod,
     retentionMethod,
-    currentConfirmed: !!initial && !assessmentReviewPending && !reviewPending,
+    currentConfirmed,
+    coverageInitialAt: coverageInitial?.completedAt || null,
+    requiredAssessmentDomains: [...requiredDomains],
+    confirmedAssessmentDomains: confirmedDomains.filter(
+      (domain) => !pendingDomains.includes(domain),
+    ),
+    pendingAssessmentDomains: pendingDomains,
+    retainedAssessmentDomains: retainedDomains,
+    pendingRetentionDomains: requiredDomains.filter(
+      (domain) => !retainedDomains.includes(domain),
+    ),
+    domainInitialEvidence: domainInitialEvidence.map((attempt) => ({
+      problemId: attempt.problemId,
+      assessmentDomain: domainOf(attempt),
+      completedAt: attempt.completedAt,
+    })),
+    domainRetentionEvidence: domainRetentionEvidence.map((attempt) => ({
+      problemId: attempt.problemId,
+      assessmentDomain: domainOf(attempt),
+      completedAt: attempt.completedAt,
+    })),
     historicalRetained: !!historicalRetention,
     historicalRetentionAt: historicalRetention?.completedAt || null,
     historicalRetentionMethod,
@@ -1769,7 +2066,7 @@ export function unitStatus(progress, unitId) {
     practicalConditionsObserved: [
       ...new Set(practicalEvidence.map((event) => event.conditionId)),
     ],
-    branchCount: new Set(qualifying.map((a) => a.branchId)).size,
+    branchCount: new Set(baselineQualifying.map((a) => a.branchId)).size,
     initialAt: initial?.completedAt || null,
     retentionAt: retention?.completedAt || null,
     initialEvidence:
@@ -1785,13 +2082,13 @@ export function unitStatus(progress, unitId) {
           }))
         : [],
     retentionEvidence:
-      retentionMethod === "assessment" ? retention.problemId : null,
+      retentionMethod === "assessment" ? baselineRetention.problemId : null,
     retentionPracticalEvidence:
       retentionMethod === "practical"
         ? {
-            recordId: retention.recordId,
-            ply: retention.ply,
-            conditionId: retention.conditionId,
+            recordId: baselineRetention.recordId,
+            ply: baselineRetention.ply,
+            conditionId: baselineRetention.conditionId,
           }
         : null,
     opportunities: practical.length,
@@ -1826,19 +2123,21 @@ export function unitStatus(progress, unitId) {
         ? "実戦の復習"
         : practicalPending
           ? "実戦待ち"
-          : retention
-            ? practicalObserved
-              ? "実戦遂行"
-              : "実戦待ち"
-            : initial
-              ? "保持待ち"
-              : count
-                ? `確認 ${count}/${initialFamilyTarget}`
-                : practiced
-                  ? "練習済"
-                  : viewed
-                    ? "閲覧済"
-                    : "未着手",
+          : initial && pendingDomains.length
+            ? `追加確認 ${requiredDomains.length - pendingDomains.length}/${requiredDomains.length}`
+            : retention
+              ? practicalObserved
+                ? "実戦遂行"
+                : "実戦待ち"
+              : initial
+                ? "保持待ち"
+                : count
+                  ? `確認 ${count}/${initialFamilyTarget}`
+                  : practiced
+                    ? "練習済"
+                    : viewed
+                      ? "閲覧済"
+                      : "未着手",
   };
 }
 
@@ -1852,7 +2151,10 @@ export function selectAssessment(
     status = unitStatus(p, unitId);
   if (
     phase === "retention" &&
-    (!status.initialConfirmed || !laterDay(at, status.initialAt))
+    (!(status.requiredAssessmentDomains.length
+      ? status.currentConfirmed
+      : status.initialConfirmed) ||
+      !laterDay(at, status.coverageInitialAt || status.initialAt))
   )
     return null;
   const successful = new Set(
@@ -1860,16 +2162,30 @@ export function selectAssessment(
       .filter((a) => a.unitId === unitId && independent(a))
       .map((a) => a.family),
   );
-  const requiredCondition = status.assessmentReviewPending
-    ? status.assessmentReview.requiredCondition
-    : status.reviewFindings.find((finding) => finding.stage === "assessment")
-        ?.requiredCondition;
+  const review = status.assessmentReviewPending
+    ? status.assessmentReview
+    : status.reviewFindings.find((finding) => finding.stage === "assessment");
+  const requiredCondition = review?.requiredCondition;
+  const pendingDomains =
+    review?.pendingDomains ||
+    (phase === "retention"
+      ? status.pendingRetentionDomains
+      : status.pendingAssessmentDomains);
+  const needsBaseline = review
+    ? review.baselinePending
+    : phase === "retention"
+      ? !status.baselineRetained
+      : !status.baselineConfirmed;
   const candidates = (Array.isArray(bank) ? bank : []).filter(
     (problem) =>
       problem.role === "assessment" &&
       !assessmentExclusion(problem.problemId || problem.id) &&
       (problem.unitId || problem.skillId) === unitId &&
       matchesCondition(problem, requiredCondition) &&
+      (!status.requiredAssessmentDomains.length ||
+        (needsBaseline
+          ? !domainProblem(problem)
+          : pendingDomains.includes(trustedAssessmentDomain(problem)))) &&
       !wasSeen(p, identity(problem)),
   );
   candidates.sort(
@@ -1904,7 +2220,7 @@ export function nextLearningStep(
       label: "実戦の復習",
     };
   const pending = units.filter(
-    (unit) => !unitStatus(progress, unit.id).initialConfirmed,
+    (unit) => !unitStatus(progress, unit.id).currentConfirmed,
   );
   if (!pending.length && !pendingReview && !pendingAssessment)
     return {
@@ -1925,12 +2241,12 @@ export function nextLearningStep(
     const ids = unit.prerequisites || [];
     const missing = ids
       .map((id) => byId.get(id))
-      .find((item) => item && !unitStatus(progress, item.id).initialConfirmed);
+      .find((item) => item && !unitStatus(progress, item.id).currentConfirmed);
     return missing ? prerequisite(missing) : unit;
   }
   if (!pendingReview && !pendingAssessment) {
     target = prerequisite(target);
-    if (unitStatus(progress, target.id).initialConfirmed)
+    if (unitStatus(progress, target.id).currentConfirmed)
       target = prerequisite(pending[0]);
   }
   const status = unitStatus(progress, target.id);
@@ -1947,9 +2263,11 @@ export function nextLearningStep(
           .filter((a) => a.role === "lesson" && a.status === "solved")
           .map((a) => a.problemId),
       );
-      const lesson =
-        (target.problemIds || []).find((id) => !completedIds.has(id)) ||
-        target.problemIds?.[0];
+      const lesson = remediationLesson(
+        target,
+        completedIds,
+        status.assessmentReview.requiredDomain,
+      );
       return lesson
         ? {
             kind: "lesson",
@@ -1990,13 +2308,24 @@ export function nextLearningStep(
   const completedLessons = rows.filter(
     (a) => a.role === "lesson" && a.status === "solved",
   );
+  const requiredRemediationDomain = domainOf(
+    failures.find(
+      (attempt) =>
+        (attempt.lastFailureOrdinal ||
+          attempt.completedOrdinal ||
+          attempt.ordinal) === lastFailure,
+    ) || {},
+  );
   const lessonAfterFailure = completedLessons.some(
-    (a) => a.completedOrdinal > lastFailure,
+    (a) =>
+      a.completedOrdinal > lastFailure &&
+      teachesRequiredDomain(a, requiredRemediationDomain),
   );
   const journeyAfterFailure = Object.values(ledger.practicalResults).some(
     (record) => {
       const source = record.source;
       if (
+        requiredRemediationDomain ||
         !(record.completedOrdinal > lastFailure) ||
         source.completed !== true ||
         !(
@@ -2028,9 +2357,11 @@ export function nextLearningStep(
   );
   if (lastFailure && !lessonAfterFailure && !journeyAfterFailure) {
     const completedIds = new Set(completedLessons.map((a) => a.problemId));
-    const lesson =
-      (target.problemIds || []).find((id) => !completedIds.has(id)) ||
-      target.problemIds?.[0];
+    const lesson = remediationLesson(
+      target,
+      completedIds,
+      requiredRemediationDomain,
+    );
     if (lesson)
       return {
         kind: "lesson",
@@ -2053,10 +2384,19 @@ export function nextLearningStep(
       problemId: problem.id,
       reason: pendingReview
         ? "review-transfer"
-        : status.initialCount || lastFailure
-          ? "initial"
-          : "diagnostic",
-      label: pendingReview ? "別の局面で確認" : "初回確認",
+        : status.baselineConfirmed && status.pendingAssessmentDomains.length
+          ? "coverage"
+          : status.initialCount || lastFailure
+            ? "initial"
+            : "diagnostic",
+      label: pendingReview
+        ? "別の局面で確認"
+        : status.baselineConfirmed && status.pendingAssessmentDomains.length
+          ? "追加確認"
+          : "初回確認",
+      ...(trustedAssessmentDomain(problem)
+        ? { assessmentDomain: trustedAssessmentDomain(problem) }
+        : {}),
     };
   return {
     kind: "journey",

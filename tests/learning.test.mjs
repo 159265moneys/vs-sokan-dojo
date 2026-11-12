@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   units,
-  problems as allProblems,
+  baseLessonProblems as allProblems,
   curriculumVersion,
 } from "../dist/curriculum.js";
 import {

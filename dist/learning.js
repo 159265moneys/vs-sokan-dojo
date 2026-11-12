@@ -2,9 +2,9 @@ import {
   units,
   problems,
   curriculumVersion,
-} from "./curriculum.js?v=curriculum-v4-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage1-20261112";
 import { coord } from "./game.js";
-import { positionFingerprint } from "./learning-path.js?v=curriculum-v4-20261112";
+import { positionFingerprint } from "./learning-path.js?v=curriculum-v5-stage1-20261112";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const byId = new Map(problems.map((p) => [p.id, p]));
@@ -302,6 +302,16 @@ function meetsExercise(board, exercise, placed) {
   )
     return false;
   const required = [...exercise.cells, placed];
+  if (exercise.objective === "prevent-fork")
+    return !winPoints(board, 2).length && !forkMoves(board, 2).length;
+  if (exercise.objective === "safe-four") {
+    const finishes = winPoints(board, 1);
+    if (!finishes.length || winPoints(board, 2).length) return false;
+    if (finishes.length >= 2) return true;
+    const reply = [...board];
+    reply[finishes[0]] = 2;
+    return winner(reply) !== 2 && !winPoints(reply, 2).length;
+  }
   if (exercise.objective === "four")
     return windows.some(
       (w) =>
@@ -341,15 +351,27 @@ function directionName(cells) {
 function initializeHints(state, guide) {
   state.guide = [...guide];
   state.hintStages =
-    !state.history.length && problem(state).hintStages
+    !state.exercise && !state.history.length && problem(state).hintStages
       ? clone(problem(state).hintStages)
       : makeHints(state.board, guide);
   state.hintTexts = state.exercise
-    ? [
-        "白が止めた方向を確認する。",
-        "まだ白石のない、残った方向を使う。",
-        state.exercise.title,
-      ]
+    ? state.exercise.objective === "safe-four"
+      ? [
+          "黒の四を作る候補を探す。",
+          "白が受ける地点から、白の四方向を確かめる。",
+          "白の受けが四を作らない候補を選ぶ。",
+        ]
+      : state.exercise.objective === "prevent-fork"
+        ? [
+            "白が次に二つの完成点を作る交点を探す。",
+            "交点か、その先の完成点を塞ぐ候補を比べる。",
+            "置いた後に白の五連と二つの完成点が残らないか確かめる。",
+          ]
+        : [
+            "白が止めた方向を確認する。",
+            "まだ白石のない、残った方向を使う。",
+            state.exercise.title,
+          ]
     : state.history.length
       ? [
           "直前の白石が、どの方向を止めたか見る。",
@@ -555,6 +577,53 @@ export function playLearningMove(state, i) {
     return completed(next, "win", "五連");
   }
   if (state.exercise) {
+    if (["safe-four", "prevent-fork"].includes(state.exercise.objective)) {
+      const safe = state.exercise.objective === "safe-four";
+      if (meetsExercise(next.board, state.exercise, i)) {
+        const finishes = winPoints(next.board, 1);
+        const text = safe
+          ? finishes.length >= 2
+            ? `${coord(i)}で${finishes.map(coord).join("・")}が黒の完成点。白自身の即勝ちはない。`
+            : `${coord(i)}で黒の完成点は${coord(finishes[0])}。白がそこを塞いでも、白の完成点はできない。`
+          : `${coord(i)}で、白の即五と次に二つの完成点を作る手を消した。勝負は続く。`;
+        const predicted = p.nodes
+          .flatMap((n) => n.choices)
+          .find((c) => c.correct);
+        next.transitionFrames = [
+          ...clone(predicted?.frames || []),
+          makeFrame(next.board, i, "元の盤で選んだ一手", text),
+        ];
+        return completed(
+          next,
+          "local-goal",
+          safe ? "受け四を与えない一手" : "次の二重攻撃を防いだ",
+          text,
+        );
+      }
+      const finishes = winPoints(next.board, 1);
+      let title = "四を作る候補を比べる";
+      let text = `${coord(i)}では黒の四ができない。四を作った後、白の受けで何ができるかまで比べよう。`;
+      let frames = [makeFrame(next.board, i, title, text)];
+      if (safe && finishes.length === 1) {
+        const reply = [...next.board];
+        reply[finishes[0]] = 2;
+        const counter = winPoints(reply, 2);
+        if (counter.length) {
+          title = "白の受けが四になる";
+          text = `白${coord(finishes[0])}で受けると、${counter.map(coord).join("・")}が白の完成点になる。`;
+          frames.push(makeFrame(reply, finishes[0], title, text));
+        }
+      }
+      const proof = whiteRefutation(next);
+      if (proof)
+        return failed(next, "proven-loss", "白の攻めが先に届く", "", proof);
+      if (!safe) {
+        title = "白の狙いが残る";
+        text =
+          "この手では、白の五連か次の二重攻撃が残る。交点と外側の空点を比べよう。";
+      }
+      return failed(next, "goal-miss", title, text, frames);
+    }
     if (meetsExercise(next.board, state.exercise, i)) {
       const cells = [...state.exercise.cells, i].sort((a, b) => a - b);
       const shapeText =
@@ -721,7 +790,10 @@ export function answerLearningChoice(state, choiceId) {
   if (c.continuations?.length) {
     const continuation =
       c.continuations[state.replyVariant % c.continuations.length];
-    next.transitionFrames = [];
+    next.transitionFrames =
+      !continuation.moves.length && problem(state).role !== "assessment"
+        ? clone(c.frames)
+        : [];
     for (const m of continuation.moves) {
       if (next.board[m.i] || winner(next.board))
         throw Error("比較の手順が不正です");
@@ -837,13 +909,20 @@ export function getLearningView(state) {
         ? "board"
         : "choice";
   let highlights = [];
+  if (state.status === "choose" && input === "choice")
+    highlights = p.questionHighlights || [];
   if (state.status === "choose" && state.hints.level)
     highlights = state.hintStages[state.hints.level - 1] || [];
   if (state.status === "solved")
     highlights =
       state.transitionFrames.at(-1)?.highlights || factHighlights(state.board);
   const resultFrame =
-    state.status === "solved" ? state.transitionFrames.at(-1) : null;
+    state.status === "solved"
+      ? state.transitionFrames.at(-1)
+      : state.status === "feedback" && p.questionHighlights && !state.exercise
+        ? state.refutationFrames.at(-1)
+        : null;
+  if (resultFrame) highlights = resultFrame.highlights || [];
   return clone({
     problemId: p.id,
     unitId: p.unitId,
@@ -998,7 +1077,7 @@ export function restoreLearningAttempt(raw) {
         (winPoints(raw.board, 2).length || forkMoves(raw.board, 2).length)
       )
         return null;
-      if (p.judge.kind === "choice" && !raw.exercise) {
+      if (p.nodes.some((n) => n.input === "choice") && !raw.exercise) {
         const selected = p.nodes
           .flatMap((n) => n.choices)
           .find((c) => c.id === raw.feedback.choiceId);

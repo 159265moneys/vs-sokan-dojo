@@ -1384,6 +1384,77 @@ test("actual authored-strength order, conditions, branch and quiet preparation s
       `${unitId}: ${status.practicalConditionsObserved.join(",")}`,
     );
     assert.equal(status.initialMethod, "practical");
+    assert.equal(
+      status.currentConfirmed,
+      !["conditions", "counter"].includes(unitId),
+      `${unitId}: two actual games preserve baseline history but cannot certify explicit prediction`,
+    );
+  }
+});
+
+test("v5: two goal-matched games after remediation still need every explicit prediction domain", () => {
+  for (const [unitId, firstGame, secondGame] of [
+    ["conditions", "check-conditions-gap-a", "check-conditions-cross-a"],
+    ["counter", "check-counter-finish-a", "check-counter-chain-a"],
+  ]) {
+    const authoredBank = authoredProblems.filter(
+      (item) => item.unitId === unitId && item.role === "assessment",
+    );
+    const baseBank = authoredBank.filter((item) => !item.assessmentDomain);
+    const first = baseBank[0];
+    const second = baseBank.find((item) => item.family !== first.family);
+    let progress = record(record(createPathProgress(), first), second);
+    function predict(item) {
+      let state = createAttempt(item.id, { attemptId: `domain-${item.id}` });
+      state = answerLearningChoice(
+        state,
+        item.nodes[0].choices.find((choice) => choice.correct).id,
+      );
+      if (state.status === "choose")
+        state = playLearningMove(state, item.guide[0]);
+      assert.equal(state.status, "solved");
+      progress = recordAttemptEvidence(progress, state, { ...item, at: time });
+    }
+    for (const domain of unitStatus(progress, unitId).requiredAssessmentDomains)
+      predict(
+        selectAssessment(
+          progress,
+          unitId,
+          authoredBank.filter((item) => item.assessmentDomain === domain),
+        ),
+      );
+    const failed = baseBank.find(
+      (item) => ![first.id, second.id].includes(item.id),
+    );
+    progress = record(progress, failed, { hints: { uses: 1 } });
+    const lesson = authoredProblems.find(
+      (item) => item.unitId === unitId && item.role === "lesson",
+    );
+    progress = record(progress, lesson, { attemptId: `remedial-${unitId}` });
+    progress = recordPracticalResult(
+      progress,
+      authoredContinuation(`transfer-${unitId}-1`, firstGame),
+    );
+    progress = recordPracticalResult(
+      progress,
+      authoredContinuation(`transfer-${unitId}-2`, secondGame),
+    );
+    let status = unitStatus(progress, unitId);
+    assert.equal(status.assessmentReview.baselinePending, false);
+    assert.equal(status.assessmentReview.stage, "assessment");
+    assert.equal(status.currentConfirmed, false);
+    for (const domain of status.requiredAssessmentDomains)
+      predict(
+        selectAssessment(
+          progress,
+          unitId,
+          authoredBank.filter((item) => item.assessmentDomain === domain),
+        ),
+      );
+    status = unitStatus(progress, unitId);
+    assert.equal(status.currentConfirmed, true);
+    assert.equal(status.assessmentReview.resolutionMethod, "practical");
+    assert.equal(status.assessmentReview.domainResolutionEvidence.length, 2);
   }
 });
 
