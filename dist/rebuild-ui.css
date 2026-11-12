@@ -1011,3 +1011,90 @@ body[data-screen="library"] #library-view {
 #board-overlay .shape-point.motif-critical.danger {
   fill: #3a1d16;
 }
+
+.path-next {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 2px 18px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 12px;
+}
+.path-next > div {
+  flex: 1;
+  min-width: 0;
+}
+.path-next h2 {
+  margin: 4px 0 0;
+  font-size: 19px;
+}
+.path-next button {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 10px 16px;
+}
+.learning-sections {
+  gap: 2px;
+}
+.learning-sections button {
+  padding-inline: 3px;
+  font-size: 12px;
+}
+.review-skill-card,
+.exam-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  background: var(--surface);
+  margin-bottom: 12px;
+}
+.review-skill-card h2,
+.exam-card h2,
+.library-subtitle {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+.review-skill-card > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.review-skill-card .stage-actions {
+  margin-top: 12px;
+}
+.exam-card {
+  margin-top: 20px;
+}
+.exam-record {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.exam-record strong {
+  font-size: 24px;
+}
+.exam-card p {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 10px 0;
+}
+.exam-card > button {
+  width: 100%;
+}
+.journey-goals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.journey-goals .achieved {
+  color: var(--green);
+}
+.objective-list p {
+  margin: 10px 0;
+}
+.library-subtitle {
+  margin-top: 22px;
+}

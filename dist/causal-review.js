@@ -1,3 +1,4 @@
+import { reviewStartPly } from "./training-sessions.js";
 import {
   recognizePatterns,
   patternHighlights,
@@ -735,12 +736,13 @@ export async function scanRecord(
     scope: "bounded-tactics-with-verified-pattern-opportunities",
     limits,
   };
+  const startPly = reviewStartPly(valid);
   let forcedBefore = false;
   for (let j = 0; j < valid.moves.length; j++) {
     const actual = valid.moves[j].i,
       color = (j % 2) + 1,
       ply = j + 1;
-    if (color === 1) {
+    if (color === 1 && j >= startPly) {
       const futureWhite = valid.moves
         .slice(j + 1)
         .filter((_, i) => i % 2 === 0)

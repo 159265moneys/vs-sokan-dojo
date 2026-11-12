@@ -10,7 +10,33 @@ import { Engine } from "./engine-client.js";
 import { Sounds } from "./sound.js";
 import { boardSkin, stoneName, stoneSprite, skinText } from "./board-themes.js";
 import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111-v2";
-import { units, problems } from "./curriculum.js";
+import { units, problems } from "./curriculum.js?v=learning-v3-20261111";
+import { positionMoves, reviewStartPly } from "./training-sessions.js";
+import { assessmentProblems } from "./assessment-bank.js?v=learning-v3-20261111";
+import {
+  createPathProgress,
+  noteExposure,
+  recordAttemptEvidence,
+  unitStatus,
+  selectAssessment,
+  nextLearningStep,
+  recordPracticalResult,
+  getExamStatus,
+  recordReviewFindings,
+} from "./learning-path.js?v=learning-v3-20261111";
+import {
+  journeyTracks,
+  createJourney,
+  playJourneyMove,
+  applyJourneyReply,
+  getJourneyView,
+  getJourneyResult,
+  restoreJourney,
+  markJourneyAssistance,
+  retryJourney,
+  previewJourneyMove,
+} from "./journey.js?v=learning-v3-20261111";
+
 import {
   createAttempt,
   playLearningMove,
@@ -25,11 +51,11 @@ import {
   recordLearningAttempt,
   recordLessonView,
   getLearningStats,
-} from "./learning.js";
+} from "./learning.js?v=learning-v3-20261111";
 import {
   describeMove,
   judgeReviewMove,
-} from "./causal-review.js?v=patterns-20261111-v2";
+} from "./causal-review.js?v=learning-v3-20261111";
 import { patternHighlights } from "./review-patterns.js?v=patterns-20261111-v2";
 
 const $ = (s) => document.querySelector(s),
@@ -123,6 +149,27 @@ let titleVisible = true,
 if (!["learn", "play", "review"].includes(mode)) mode = "learn";
 let progress = createLearningProgress(read("learning-v2", null));
 let learning = restoreLearningAttempt(read("learning-attempt-v2", null));
+let pathProgress = createPathProgress(
+  read("learning-path-v3", null),
+  progress,
+  { curriculumVersion: "path-2026-11-11" },
+);
+let learningRole = "lesson",
+  journey = recoverJourney(read("journey-v3", null)),
+  journeyBusy = false,
+  journeyError = null,
+  journeyEpoch = 0;
+let practiceGames = read("practice-games-v3", []);
+if (!Array.isArray(practiceGames)) practiceGames = [];
+let examSeries = read("exam-series-v3", null);
+let playTrace = game.trace
+  ? recoverJourney(game.trace)
+  : !game.moves.length
+    ? createJourney("practice", { attemptId: game.id })
+    : null;
+if (!game.moves.length && !game.result) attachGameEvidence(game);
+delete game.trace;
+
 let learnScreen = learning ? "practice" : "library",
   learnSection = "lessons",
   unitId = units[0]?.id,
@@ -142,8 +189,11 @@ let review = null,
   reviewWorker = null,
   reviewJob = 0;
 const reviewCache = new Map();
+const shownReviewBoards = new Set();
 const pending = { play: null, learn: null, review: null };
-let demoReturn = false;
+let demoReturn = false,
+  lessonTarget = null,
+  reviewTargetPly = null;
 let precisionCenter = 112,
   lastPanelKey = "",
   lastLibraryKey = "";
@@ -156,7 +206,12 @@ if (learning) {
     ? validQueue
     : [learning.problemId];
   queueIndex = problemQueue.indexOf(learning.problemId);
-  if (["lessons", "mixed", "retry"].includes(savedRoute?.section))
+  learningRole =
+    savedRoute?.role === "assessment" &&
+    problems.find((p) => p.id === learning.problemId)?.role === "assessment"
+      ? "assessment"
+      : "lesson";
+  if (["lessons", "mixed", "retry", "games"].includes(savedRoute?.section))
     learnSection = savedRoute.section;
 }
 
@@ -200,13 +255,31 @@ function closeModal() {
   $("#modal").close();
 }
 function saveGame() {
-  save("draft", game.result ? null : game);
+  save("draft", game.result ? null : { ...game, trace: playTrace });
 }
 function saveLearning() {
-  if (learning) progress = recordLearningAttempt(progress, learning);
+  if (learning) {
+    progress = recordLearningAttempt(progress, learning);
+    const p = currentProblem();
+    pathProgress = recordAttemptEvidence(pathProgress, learning, {
+      role: learningRole,
+      at: nowISO(),
+      unitId: p.unitId,
+      skillId: p.skillId || p.unitId,
+      family: p.family,
+      board: p.board,
+      branchId: p.branchId || `${p.id}:${learning.replyVariant}`,
+      requiresBranch: p.requiresBranch ?? false,
+    });
+    save("learning-path-v3", pathProgress);
+  }
   save("learning-v2", progress);
   save("learning-attempt-v2", learning);
-  save("learning-route-v2", { problemQueue, section: learnSection });
+  save("learning-route-v2", {
+    problemQueue,
+    section: learnSection,
+    role: learningRole,
+  });
 }
 function updateLoading(state, progress = null) {
   if (!$("#title-screen")) return;
@@ -297,6 +370,19 @@ function rawFrame() {
       highlights: hint?.highlights || [],
     };
   if (mode === "learn") {
+    if (learnScreen === "journey" && journey) {
+      const v = getJourneyView(journey),
+        preview =
+          pending.learn !== null
+            ? previewJourneyMove(journey, pending.learn)
+            : null;
+      return {
+        board: v.board,
+        last: v.last,
+        history: v.moves.slice(journey.startPly).map((i) => ({ i })),
+        highlights: preview?.highlights || v.highlights,
+      };
+    }
     if (learnScreen === "demo") {
       const frames = getDemoFrames(unitId);
       return frames[Math.min(demoStep, frames.length - 1)] || emptyFrame();
@@ -388,8 +474,19 @@ function canPlace() {
       engineState === "ready" &&
       !cpuBusy &&
       !hintBusy &&
+      !journeyBusy &&
+      !engine?.pending &&
       !game.result &&
       game.moves.length % 2 === 0
+    );
+  if (mode === "learn" && learnScreen === "journey")
+    return (
+      journey?.status === "playing" &&
+      !journeyBusy &&
+      !cpuBusy &&
+      !hintBusy &&
+      !engine?.pending &&
+      engineState === "ready"
     );
   if (mode === "learn")
     return (
@@ -409,6 +506,7 @@ function switchMode(next) {
   save("view-v2", mode);
   render();
   if (mode === "play") cpuTurn();
+  if (mode === "learn" && learnScreen === "journey") journeyReply();
 }
 function statusText() {
   if (mode === "play")
@@ -427,13 +525,31 @@ function statusText() {
             ? "ヒントを考えています"
             : engineState === "error"
               ? "読み込みに失敗しました"
-              : engineState !== "ready"
-                ? "準備中"
-                : game.moves.length % 2
-                  ? "CPUの番"
-                  : pending.play !== null
-                    ? `${coord(pending.play)}を選択中`
-                    : "あなたの番";
+              : journeyBusy
+                ? "CPUの応手待ち"
+                : engineState !== "ready"
+                  ? "準備中"
+                  : game.moves.length % 2
+                    ? "CPUの番"
+                    : pending.play !== null
+                      ? `${coord(pending.play)}を選択中`
+                      : "あなたの番";
+  if (mode === "learn" && learnScreen === "journey")
+    return journeyError || engineState === "error"
+      ? "CPUが応答していません"
+      : journey?.completed
+        ? journey.winner === 1
+          ? "あなたの勝ち"
+          : journey.winner === 2
+            ? "CPUの勝ち"
+            : "引き分け"
+        : journeyBusy
+          ? "CPUが考えています"
+          : journey?.turn === 2
+            ? "CPUの番"
+            : engineState === "ready"
+              ? "あなたの番"
+              : "準備中";
   if (mode === "learn")
     return learnScreen === "demo"
       ? "見本"
@@ -484,17 +600,21 @@ function render() {
     $("#context-bar").hidden = false;
     const heading =
       mode === "learn"
-        ? learnScreen === "demo"
-          ? units.find((u) => u.id === unitId)?.title
-          : learnSection === "mixed"
-            ? "実戦問題"
-            : currentUnit()?.title
+        ? learnScreen === "journey"
+          ? getJourneyView(journey).title
+          : learnScreen === "demo"
+            ? units.find((u) => u.id === unitId)?.title
+            : learningRole === "assessment"
+              ? "確認問題"
+              : learnSection === "mixed"
+                ? "問題練習"
+                : currentUnit()?.title
         : mode === "review"
           ? "振り返り"
           : "";
     $("#context-bar").innerHTML =
       mode === "play"
-        ? `<span class='context-status' role='status'><i class='status-dot ${cpuBusy ? "busy" : ""}'></i>${esc(present(statusText()))}</span><button class='opponent-pill' data-action='match-menu'>${esc(levels[game.moves.length ? game.level : level].label)} <strong>CPU</strong> ${esc(stoneName(skin(), 2))}</button>`
+        ? `<span class='context-status' role='status'><i class='status-dot ${cpuBusy ? "busy" : ""}'></i>${esc(present(statusText()))}</span><button class='opponent-pill' data-action='match-menu'>${esc(levels[game.moves.length ? game.level : level].label)}${game.exam ? ` · 挑戦 ${Math.min(examState().attempts, 10)}/10` : ""} <strong>CPU</strong> ${esc(stoneName(skin(), 2))}</button>`
         : `${ib(mode === "learn" ? "learn-library" : "review-library", "chevron-left", mode === "learn" ? "教材一覧" : "対局一覧")}<strong class='context-title'>${esc(heading)}</strong><span class='context-status' role='status'>${esc(statusText())}</span>`;
     if (mode === "review") {
       const f = getFrame();
@@ -513,7 +633,21 @@ function render() {
           node.outerHTML = `<button class='context-title pattern-trigger ${p.color === 1 ? "good" : "danger"}' data-action='review-patterns'>${esc(verb + (p.purpose ? "型：" : "の型：") + p.name)} ${icon("chevron-right")}</button>`;
       }
     }
-    renderBoard(getFrame(), {
+    const displayFrame = getFrame();
+    if (mode === "review" && reviewRetry?.status !== "choose") {
+      const key = displayFrame.board.join("");
+      if (!shownReviewBoards.has(key)) {
+        shownReviewBoards.add(key);
+        pathProgress = noteExposure(pathProgress, {
+          board: displayFrame.board,
+          unitId: displayFrame.selectedMotif?.skillId,
+          kind: "review",
+          at: nowISO(),
+        });
+        savePath();
+      }
+    }
+    renderBoard(displayFrame, {
       skin: skin(),
       numbers,
       pending: canPlace() ? pending[mode] : null,
@@ -523,6 +657,615 @@ function render() {
   }
   restoreFocus(focus);
 }
+function recoverJourney(raw) {
+  if (!raw) return null;
+  try {
+    return restoreJourney(raw);
+  } catch {
+    return null;
+  }
+}
+function nowISO() {
+  return (
+    new Date(Date.now() + 9 * 3600000).toISOString().slice(0, -1) + "+09:00"
+  );
+}
+function savePath() {
+  save("learning-path-v3", pathProgress);
+}
+function gameSettings(which = level) {
+  return {
+    rule: "freestyle15",
+    level: which,
+    strength: levels[which].strength,
+    timeMs: levels[which].ms,
+  };
+}
+function attachGameEvidence(g) {
+  g.rule = "freestyle15";
+  g.role = g.exam ? "exam" : "practice";
+  g.startBoard = Array(225).fill(0);
+  g.startSettings = gameSettings(g.level);
+  g.settings = { ...g.startSettings };
+}
+function markLiveHelp(kind) {
+  if (learningRole === "assessment" && learning?.status === "choose") {
+    learning = markLearningGuidance(learning);
+    saveLearning();
+  }
+  if (
+    journey &&
+    !journey.completed &&
+    !journey.assisted &&
+    journey.moves.length > journey.startPly
+  ) {
+    journey = markJourneyAssistance(journey, kind);
+    saveJourney();
+  }
+  if (game.result || (!game.moves.length && kind !== "hint")) return;
+  game.assisted = true;
+  if (playTrace) playTrace = markJourneyAssistance(playTrace, kind);
+  saveGame();
+  recordGameEvidence();
+}
+function exposeLesson(id) {
+  const frames = getDemoFrames(id),
+    frame = frames[demoStep];
+  for (const f of [frames[0], frame])
+    if (f)
+      pathProgress = noteExposure(pathProgress, {
+        unitId: id,
+        board: f.board,
+        kind: "demo",
+        at: nowISO(),
+      });
+  savePath();
+  markLiveHelp("lesson");
+}
+function exposeCurrent(kind) {
+  const p = currentProblem();
+  if (!p) return;
+  pathProgress = noteExposure(pathProgress, {
+    unitId: p.unitId,
+    problemId: p.id,
+    family: p.family,
+    board: p.board,
+    kind,
+    at: nowISO(),
+  });
+  savePath();
+}
+function recommendedStep(id = null) {
+  return nextLearningStep(pathProgress, {
+    units,
+    assessmentProblems,
+    unitId: id,
+    at: nowISO(),
+  });
+}
+function goRecommended(id = null) {
+  const step = recommendedStep(id);
+  if (
+    learningRole === "assessment" &&
+    learning?.status === "choose" &&
+    step.kind === "assessment" &&
+    step.reason !== "review-transfer" &&
+    step.unitId === currentProblem()?.unitId
+  ) {
+    mode = "learn";
+    learnScreen = "practice";
+    lessonReplay = null;
+    render();
+    return;
+  }
+  if (step.kind === "review") {
+    if (
+      journey &&
+      !journey.completed &&
+      journey.config.sourceReview?.recordId === step.recordId &&
+      journey.config.sourceReview?.ply === step.ply
+    ) {
+      mode = "learn";
+      learnScreen = "journey";
+      learnSection = "games";
+      lessonReplay = null;
+      render();
+      journeyReply();
+      return;
+    }
+    const r =
+      records.find((r) => r.id === step.recordId) ||
+      practiceGames.find((r) => r.id === step.recordId) ||
+      (game.id === step.recordId ? game : null);
+    if (r) {
+      loadReview(r, step.ply);
+      return;
+    }
+    toast("元の棋譜が見つかりません");
+    return;
+  }
+  mode = "learn";
+  save("view-v2", mode);
+  learnSection = "lessons";
+  if (step.kind === "assessment") {
+    startAssessment(step.unitId);
+    return;
+  }
+  if (step.kind === "lesson") {
+    if (!unitStatus(pathProgress, step.unitId).viewed) {
+      openUnit(step.unitId, false, step.problemId);
+      return;
+    }
+    const u = units.find((u) => u.id === step.unitId);
+    startProblem(step.problemId, { queue: [step.problemId], role: "lesson" });
+    return;
+  }
+  if (step.reason === "assessment-exhausted") {
+    startJourney("practice", { white: practiceLevelFor(step.unitId) });
+    return;
+  }
+  if (step.reason === "initial-complete") {
+    startGuidedNext();
+    return;
+  }
+  learnSection = "games";
+  learnScreen = "library";
+  render();
+}
+function startGuidedNext() {
+  const sources = Object.values(pathProgress.practicalResults || {}).map(
+    (r) => r.source,
+  );
+  const finished = sources.filter((r) => r.completed && r.role === "journey");
+  const achieved = (r) =>
+    new Set(
+      (r.opportunities || [])
+        .filter((o) => !o.retracted && o.outcome === "achieved")
+        .map((o) => o.objectiveId),
+    );
+  const hasGoals = (r, ids) => ids.every((id) => achieved(r).has(id));
+  const goals = (track) =>
+    new Set(
+      finished
+        .filter((r) => r.trackId === track)
+        .flatMap((r) => [...achieved(r)]),
+    );
+  const builds = finished.filter(
+      (r) =>
+        r.trackId === "build" &&
+        r.fromOpening === true &&
+        r.startPly === 0 &&
+        r.result === "win",
+    ),
+    buildGoals = [
+      "two-directions",
+      "build-threat",
+      "force-four",
+      "finish-five",
+    ],
+    defended = goals("defend");
+  if (!builds.some((r) => hasGoals(r, buildGoals))) {
+    startJourney("build");
+    return;
+  }
+  if (!builds.some((r) => hasGoals(r, [...buildGoals, "switch-direction"]))) {
+    const completedBranch = (axis) =>
+      finished.some(
+        (r) =>
+          r.trackId === "branch" &&
+          r.origin === "position" &&
+          r.startPly === 8 &&
+          r.fromOpening === false &&
+          r.sourceProblemId === "two-direction-fork" &&
+          r.result === "win" &&
+          r.white?.kind === "teaching-branch" &&
+          r.branchOverride?.blockedAxes?.includes(axis) &&
+          hasGoals(r, ["switch-direction", "force-four", "finish-five"]) &&
+          (r.opportunities || []).some(
+            (o) =>
+              !o.retracted &&
+              o.outcome === "achieved" &&
+              o.objectiveId === "switch-direction" &&
+              o.ply > r.branchOverride.ply &&
+              o.evidence?.reply === r.branchOverride.move &&
+              o.evidence?.scope === "blocked-open-three-then-other-four" &&
+              o.evidence?.blockedAxes?.includes(axis),
+          ),
+      );
+    for (const variants of [
+      ["E8", "I8"],
+      ["H9", "H5"],
+    ]) {
+      const axis = variants[0] === "E8" ? 0 : 1;
+      if (completedBranch(axis)) continue;
+      const attempts = sources.filter(
+        (r) =>
+          r.trackId === "branch" &&
+          r.role === "journey" &&
+          variants.includes(r.replyVariant),
+      ).length;
+      startJourney("branch", {
+        replyVariant: variants[attempts % variants.length],
+      });
+      return;
+    }
+  }
+  if (!(
+    defended.has("recover-after-defense") &&
+    (defended.has("stop-five") || defended.has("prevent-fork"))
+  )) {
+    startJourney("defend", {
+      initialMoves: positionMoves(
+        problems.find((p) => p.id === "prevent-junction").board,
+      ),
+    });
+    return;
+  }
+  const games = Object.values(pathProgress.practicalResults || {}).filter(
+    (r) => r.eligibleFullGame && r.source.result === "win",
+  );
+  if (games.filter((r) => r.source.level === "normal").length < 2) {
+    startJourney("practice", { white: levels.normal });
+    return;
+  }
+  if (games.filter((r) => r.source.level === "strong").length < 2) {
+    startJourney("practice", { white: levels.strong });
+    return;
+  }
+  startExam();
+}
+function practiceLevelFor(id) {
+  const i = units.findIndex((u) => u.id === id);
+  return i < 3 ? levels.normal : i < 6 ? levels.strong : levels.max;
+}
+function startAssessment(id, phase = "initial") {
+  const p = selectAssessment(pathProgress, id, assessmentProblems, {
+    phase,
+    at: nowISO(),
+  });
+  if (!p) {
+    if (
+      phase === "retention" &&
+      Date.now() -
+        Date.parse(unitStatus(pathProgress, id).initialAt || nowISO()) <
+        86400000
+    ) {
+      learnScreen = "library";
+      render();
+      toast("保持確認は24時間以上あけて行います");
+      return;
+    }
+    startJourney("practice", { white: practiceLevelFor(id) });
+    return;
+  }
+  learnSection = "lessons";
+  startProblem(p.id, { queue: [p.id], role: "assessment", variant: 0 });
+}
+function pathCard() {
+  const step = recommendedStep(),
+    u = units.find((u) => u.id === step.unitId);
+  const confirmed = units.filter(
+    (x) => unitStatus(pathProgress, x.id).currentConfirmed,
+  ).length;
+  return `<div class='path-next'><div><span class='lesson-kicker'>次の一歩 · 確認 ${confirmed}/${units.length}</span><h2>${esc(step.kind === "journey" ? "空盤から試す" : u?.title)}</h2></div>${button("path-next", step.label, "primary")}</div>`;
+}
+function examState() {
+  const e = getExamStatus(pathProgress, { seriesId: examSeries });
+  const active =
+    game.exam &&
+    !game.result &&
+    game.seriesId === examSeries &&
+    !!game.startSettings;
+  return {
+    ...e,
+    active,
+    failed: !!(
+      e.losses ||
+      e.draws ||
+      e.resigned ||
+      e.assisted ||
+      e.invalid ||
+      (e.unfinished && !active)
+    ),
+  };
+}
+function renderPracticeLibrary() {
+  const e = examState();
+  return `<div class='journey-list'>${journey ? button("journey-resume", "課題対局の続きへ", "primary") : ""}${journeyTracks.map((t) => `<button class='unit-card' data-action='journey-start' data-track='${t.id}'><span class='unit-copy'><strong>${esc(t.title)}</strong><span>${esc(t.goal)}</span></span>${icon("chevron-right")}</button>`).join("")}</div><section class='exam-card'><h2>最強10局チャレンジ</h2><div class='exam-record'><strong>${e.wins}勝</strong><span>${e.losses}敗 · ${e.draws}分 · ${e.resigned}投了</span><span>試行 ${e.attempts}/10</span></div>${e.unfinished ? `<span class='lesson-kicker'>未完了 ${e.unfinished}</span>` : ""}${e.assisted ? `<span class='lesson-kicker'>補助あり ${e.assisted}</span>` : ""}${e.invalid ? `<span class='lesson-kicker'>条件不一致 ${e.invalid}</span>` : ""}<p>${e.challengeCompleted ? "10局全勝" : e.failed || e.attempts >= 10 ? "今回の挑戦は未達" : "空盤・無補助で10局"}</p>${button("exam-start", e.active ? "対局に戻る" : e.failed || e.attempts >= 10 ? "新しい挑戦" : "挑戦する", "primary")}</section>${
+    practiceGames.length
+      ? `<h2 class='library-subtitle'>課題対局の履歴</h2><div class='record-list'>${practiceGames
+          .slice(-8)
+          .map(
+            (r) =>
+              `<button class='record-card' data-action='${r.result === "unfinished" && r.snapshot ? "practice-resume" : "practice-review"}' data-practice='${esc(r.id)}'><span class='unit-copy'><strong>${esc(journeyTracks.find((t) => t.id === r.trackId)?.title || "局面から続ける")}</strong><span>${r.startPly ? "局面から · " : ""}${r.moves.length}手 · ${{ win: "勝ち", loss: "負け", draw: "引分", unfinished: "途中" }[r.result] || "途中"}</span></span>${icon("review")}</button>`,
+          )
+          .join("")}</div>`
+      : ""
+  }`;
+}
+function saveJourney() {
+  if (!journey) return;
+  save("journey-v3", journey);
+  const r = getJourneyResult(journey);
+  const role =
+      r.origin === "review"
+        ? "recovery"
+        : r.trackId === "practice" && r.fromOpening
+          ? "practice"
+          : "journey",
+    lvl =
+      r.white.strength === 100
+        ? "max"
+        : r.white.strength >= 80
+          ? "strong"
+          : "normal",
+    cfg = {
+      rule: "freestyle15",
+      level: lvl,
+      strength: r.white.strength,
+      timeMs: r.white.ms,
+    };
+  pathProgress = recordPracticalResult(pathProgress, {
+    ...r,
+    role,
+    rule: "freestyle15",
+    level: lvl,
+    startBoard: Array.from(boardFrom(journey.config.initialMoves)),
+    startSettings: cfg,
+    settings: cfg,
+    at: nowISO(),
+  });
+  savePath();
+}
+function archiveJourney() {
+  if (!journey) return;
+  const r = getJourneyResult(journey);
+  const item = {
+    ...r,
+    rule: "freestyle15",
+    level:
+      r.white.strength === 100
+        ? "max"
+        : r.white.strength >= 80
+          ? "strong"
+          : "normal",
+    started: Date.now(),
+    moves: r.moves.map((i) => ({ i })),
+    snapshot: journey,
+  };
+  const i = practiceGames.findIndex((g) => g.id === r.id);
+  if (i < 0) practiceGames.push(item);
+  else practiceGames[i] = item;
+  save("practice-games-v3", practiceGames);
+  saveJourney();
+}
+function startJourney(trackId, options = {}) {
+  const commit = () => {
+    if (trackId !== "practice" || options.sourceReview)
+      markLiveHelp("guided-practice");
+    if (journey) archiveJourney();
+    const cancelOldJourney = journeyBusy;
+    journeyEpoch++;
+    if (cancelOldJourney && engine?.pending) engine.cancel();
+    journeyBusy = false;
+    journeyError = null;
+    pending.learn = null;
+    journey = createJourney(trackId, {
+      attemptId: crypto.randomUUID(),
+      ...options,
+    });
+    if (options.initialBlackMove != null)
+      journey = playJourneyMove(journey, options.initialBlackMove);
+    learnScreen = "journey";
+    lessonReplay = null;
+    mode = "learn";
+    learnSection = "games";
+    closeModal();
+    saveJourney();
+    save("view-v2", mode);
+    render();
+    if (journey.completed) archiveJourney();
+    else journeyReply();
+  };
+  if (
+    journey &&
+    journey.moves.length > journey.startPly &&
+    !journey.completed
+  ) {
+    openModal(
+      `<h2>課題対局を切り替える？</h2><p>今の棋譜は履歴に残します。</p><div class='modal-actions'>${button("close-modal", "戻る")}${button("confirm-journey", "始める", "primary")}</div>`,
+    );
+    $('#modal-body [data-action="confirm-journey"]').onclick = commit;
+  } else commit();
+}
+function resumePractice(id) {
+  const r = practiceGames.find((r) => r.id === id),
+    restored = recoverJourney(r?.snapshot);
+  if (!restored) {
+    if (r) loadReview(r);
+    return;
+  }
+  const commit = () => {
+    if (journey && journey.id !== id) archiveJourney();
+    const cancel = journeyBusy;
+    journeyEpoch++;
+    journeyBusy = false;
+    if (cancel && engine?.pending) engine.cancel();
+    journey = restored;
+    journeyError = null;
+    mode = "learn";
+    learnScreen = "journey";
+    learnSection = "games";
+    lessonReplay = null;
+    pending.learn = null;
+    closeModal();
+    saveJourney();
+    render();
+    journeyReply();
+  };
+  if (
+    journey &&
+    !journey.completed &&
+    journey.id !== id &&
+    journey.moves.length > journey.startPly
+  ) {
+    openModal(
+      `<h2>この課題対局を再開する？</h2><p>今の課題は履歴に残します。</p><div class='modal-actions'>${button("close-modal", "戻る")}${button("confirm-resume", "再開", "primary")}</div>`,
+    );
+    $('#modal-body [data-action="confirm-resume"]').onclick = commit;
+  } else commit();
+}
+function startRecovery() {
+  const m = moments[momentIndex];
+  if (!m || !review) return;
+  startJourney("defend", {
+    initialMoves: review.moves.slice(0, m.ply - 1),
+    sourceReview: { before: m.before, ply: m.ply, recordId: review.id },
+    initialBlackMove: reviewRetry?.accepted ? reviewRetry.move : null,
+    white: {
+      ms: levels[review.level || "normal"].ms,
+      strength: levels[review.level || "normal"].strength,
+    },
+  });
+}
+function putJourney(i) {
+  if (!journey || journeyBusy || engine?.pending) return;
+  const next = playJourneyMove(journey, i);
+  if (next === journey) return;
+  journey = next;
+  pending.learn = null;
+  se.play("stone");
+  saveJourney();
+  if (journey.completed) {
+    archiveJourney();
+    se.play(journey.winner === 1 ? "win" : "lose");
+  }
+  render();
+  if (!journey.completed) journeyReply();
+}
+async function journeyReply() {
+  if (
+    !journey ||
+    !getJourneyView(journey).needsReply ||
+    journeyBusy ||
+    !engine?.ready ||
+    engine.pending ||
+    cpuBusy ||
+    hintBusy
+  )
+    return;
+  const id = journey.id,
+    token = journeyEpoch,
+    v = getJourneyView(journey);
+  journeyBusy = true;
+  journeyError = null;
+  render();
+  try {
+    const prescribed = v.replyConfig.teachingMove ?? v.replyConfig.openingMove;
+    const r =
+      prescribed != null
+        ? { i: prescribed }
+        : await engine.search(journey.moves, v.replyConfig);
+    if (token !== journeyEpoch || journey?.id !== id) return;
+    journey = applyJourneyReply(journey, r.i);
+    journeyBusy = false;
+    saveJourney();
+    se.play("stone");
+    if (journey.completed) {
+      archiveJourney();
+      se.play(journey.winner === 1 ? "win" : "lose");
+    }
+  } catch (e) {
+    if (token !== journeyEpoch) return;
+    journeyBusy = false;
+    journeyError = e.message === "cancelled" ? null : true;
+  } finally {
+    if (token === journeyEpoch) render();
+    if (mode === "play") cpuTurn();
+  }
+}
+function recordGameEvidence() {
+  if (!game.startSettings) return;
+  const goals = playTrace
+    ? getJourneyResult(playTrace).opportunities.filter((o) => !o.retracted)
+    : [];
+  pathProgress = recordPracticalResult(pathProgress, {
+    ...game,
+    rule: "freestyle15",
+    role: game.exam ? "exam" : "practice",
+    result: game.result || "unfinished",
+    at: nowISO(),
+    settings: gameSettings(game.level),
+    opportunities: goals,
+  });
+  savePath();
+}
+function storeReviewEvidence(record, findings) {
+  pathProgress = recordReviewFindings(pathProgress, record, findings, {
+    at: nowISO(),
+  });
+  const old = pathProgress.practicalResults?.[record.id]?.source;
+  if (old) {
+    const positive = findings
+      .filter((m) => m.kind === "pattern-play")
+      .map((m) => ({
+        unitId: m.patternType === "double-plan" ? "prepare" : m.skillId,
+        success: true,
+        ply: m.ply,
+        outcome: "achieved",
+        source: "verified-pattern",
+      }));
+    const byKey = new Map(
+      [...(old.opportunities || []), ...positive].map((o) => [
+        `${o.unitId}:${o.ply}:${o.source || o.kind}`,
+        o,
+      ]),
+    );
+    pathProgress = recordPracticalResult(pathProgress, {
+      ...old,
+      opportunities: [...byKey.values()],
+    });
+  }
+  savePath();
+}
+function startExam() {
+  if (game.exam && !game.result) {
+    switchMode("play");
+    return;
+  }
+  const e = examState();
+  const begin = () => {
+    if (!examSeries || e.failed || e.attempts >= 10) {
+      examSeries = crypto.randomUUID();
+      save("exam-series-v3", examSeries);
+    }
+    level = "max";
+    save("level", level);
+    if (newGame() !== true) {
+      pendingNewAction = startExam;
+      return;
+    }
+    game.exam = true;
+    game.seriesId = examSeries;
+    attachGameEvidence(game);
+    recordGameEvidence();
+    saveGame();
+    render();
+  };
+  if (game.moves.length && !game.result) {
+    openModal(
+      `<h2>チャレンジを始める？</h2><p>今の対局は途中の棋譜として残します。</p><div class='modal-actions'>${button("close-modal", "戻る")}${button("confirm-exam", "始める", "primary")}</div>`,
+    );
+    $('#modal-body [data-action="confirm-exam"]').onclick = () => {
+      if (saveUnfinished() === false) {
+        archiveFailure(begin);
+        return;
+      }
+      closeModal();
+      begin();
+    };
+  } else begin();
+}
 function renderLibrary() {
   const el = $("#library-view"),
     key = mode + ":" + learnSection,
@@ -530,8 +1273,9 @@ function renderLibrary() {
   lastLibraryKey = key;
   if (mode === "learn") {
     const section = `<div class='learning-sections' role='group' aria-label='学習メニュー'>${[
-      ["lessons", "レッスン"],
-      ["mixed", "実戦問題"],
+      ["lessons", "順に学ぶ"],
+      ["games", "課題対局"],
+      ["mixed", "問題練習"],
       ["retry", "復習"],
     ]
       .map(([id, label]) =>
@@ -545,27 +1289,89 @@ function renderLibrary() {
       .join("")}</div>`;
     let content = "";
     if (learnSection === "lessons")
-      content = `<div class='unit-list'>${units
-        .map((u, j) => {
-          const s = getLearningStats(progress, { unitId: u.id });
-          return `<button class='unit-card' data-unit='${u.id}'><span class='unit-number'>${String(j + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>${esc(u.title)}</strong><span>${esc(u.goal)}</span></span><span class='unit-progress'>${progressLabel(s, u.problemIds.length)}</span>${icon("chevron-right")}</button>`;
-        })
-        .join("")}</div>`;
-    else {
-      const list =
-        learnSection === "retry"
-          ? problems.filter((p) => needsRetry(p.id))
-          : problems.filter(
-              (p) =>
-                p.kind === "play" &&
-                p.goalKind !== "compare-plan" &&
-                p.unitId !== units[0]?.id,
+      content =
+        pathCard() +
+        `<div class='unit-list'>${units
+          .map((u, j) => {
+            const st = unitStatus(pathProgress, u.id);
+            return `<button class='unit-card' data-unit='${u.id}'><span class='unit-number'>${String(j + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>${esc(u.title)}</strong><span>${esc(u.goal)}</span></span><span class='unit-progress'>${esc(st.label)}</span>${icon("chevron-right")}</button>`;
+          })
+          .join("")}</div>`;
+    else if (learnSection === "games") content = renderPracticeLibrary();
+    else if (learnSection === "retry")
+      content = `<div class='unit-list'>${
+        units
+          .filter((u) => {
+            const st = unitStatus(pathProgress, u.id);
+            return (
+              st.needsReview ||
+              st.practicalPending ||
+              (st.initialConfirmed && !st.retained)
             );
-      content = list.length
-        ? `<div class='library-start'>${button("mixed-start", learnSection === "retry" ? "復習をはじめる" : "問題に挑戦", "primary")}</div><div class='problem-list'>${list.map((p, j) => `<button class='problem-card' data-problem='${p.id}'><span class='unit-number'>${String(j + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>${esc(learnSection === "mixed" ? `問題 ${String(j + 1).padStart(2, "0")}` : p.title)}</strong><span>${esc(p.goal)}</span></span>${icon("chevron-right")}</button>`).join("")}</div>`
-        : `<div class='empty-state'>${icon("check")}<h2>復習はありません</h2>${button("learn-lessons", "レッスンへ", "primary")}</div>`;
+          })
+          .map((u) => {
+            const st = unitStatus(pathProgress, u.id);
+            const eligible =
+              st.initialConfirmed &&
+              selectAssessment(pathProgress, u.id, assessmentProblems, {
+                phase: "retention",
+                at: nowISO(),
+              });
+            let action;
+            if (st.reviewPending || st.assessmentReviewPending)
+              action = button(
+                "unit-next",
+                st.reviewPending ? "自分の局面へ" : "つまずきを練習",
+                "primary",
+                `data-unit-id='${u.id}'`,
+              );
+            else if (st.practicalPending)
+              action = button(
+                "unit-practical",
+                "実戦で確認",
+                "primary",
+                `data-unit-id='${u.id}'`,
+              );
+            else if (eligible)
+              action = button(
+                "retention-check",
+                "保持を確認",
+                "primary",
+                `data-unit-id='${u.id}'`,
+              );
+            else if (st.initialConfirmed) {
+              const ready = Date.parse(st.initialAt) + 86400000;
+              action =
+                Date.now() < ready
+                  ? `<span class='retention-date'>${new Date(ready).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}から保持確認</span>`
+                  : button(
+                      "unit-practical",
+                      "実戦で確認",
+                      "primary",
+                      `data-unit-id='${u.id}'`,
+                    );
+            } else
+              action = button(
+                "unit-check",
+                "別問題で確認",
+                "primary",
+                `data-unit-id='${u.id}'`,
+              );
+            return `<div class='review-skill-card'><h2>${esc(u.title)}</h2><span>${esc(st.label)}</span><div class='stage-actions'>${button("unit-remedial", "練習へ", "secondary", `data-unit-id='${u.id}'`)}${action}</div></div>`;
+          })
+          .join("") ||
+        `<div class='empty-state'><h2>復習はありません</h2>${button("path-next", "次の一歩へ", "primary")}</div>`
+      }</div>`;
+    else {
+      const list = problems.filter(
+        (p) =>
+          p.role !== "assessment" &&
+          p.kind === "play" &&
+          p.unitId !== units[0]?.id,
+      );
+      content = `<div class='library-start'>${button("mixed-start", "練習する", "primary")}</div><div class='problem-list'>${list.map((p, j) => `<button class='problem-card' data-problem='${p.id}'><span class='unit-number'>${String(j + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>問題 ${j + 1}</strong><span>${esc(p.goal)}</span></span>${icon("chevron-right")}</button>`).join("")}</div>`;
     }
-    el.innerHTML = `<div class='library-head'><h1>学ぶ</h1>${learning ? button("learn-resume", "続きから", "secondary") : ""}</div>${section}${content}`;
+    el.innerHTML = `<div class='library-head'><h1>学ぶ</h1>${learning ? button("learn-resume", "問題の続き", "secondary") : ""}</div>${section}${content}`;
   } else {
     const wins = records.filter((r) => r.result === "win").length,
       losses = records.filter((r) =>
@@ -578,7 +1384,7 @@ function renderLibrary() {
             .reverse()
             .map(
               ({ r, j }) =>
-                `<button class='record-card' data-record='${j}'><span class='record-result ${r.result === "win" ? "won" : ""}'>${{ win: "勝ち", loss: "負け", resign: "投了", draw: "引分", unfinished: "途中" }[r.result] || "途中"}</span><span class='unit-copy'><strong>${levels[r.level]?.label || "普通"} · ${r.moves.length}手</strong><span>${new Date(r.finished || r.started || Date.now()).toLocaleDateString("ja-JP")}${r.assisted ? " · ヒント使用" : ""}</span></span>${icon("chevron-right")}</button>`,
+                `<button class='record-card' data-record='${j}'><span class='record-result ${r.result === "win" ? "won" : ""}'>${{ win: "勝ち", loss: "負け", resign: "投了", draw: "引分", unfinished: "途中" }[r.result] || "途中"}</span><span class='unit-copy'><strong>${levels[r.level]?.label || "普通"} · ${r.moves.length}手</strong><span>${new Date(r.finished || r.started || Date.now()).toLocaleDateString("ja-JP")}${r.assisted ? " · 補助あり" : ""}</span></span>${icon("chevron-right")}</button>`,
             )
             .join("")
         : `<div class='empty-state'>${icon("review")}<h2>まだ対局がありません</h2>${button("go-play", "対局する", "primary")}</div>`
@@ -607,7 +1413,7 @@ function placeControl() {
         `ここに置く · ${coord(pending[mode])}`,
         "primary place-button",
       )
-    : `<span class='place-prompt'>${canPlace() ? "盤をタップ" : mode === "play" ? esc(present(statusText())) : "答えを選ぶ"}</span>`;
+    : `<span class='place-prompt'>${canPlace() ? "盤をタップ" : mode === "play" || learnScreen === "journey" ? esc(present(statusText())) : "答えを選ぶ"}</span>`;
 }
 function renderControls() {
   let html = "";
@@ -623,7 +1429,18 @@ function renderControls() {
       placeControl() +
       ib("precision", "target", "盤面を拡大");
   else if (mode === "learn") {
-    if (learnScreen === "demo") {
+    if (learnScreen === "journey" && journey) {
+      const v = getJourneyView(journey);
+      html =
+        ib(
+          "journey-retry",
+          "undo",
+          "課題の一手をやり直す",
+          !v.canRetry || journeyBusy || v.completed,
+        ) +
+        placeControl() +
+        ib("precision", "target", "盤面を拡大");
+    } else if (learnScreen === "demo") {
       const frames = getDemoFrames(unitId);
       html =
         ib("demo-prev", "chevron-left", "見本の前の手", demoStep === 0) +
@@ -683,9 +1500,19 @@ function renderControls() {
         ib("precision", "target", "盤面を拡大");
     } else
       html =
-        ib("review-first", "skip-back", "最初の局面", reviewStep === 0) +
-        ib("review-prev", "chevron-left", "一手戻る", reviewStep === 0) +
-        `<input id='review-slider' type='range' min='0' max='${review?.moves.length || 0}' value='${reviewStep}' aria-label='棋譜の手数'>` +
+        ib(
+          "review-first",
+          "skip-back",
+          "最初の局面",
+          reviewStep === (review ? reviewStartPly(review) : 0),
+        ) +
+        ib(
+          "review-prev",
+          "chevron-left",
+          "一手戻る",
+          reviewStep === (review ? reviewStartPly(review) : 0),
+        ) +
+        `<input id='review-slider' type='range' min='${review ? reviewStartPly(review) : 0}' max='${review?.moves.length || 0}' value='${reviewStep}' aria-label='棋譜の手数'>` +
         ib(
           "review-next",
           "chevron-right",
@@ -717,7 +1544,15 @@ function renderPanel() {
     content += "</div>";
     actions = game.result
       ? button("review-current", "振り返る", "primary") +
-        button("new", "もう一局")
+        (game.exam
+          ? button(
+              "exam-next",
+              getExamStatus(pathProgress, { seriesId: examSeries }).attempts >=
+                10
+                ? "挑戦結果"
+                : "次の対局",
+            )
+          : button("new", "もう一局"))
       : cpuError || engineState === "error"
         ? button("retry-engine", "もう一度", "primary")
         : `<div class='difficulties' role='group' aria-label='CPUの強さ'>${Object.entries(
@@ -731,18 +1566,44 @@ function renderPanel() {
                   ((game.moves.length ? game.level : level) === id
                     ? "active"
                     : ""),
-                `data-level='${id}' aria-pressed='${(game.moves.length ? game.level : level) === id}'`,
+                `data-level='${id}' aria-pressed='${(game.moves.length ? game.level : level) === id}' ${game.exam && !game.result ? "disabled" : ""}`,
               ),
             )
             .join("")}</div>`;
   } else if (mode === "learn") {
-    if (learnScreen === "demo") {
+    if (learnScreen === "journey" && journey) {
+      const v = getJourneyView(journey),
+        preview =
+          pending.learn !== null
+            ? previewJourneyMove(journey, pending.learn)
+            : null,
+        r = getJourneyResult(journey);
+      const note =
+        preview ||
+        (v.turn === 1 && !v.completed ? v.instruction : v.feedback) ||
+        {};
+      content = `<div class='lesson-kicker'>${journey.origin === "review" ? "振り返りから継続" : journey.startPly ? "課題局面から" : v.stage.title} · ${r.white.strength === 100 ? "最強" : r.white.strength === 85 ? "強い" : r.white.strength === 35 ? "普通" : "練習CPU"}${v.assisted ? " · 解説付き" : ""}</div><h2 class='lesson-heading'>${esc(v.completed ? statusText() : note.title || v.title)}</h2><p class='lesson-copy'>${esc(note.text || "")}</p><div class='journey-goals'>${v.objectives.map((o) => `<span class='${o.status === "achieved" ? "achieved" : ""}'>${o.status === "achieved" ? "✓" : v.completed && o.status === "not-observed" ? "—" : "○"} ${esc(o.title)}${v.completed && o.status === "not-observed" ? "（機会なし）" : ""}</span>`).join("")}</div>`;
+      actions =
+        journeyError || engineState === "error"
+          ? button("journey-reply", "もう一度", "primary")
+          : v.completed
+            ? button("journey-inspect", "振り返る", "primary") +
+              button("path-next", "次の一歩へ")
+            : button("journey-objectives", "目標") +
+              button("journey-inspect", "この局面を検討");
+    } else if (learnScreen === "demo") {
       const u = units.find((u) => u.id === unitId),
         frames = getDemoFrames(unitId);
       content = `<h2 class='lesson-heading'>${esc(frame.title)}</h2><p class='lesson-copy'>${esc(frame.text)}</p><div class='step-dots' aria-label='見本の進み具合'>${frames.map((_, j) => `<span data-active='${j === demoStep}'></span>`).join("")}</div>`;
       actions = demoReturn
         ? button("demo-return", "問題に戻る", "primary")
-        : button("unit-practice", "自分で解く", "primary");
+        : button("unit-practice", "練習する", "primary") +
+          button(
+            "unit-check",
+            "確認から試す",
+            "secondary",
+            `data-unit-id='${unitId}'`,
+          );
     } else if (lessonReplay) {
       content = `<div class='lesson-kicker'>${lessonReplay.kind === "refutation" ? "相手の返し" : "手順の確認"}</div><h2 class='lesson-heading'>${esc(frame.title)}</h2><p class='lesson-copy'>${esc(frame.text)}</p>`;
       actions =
@@ -760,7 +1621,7 @@ function renderPanel() {
     } else if (learning) {
       const v = getLearningView(learning),
         f = v.feedback;
-      content = `<div class='lesson-kicker'>${problemQueue.length > 1 ? `問題 ${queueIndex + 1}/${problemQueue.length}` : "問題"}</div><h2 class='lesson-heading'>${esc(f?.title || v.goal)}</h2><p class='lesson-copy'>${esc(f?.text || "")}</p>`;
+      content = `<div class='lesson-kicker'>${learningRole === "assessment" ? "初回・保持の確認 · " : ""}${problemQueue.length > 1 ? `問題 ${queueIndex + 1}/${problemQueue.length}` : "問題"}</div><h2 class='lesson-heading'>${esc(f?.title || v.goal)}</h2><p class='lesson-copy'>${esc(f?.text || "")}</p>`;
 
       if (v.hintLevel)
         content += `<p class='lesson-copy hint-copy'>${esc(v.hintText || "印をつけた石から、次に四や五になる点を考えよう。")}</p><div class='hint-step'>ヒント ${v.hintLevel}</div>`;
@@ -768,23 +1629,20 @@ function renderPanel() {
         actions =
           button(
             "learning-next",
-            queueIndex + 1 < problemQueue.length
-              ? "次の問題"
-              : learnSection === "lessons" &&
-                  units.findIndex((u) => u.id === currentProblem()?.unitId) <
-                    units.length - 1
-                ? "次のレッスン"
-                : "一覧へ",
+            queueIndex + 1 < problemQueue.length ? "次の問題" : "次の一歩へ",
             "primary",
           ) +
-          (hasLearningBranch()
+          (learningRole !== "assessment" && hasLearningBranch()
             ? button("learning-branch", "別の受けを試す")
             : "");
       else if (learning.status === "feedback")
         actions =
           (v.refutationFrames.length
             ? button("learning-refutation", "相手の返しを見る", "primary")
-            : "") + button("learning-retry", "もう一度");
+            : "") +
+          (learningRole === "assessment"
+            ? button("assessment-remedial", "ここを学ぶ")
+            : button("learning-retry", "もう一度"));
       else
         actions =
           (v.input === "choice"
@@ -802,7 +1660,9 @@ function renderPanel() {
         actions = button("review-cancel-retry", "解説に戻る");
       else if (reviewRetry)
         actions =
-          button("review-retry", "もう一度試す", "primary") +
+          (reviewRetry.accepted
+            ? button("review-continue", "ここから対局", "primary")
+            : button("review-retry", "もう一度試す", "primary")) +
           button("review-related", "似た形を学ぶ");
       else
         actions =
@@ -874,7 +1734,12 @@ function hasLearningBranch() {
     (p?.kind === "play" && learning?.history?.some((m) => m.side === 2))
   );
 }
-function openUnit(id, returnToPractice = false) {
+function openUnit(id, returnToPractice = false, targetProblemId = null) {
+  lessonTarget = targetProblemId;
+  if (learningRole === "assessment" && learning?.status === "choose") {
+    learning = markLearningGuidance(learning);
+    saveLearning();
+  }
   demoReturn = returnToPractice;
   unitId = id;
   learnScreen = "demo";
@@ -882,10 +1747,12 @@ function openUnit(id, returnToPractice = false) {
   demoStep = 0;
   pending.learn = null;
   progress = recordLessonView(progress, id);
+  exposeLesson(id);
   save("learning-v2", progress);
   render();
 }
-function startProblem(id, { queue = null, variant = 0 } = {}) {
+function startProblem(id, { queue = null, variant = 0, role = "lesson" } = {}) {
+  learningRole = role;
   learning = createAttempt(id, {
     replyVariant: variant,
     attemptId: crypto.randomUUID(),
@@ -907,7 +1774,9 @@ function startProblem(id, { queue = null, variant = 0 } = {}) {
 function startUnit() {
   const u = units.find((u) => u.id === unitId);
   if (u?.problemIds.length)
-    startProblem(u.problemIds[0], { queue: u.problemIds });
+    startProblem(lessonTarget || u.problemIds[0], {
+      queue: lessonTarget ? [lessonTarget] : u.problemIds,
+    });
 }
 function submitLearning(i = null, choice = null) {
   if (!learning || lessonReplay) return;
@@ -921,7 +1790,8 @@ function submitLearning(i = null, choice = null) {
   let transitions = getLearningView(learning).transitionFrames;
   if (transitions.length && learning.feedback.correct === true) {
     if (learning.status === "choose") {
-      if (learnSection === "lessons") learning = markLearningGuidance(learning);
+      if (learningRole !== "assessment" && learnSection === "lessons")
+        learning = markLearningGuidance(learning);
       else
         transitions = transitions.map((f) => ({
           ...f,
@@ -951,21 +1821,14 @@ function submitLearning(i = null, choice = null) {
   render();
 }
 function nextLearning() {
-  if (queueIndex + 1 < problemQueue.length) {
+  if (learningRole !== "assessment" && queueIndex + 1 < problemQueue.length) {
     queueIndex++;
-    startProblem(problemQueue[queueIndex]);
-  } else {
-    const index = units.findIndex((u) => u.id === currentProblem()?.unitId);
-    if (learnSection === "lessons" && index >= 0 && index < units.length - 1)
-      openUnit(units[index + 1].id);
-    else {
-      learnScreen = "library";
-      lessonReplay = null;
-      render();
-    }
-  }
+    startProblem(problemQueue[queueIndex], { role: "lesson" });
+  } else goRecommended();
 }
+
 function replayLearning(kind) {
+  if (kind === "refutation") exposeCurrent("answer");
   const v = getLearningView(learning),
     frames = kind === "refutation" ? v.refutationFrames : v.transitionFrames;
   if (frames.length) {
@@ -990,6 +1853,8 @@ function newGame() {
     archivePending = false;
   }
   cpuToken++;
+  journeyEpoch++;
+  journeyBusy = false;
   if (engine?.pending) engine.cancel();
   cpuBusy = false;
   hintBusy = false;
@@ -1004,10 +1869,13 @@ function newGame() {
     started: Date.now(),
     assisted: false,
   };
+  attachGameEvidence(game);
+  playTrace = createJourney("practice", { attemptId: game.id });
   saveGame();
   mode = "play";
   save("view-v2", mode);
   render();
+  return true;
 }
 function requestNew(nextLevel = null) {
   const commit = () => {
@@ -1036,6 +1904,7 @@ function requestNew(nextLevel = null) {
 function saveUnfinished() {
   if (!game.moves.length || game.result) return;
   const saved = { ...structuredClone(game), result: "unfinished" };
+  recordGameEvidence();
   const ix = records.findIndex((r) => r.id === game.id);
   if (ix < 0) records.push(saved);
   else records[ix] = saved;
@@ -1046,6 +1915,7 @@ function saveUnfinished() {
 function finish(result) {
   game.result = result;
   game.finished = Date.now();
+  recordGameEvidence();
   const ix = records.findIndex((r) => r.id === game.id);
   if (ix < 0) records.push(structuredClone(game));
   else records[ix] = structuredClone(game);
@@ -1062,7 +1932,14 @@ function putGame(i) {
   if (b[i] || game.result || !Number.isInteger(i) || i < 0 || i >= 225)
     return false;
   const side = (game.moves.length % 2) + 1;
+  if (!game.moves.length) recordGameEvidence();
   game.moves.push({ i });
+  if (playTrace) {
+    playTrace =
+      side === 1
+        ? playJourneyMove(playTrace, i)
+        : applyJourneyReply(playTrace, i);
+  }
   b[i] = side;
   pending.play = null;
   hint = null;
@@ -1077,6 +1954,8 @@ async function cpuTurn() {
   if (
     titleVisible ||
     !engine?.ready ||
+    engine.pending ||
+    journeyBusy ||
     cpuBusy ||
     hintBusy ||
     game.result ||
@@ -1098,12 +1977,13 @@ async function cpuTurn() {
     cpuBusy = false;
     cpuError = true;
     render();
+  } finally {
+    if (mode === "learn" && learnScreen === "journey") journeyReply();
   }
 }
 async function getHint() {
   if (!canPlace() || game.exam) return;
-  game.assisted = true;
-  saveGame();
+  markLiveHelp("hint");
   pending.play = null;
   hintBusy = true;
   const token = cpuToken;
@@ -1138,6 +2018,7 @@ async function getHint() {
     if (token === cpuToken) {
       hintBusy = false;
       render();
+      if (mode === "learn" && learnScreen === "journey") journeyReply();
     }
   }
 }
@@ -1148,6 +2029,7 @@ function undo() {
     -Math.min(game.moves.length, game.moves.length % 2 ? 1 : 2),
   );
   game.assisted = true;
+  if (playTrace) playTrace = retryJourney(playTrace, game.moves.length);
   hint = null;
   pending.play = null;
   saveGame();
@@ -1163,7 +2045,9 @@ function recordKey(r) {
     r.moves.map((m) => (typeof m === "number" ? m : m.i)).join(",")
   );
 }
-function loadReview(record) {
+function loadReview(record, focusPly = null) {
+  reviewTargetPly = focusPly;
+  markLiveHelp("analysis");
   reviewJob++;
   reviewWorker?.terminate();
   reviewWorker = null;
@@ -1190,6 +2074,7 @@ function loadReview(record) {
   const cached = reviewCache.get(recordKey(review));
   if (cached && cached.length === review.moves.length) {
     moments = cached.moments;
+    storeReviewEvidence(review, moments);
     reviewFrame = 0;
     reviewScan = {
       state: "done",
@@ -1197,7 +2082,13 @@ function loadReview(record) {
       total: review.moves.length,
       coverage: cached.coverage,
     };
-    if (moments.length) reviewScreen = "moment";
+    if (moments.length) {
+      reviewScreen = "moment";
+      momentIndex = Math.max(
+        0,
+        moments.findIndex((m) => m.ply === reviewTargetPly),
+      );
+    }
     render();
   } else {
     render();
@@ -1215,7 +2106,7 @@ function scanReview() {
   reviewScan = { state: "running", done: 0, total: review.moves.length };
   render();
   reviewWorker = new Worker(
-    new URL("./review-worker.js?v=patterns-20261111-v2", import.meta.url),
+    new URL("./review-worker.js?v=learning-v3-20261111", import.meta.url),
     {
       type: "module",
     },
@@ -1229,6 +2120,7 @@ function scanReview() {
     }
     if (data.type === "result") {
       moments = data.moments;
+      storeReviewEvidence(scanningRecord, moments);
       reviewScan = {
         state: "done",
         done: reviewScan.total,
@@ -1242,7 +2134,10 @@ function scanReview() {
       });
       if (moments.length && reviewAutoOpen) {
         reviewScreen = "moment";
-        momentIndex = 0;
+        momentIndex = Math.max(
+          0,
+          moments.findIndex((m) => m.ply === reviewTargetPly),
+        );
         reviewFrame = 0;
         reviewPhase = "advice";
       }
@@ -1306,6 +2201,7 @@ function submitReview(i) {
     title: v.title,
     text: v.text,
     accepted: v.accepted,
+    move: i,
     frames: v.frames?.length
       ? v.frames
       : [{ board: b, last: i, title: v.title, text: v.text, highlights: [] }],
@@ -1322,7 +2218,10 @@ function setReviewStep(n) {
   reviewAutoOpen = false;
   reviewScreen = "record";
   reviewRetry = null;
-  reviewStep = Math.max(0, Math.min(review.moves.length, n));
+  reviewStep = Math.max(
+    reviewStartPly(review),
+    Math.min(review.moves.length, n),
+  );
   render();
 }
 function reviewFrameStep(delta) {
@@ -1382,7 +2281,7 @@ function matchMenu() {
 }
 function settings() {
   openModal(
-    `<h2>設定</h2><div class='menu-list'>${button("sound-setting", `効果音 ${sound ? "オン" : "オフ"}`)}${button("numbers-setting", `手順番号 ${numbers ? "オン" : "オフ"}`)}${button("import", "棋譜を読み込む")}</div><div class='rule-chips'><span>15 × 15</span><span>黒先手</span><span>禁手なし</span><span>五連以上</span></div><details><summary>ルール・クレジット</summary><p>縦・横・斜めに五つ以上並べると勝ち。三三・四四・長連も有効。</p><p><a href='https://github.com/dotb1ue/rapfi' target='_blank' rel='noopener'>Rapfi</a> · <a href='engine/LICENSE.txt' target='_blank'>GPL-3.0</a> · <a href='engine/SOURCE.txt' target='_blank'>出典</a> · <a href='engine/rapfi-source.tar.gz'>ソース</a></p></details>`,
+    `<h2>設定</h2><div class='menu-list'>${button("sound-setting", `効果音 ${sound ? "オン" : "オフ"}`)}${button("numbers-setting", `手順番号 ${numbers ? "オン" : "オフ"}`)}${button("import", "棋譜を読み込む")}${button("export-learning", "学習記録を書き出す")}</div><div class='rule-chips'><span>15 × 15</span><span>黒先手</span><span>禁手なし</span><span>五連以上</span></div><details><summary>ルール・クレジット</summary><p>縦・横・斜めに五つ以上並べると勝ち。三三・四四・長連も有効。</p><p><a href='https://github.com/dotb1ue/rapfi' target='_blank' rel='noopener'>Rapfi</a> · <a href='engine/LICENSE.txt' target='_blank'>GPL-3.0</a> · <a href='engine/SOURCE.txt' target='_blank'>出典</a> · <a href='engine/rapfi-source.tar.gz'>ソース</a></p></details>`,
   );
 }
 function toggleSound() {
@@ -1405,6 +2304,73 @@ const actions = {
   "title-learn": () => dismissTitle("learn"),
   retry: retryEngine,
   "retry-engine": retryEngine,
+  "path-next": () => goRecommended(),
+  "assessment-remedial": () => goRecommended(currentProblem()?.unitId),
+  "unit-next": (el) => goRecommended(el.dataset.unitId),
+  "unit-practical": (el) =>
+    startJourney("practice", { white: practiceLevelFor(el.dataset.unitId) }),
+  "unit-check": (el) => startAssessment(el.dataset.unitId || unitId),
+  "retention-check": (el) =>
+    startAssessment(el.dataset.unitId || unitId, "retention"),
+  "unit-remedial": (el) => openUnit(el.dataset.unitId),
+  "journey-start": (el) => {
+    const t = journeyTracks.find((t) => t.id === el.dataset.track);
+    if (!t) return;
+    if (t.unaided) {
+      startJourney(t.id);
+      return;
+    }
+    openModal(
+      `<h2>${esc(t.title)}</h2><div class='menu-list'>${(t.id === "branch" ? t.replyVariants : ["natural", "H7", "G7", "H6"]).map((v) => button("journey-variant", t.id === "branch" ? `${["E8", "I8"].includes(v) ? "横" : "縦"}を塞ぐ · 白${v}` : v === "natural" ? "CPUに任せる" : `白${v}から`, "secondary", `data-track='${t.id}' data-variant='${v}'`)).join("")}</div>`,
+    );
+  },
+  "journey-variant": (el) =>
+    startJourney(el.dataset.track, { replyVariant: el.dataset.variant }),
+  "journey-resume": () => {
+    mode = "learn";
+    learnScreen = "journey";
+    learnSection = "games";
+    lessonReplay = null;
+    render();
+    journeyReply();
+  },
+  "journey-reply": () => {
+    if (engineState === "error") retryEngine();
+    else journeyReply();
+  },
+  "journey-retry": () => {
+    if (!journey || journeyBusy || journey.completed) return;
+    journey = retryJourney(journey);
+    pending.learn = null;
+    saveJourney();
+    render();
+  },
+  "journey-objectives": () => {
+    const v = getJourneyView(journey);
+    openModal(
+      `<h2>${esc(v.title)}</h2><div class='objective-list'>${v.objectives.map((o) => `<p>${o.status === "achieved" ? "✓" : v.completed && o.status === "not-observed" ? "—" : "○"} ${esc(o.title)}${v.completed && o.status === "not-observed" ? "（機会なし）" : ""}</p>`).join("")}</div>`,
+    );
+  },
+  "journey-inspect": () => {
+    if (!journey) return;
+    if (!journey.completed) journey = markJourneyAssistance(journey, "review");
+    archiveJourney();
+    const r = practiceGames.find((r) => r.id === journey.id);
+    loadReview(r);
+  },
+  "practice-resume": (el) => resumePractice(el.dataset.practice),
+  "practice-review": (el) =>
+    loadReview(practiceGames.find((r) => r.id === el.dataset.practice)),
+  "review-continue": startRecovery,
+  "exam-start": startExam,
+  "exam-next": () => {
+    if (getExamStatus(pathProgress, { seriesId: examSeries }).attempts >= 10) {
+      mode = "learn";
+      learnScreen = "library";
+      learnSection = "games";
+      render();
+    } else startExam();
+  },
   new: () => requestNew(),
   "new-without-save": () => {
     archivePending = false;
@@ -1420,8 +2386,10 @@ const actions = {
     const i = pending[mode];
     if (mode === "play") {
       if (putGame(i)) cpuTurn();
-    } else if (mode === "learn") submitLearning(i);
-    else submitReview(i);
+    } else if (mode === "learn") {
+      if (learnScreen === "journey") putJourney(i);
+      else submitLearning(i);
+    } else submitReview(i);
   },
   undo,
   hint: getHint,
@@ -1474,15 +2442,19 @@ const actions = {
   },
   "demo-prev": () => {
     demoStep = Math.max(0, demoStep - 1);
+    exposeLesson(unitId);
     render();
   },
   "demo-next": () => {
     demoStep = Math.min(getDemoFrames(unitId).length - 1, demoStep + 1);
+    exposeLesson(unitId);
     render();
   },
   "unit-practice": startUnit,
   "learning-choice": (el) => submitLearning(null, el.dataset.choice),
   "learning-hint": () => {
+    exposeCurrent("hint");
+    markLiveHelp("hint");
     learning = hintLearning(learning);
     saveLearning();
     render();
@@ -1513,8 +2485,12 @@ const actions = {
   },
   "learning-next": nextLearning,
   "learning-branch": () =>
-    startProblem(learning.problemId, { variant: learning.replyVariant + 1 }),
+    startProblem(learning.problemId, {
+      variant: learning.replyVariant + 1,
+      role: "lesson",
+    }),
   "learning-demo": () => {
+    exposeCurrent("demo");
     if (learning.status === "choose") {
       learning = markLearningGuidance(learning);
       saveLearning();
@@ -1629,6 +2605,23 @@ const actions = {
     closeModal();
     render();
   },
+  "export-learning": () => {
+    const data = {
+      version: 3,
+      rule: "freestyle15",
+      exportedAt: nowISO(),
+      path: pathProgress,
+      practiceGames,
+    };
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `楚涵-学習記録-${nowISO().slice(0, 10)}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
   import: () => {
     closeModal();
     $("#import-file").click();
@@ -1722,7 +2715,10 @@ engine = new Engine(
     engineState = state;
     updateLoading(state);
     render();
-    if (state === "ready" && !titleVisible) cpuTurn();
+    if (state === "ready" && !titleVisible) {
+      if (mode === "play") cpuTurn();
+      if (mode === "learn" && learnScreen === "journey") journeyReply();
+    }
   },
   () => {},
   (p) => updateLoading("progress", p),

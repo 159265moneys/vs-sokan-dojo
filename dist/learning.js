@@ -1,5 +1,10 @@
-import { units, problems, curriculumVersion } from "./curriculum.js";
+import {
+  units,
+  problems,
+  curriculumVersion,
+} from "./curriculum.js?v=learning-v3-20261111";
 import { coord } from "./game.js";
+import { positionFingerprint } from "./learning-path.js?v=learning-v3-20261111";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const byId = new Map(problems.map((p) => [p.id, p]));
@@ -407,6 +412,19 @@ function submitted(state, i = null, choiceId = null) {
   return next;
 }
 function failed(next, kind, title, text, frames = []) {
+  if (!text && kind === "proven-loss") {
+    const prior = winPoints(next.checkpoint.board, 1),
+      reply = frames.find((f) => f.last !== null && f.board[f.last] === 2);
+    text =
+      (prior.length
+        ? `${prior.map(coord).join("・")}なら先に五連を作れた。`
+        : "") +
+      (reply
+        ? winner(reply.board) === 2
+          ? `この手には白${coord(reply.last)}で五連が完成する。`
+          : `この手には白${coord(reply.last)}から攻めが続く。${reply.text}`
+        : "相手の勝ち筋が残る。");
+  }
   next.status = "feedback";
   next.feedback = {
     ...next.feedback,
@@ -468,7 +486,7 @@ function afterReply(next, reply, title = "応手を見て続ける") {
   ];
   let replyText = previousBlackWins.includes(reply)
     ? `白は${coord(reply)}を塞ぎ、黒の五連を防いだ。`
-    : `白は${coord(reply)}で一方の攻めに応じた。`;
+    : `白は${coord(reply)}に置いた。`;
   if (remainingBlackWins.length)
     replyText += `黒には${remainingBlackWins.map(coord).join("・")}の勝ち口が残る。片方しか塞げないため、そこで五連にできる。`;
   else if (remainingWhiteWins.length)
@@ -574,16 +592,36 @@ export function playLearningMove(state, i) {
     );
   }
   const initial = state.history.length === 0;
+  if (
+    initial &&
+    p.judge.firstObjective === "forcing-four" &&
+    winPoints(next.board, 1).length === 0
+  ) {
+    const text =
+      "この一手では次の五を脅かせない。四を作り、相手の受けで残る形を比べよう。";
+    return failed(next, "goal-miss", "四を続ける手順を試す", text, [
+      makeFrame(next.board, i, "この一手は四にならない", text),
+    ]);
+  }
   if (p.judge.kind === "prevent-fork") {
     const immediate = winPoints(next.board, 2),
       forks = forkMoves(next.board, 2);
     if (!immediate.length && !forks.length) {
       next.transitionFrames = [
-        makeFrame(next.board, i, "次の二重攻撃を消した", "", [
-          highlight([i], [], "good"),
-        ]),
+        makeFrame(
+          next.board,
+          i,
+          p.judge.successTitle || "次の二重攻撃を消した",
+          p.judge.successText || "",
+          [highlight([i], [], "good")],
+        ),
       ];
-      return completed(next, "local-goal", "次の二重攻撃を防いだ");
+      return completed(
+        next,
+        "local-goal",
+        p.judge.successTitle || "次の二重攻撃を防いだ",
+        p.judge.successText || "",
+      );
     }
     const frames = whiteRefutation(next, 5, 600) || [
       makeFrame(next.board, i, "白の狙いが残る", "", [
@@ -604,14 +642,21 @@ export function playLearningMove(state, i) {
     (winPoints(next.board, 1).length < 2 || winPoints(next.board, 2).length)
   ) {
     const own = winPoints(next.board, 1),
-      frames = [makeFrame(next.board, i, "両端が残らない")];
+      frames = [
+        makeFrame(
+          next.board,
+          i,
+          p.judge.failureTitle || "両端が残らない",
+          p.judge.failureText || "",
+        ),
+      ];
     if (own.length === 1 && !next.board[own[0]])
       frames.push(...replayFrames(next.board, [own[0]], 2));
     return failed(
       next,
       "goal-miss",
-      "両端を残す側へ",
-      "外側の白まで見る。",
+      p.judge.failureTitle || "両端を残す側へ",
+      p.judge.failureText || "外側の白まで見る。",
       frames,
     );
   }
@@ -640,7 +685,7 @@ export function playLearningMove(state, i) {
       throw Error(
         `検証済み準備手の継続がありません: ${p.id}/${coord(i)}/${coord(reply)}`,
       );
-    return afterReply(next, reply, "白が止めた方向を見よう");
+    return afterReply(next, reply, "白の着点から続きを読もう");
   }
   const lossFrames = whiteRefutation(
     next,
@@ -972,6 +1017,27 @@ export function restoreLearningAttempt(raw) {
         return null;
     }
     const state = clone(raw);
+    // Older saved attempts may predate the causal feedback text. Rebuild it
+    // without recording another decision or changing the attempt's evidence.
+    if (
+      state.status === "feedback" &&
+      state.feedback.kind === "proven-loss" &&
+      !state.feedback.text
+    ) {
+      const prior = winPoints(state.checkpoint.board, 1);
+      const reply = state.refutationFrames.find(
+        (f) => f.last !== null && f.board[f.last] === 2,
+      );
+      state.feedback.text =
+        (prior.length
+          ? `${prior.map(coord).join("・")}なら先に五連を作れた。`
+          : "") +
+        (reply
+          ? winner(reply.board) === 2
+            ? `この手には白${coord(reply.last)}で五連が完成する。`
+            : `この手には白${coord(reply.last)}から攻めが続く。${reply.text}`
+          : "相手の勝ち筋が残る。");
+    }
     // Rebuild hint coordinates from trusted content/current board, not saved hints.
     if (state.status === "feedback") {
       const hintState = { ...state, ...state.checkpoint };
@@ -1002,24 +1068,27 @@ export function createLearningProgress(raw = null) {
   if (
     !raw ||
     raw.schemaVersion !== 1 ||
-    raw.curriculumVersion !== curriculumVersion ||
     !raw.attempts ||
     typeof raw.attempts !== "object" ||
     Array.isArray(raw.attempts)
   )
     return {
       schemaVersion: 1,
+      evidenceVersion: 2,
       curriculumVersion,
       nextOrdinal: 1,
       attempts: {},
       viewedUnits: [],
+      exposures: [],
     };
   const result = {
     schemaVersion: 1,
+    evidenceVersion: 2,
     curriculumVersion,
     nextOrdinal: 1,
     attempts: {},
     viewedUnits: [],
+    exposures: [],
   };
   for (const [id, a] of Object.entries(raw.attempts)) {
     if (
@@ -1042,6 +1111,12 @@ export function createLearningProgress(raw = null) {
     result.attempts[id] = {
       ...clone(a),
       guidanceSeen: a.guidanceSeen === true,
+      priorExposure: a.priorExposure === true,
+      legacyEvidence:
+        a.legacyEvidence === true ||
+        raw.evidenceVersion !== 2 ||
+        raw.curriculumVersion !== curriculumVersion,
+      fingerprint: positionFingerprint(byId.get(a.problemId).board),
       family: byId.get(a.problemId).family,
       unitId: byId.get(a.problemId).unitId,
     };
@@ -1054,6 +1129,24 @@ export function createLearningProgress(raw = null) {
         : [],
     ),
   ];
+  result.exposures = [
+    ...new Set(
+      Array.isArray(raw.exposures)
+        ? raw.exposures.filter(
+            (value) => typeof value === "string" && value.startsWith("board:"),
+          )
+        : [],
+    ),
+  ];
+  // Old viewed flags carry no timestamps. Conservatively retain their board
+  // exposure; they never grant an independent first-encounter result.
+  for (const unitId of result.viewedUnits) {
+    for (const frame of byUnit.get(unitId).lessonFrames) {
+      const fingerprint = positionFingerprint(frame.board);
+      if (!result.exposures.includes(fingerprint))
+        result.exposures.push(fingerprint);
+    }
+  }
   return result;
 }
 export function recordLearningAttempt(progress, state) {
@@ -1069,11 +1162,22 @@ export function recordLearningAttempt(progress, state) {
   if (prior && prior.problemId !== state.problemId) return progress;
   if (prior?.status === "solved" && state.status !== "solved") return progress;
   const ordinal = prior ? prior.ordinal : next.nextOrdinal++;
+  const fingerprint = positionFingerprint(p.board);
+  const previouslySeen =
+    next.exposures.includes(fingerprint) ||
+    Object.entries(next.attempts).some(
+      ([id, a]) => id !== state.attemptId && a.fingerprint === fingerprint,
+    );
   next.attempts[state.attemptId] = {
     problemId: p.id,
     unitId: p.unitId,
     family: p.family,
     ordinal,
+    fingerprint,
+    priorExposure:
+      prior?.priorExposure === true ||
+      ((!prior?.status || prior.status !== "solved") && previouslySeen),
+    legacyEvidence: prior?.legacyEvidence === true,
     status: state.status,
     hints: Math.max(prior?.hints || 0, state.hints.uses),
     guidanceSeen: prior?.guidanceSeen === true || state.guidanceSeen === true,
@@ -1093,6 +1197,14 @@ export function recordLessonView(progress, unitId) {
   if (!byUnit.has(unitId)) return progress;
   const next = createLearningProgress(progress);
   if (!next.viewedUnits.includes(unitId)) next.viewedUnits.push(unitId);
+  for (const frame of byUnit.get(unitId).lessonFrames) {
+    const fingerprint = positionFingerprint(frame.board);
+    if (!next.exposures.includes(fingerprint)) next.exposures.push(fingerprint);
+    for (const attempt of Object.values(next.attempts)) {
+      if (attempt.status !== "solved" && attempt.fingerprint === fingerprint)
+        attempt.priorExposure = true;
+    }
+  }
   return next;
 }
 export function getLearningStats(progress, { problemId, unitId, family } = {}) {
@@ -1113,6 +1225,8 @@ export function getLearningStats(progress, { problemId, unitId, family } = {}) {
   );
   const done = rows.filter((a) => a.status === "solved");
   const clean = (a) =>
+    !a.priorExposure &&
+    !a.legacyEvidence &&
     !a.hints &&
     !a.guidanceSeen &&
     !a.verifiedMistakes &&
@@ -1141,7 +1255,10 @@ export function getLearningStats(progress, { problemId, unitId, family } = {}) {
     started: rows.length,
     completed: done.length,
     firstEncounterCompleted: done.filter(
-      (a) => firstProblem.get(a.problemId) === a.ordinal,
+      (a) =>
+        firstProblem.get(a.problemId) === a.ordinal &&
+        !a.priorExposure &&
+        !a.legacyEvidence,
     ).length,
     firstTryUnaided: done.filter(
       (a) => firstProblem.get(a.problemId) === a.ordinal && clean(a),
@@ -1151,6 +1268,8 @@ export function getLearningStats(progress, { problemId, unitId, family } = {}) {
     ).length,
     assistedCompleted: done.filter((a) => a.hints > 0 || a.guidanceSeen).length,
     guidedCompleted: done.filter((a) => a.guidanceSeen).length,
+    knownCompleted: done.filter((a) => a.priorExposure || a.legacyEvidence)
+      .length,
     retryCompleted: done.filter(
       (a) => a.retries > 0 || firstProblem.get(a.problemId) !== a.ordinal,
     ).length,

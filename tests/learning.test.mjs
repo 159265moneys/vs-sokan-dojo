@@ -1,7 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { units, problems, curriculumVersion } from "../dist/curriculum.js";
+import {
+  units,
+  problems as allProblems,
+  curriculumVersion,
+} from "../dist/curriculum.js";
 import {
   parse,
   coord,
@@ -27,6 +31,7 @@ import {
   getLearningStats,
 } from "../dist/learning.js";
 
+const problems = allProblems.filter((p) => p.role !== "assessment");
 const copy = (x) => JSON.parse(JSON.stringify(x));
 const problem = (id) => problems.find((p) => p.id === id);
 function solve(id, variant = 0, first = null, choiceId = null) {
@@ -88,9 +93,9 @@ function assertRefutation(start, frames) {
 
 test("curriculum has nine stages, sparse basics, legal original positions and explanatory demonstrations", () => {
   assert.equal(units.length, 9);
-  assert.equal(problems.length, 21);
-  assert.equal(new Set(problems.map((p) => p.family)).size, 19);
-  assert.equal(problems.filter((p) => p.unitId === "priority").length, 2);
+  assert.equal(problems.length, 22);
+  assert.equal(new Set(problems.map((p) => p.family)).size, 20);
+  assert.equal(problems.filter((p) => p.unitId === "priority").length, 3);
   assert.equal(new Set(problems.map((p) => p.id)).size, problems.length);
   for (const p of problems) {
     assert.equal(p.board.length, 225, p.id);
@@ -550,7 +555,7 @@ test("progress records starts, is idempotent, and separates first exposure, hint
   assert.equal(stats.firstTryUnaided, 0);
   assert.equal(stats.retryCompleted, 1);
   assert.equal(stats.completedProblems, 1);
-  assert.equal(stats.needsReview, false);
+  assert.equal(stats.needsReview, true);
   assert.equal(stats.lastOutcome, "unaided");
   let third = createAttempt("quiet-two-plans", { attemptId: "unknown" });
   progress = recordLearningAttempt(progress, third);

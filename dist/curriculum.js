@@ -1,3 +1,8 @@
+import {
+  priorityDefenseLesson,
+  priorityDefenseFrames,
+} from "./priority-defense-lesson.js";
+import { assessmentProblems } from "./assessment-bank.js";
 import { parse, coord, winningMoves, winningLine } from "./game.js";
 
 export const curriculumVersion = "2026-11-11.2";
@@ -468,6 +473,7 @@ const bank = [
     race,
     "E8 J8",
   ),
+  priorityDefenseLesson,
   play(
     "long-gap",
     "priority",
@@ -938,7 +944,7 @@ const hintTextByUnit = {
   priority: [
     "自分と白の五連になる点を、両方探す。",
     "白を受ける前に、自分がこの一手で勝てるか見る。",
-    "印の空点で、自分の五連以上を完成させる。",
+    "自分が勝てるなら五連へ。勝てないなら白の完成点を塞ぐ。",
   ],
   conditions: [
     "三の両隣だけでなく、その外側も見る。",
@@ -982,7 +988,7 @@ const hintTextByUnit = {
   ],
 };
 bank.forEach((p) => {
-  p.hintTexts = hintTextByUnit[p.unitId];
+  p.hintTexts ||= hintTextByUnit[p.unitId];
 });
 const choiceHints = {
   "closed-three": [
@@ -1056,6 +1062,7 @@ const unitDefs = [
         ["黒が先に五連"],
         [[mark("F8 G8 H8 I8 J8", "", "good")]],
       ),
+      ...priorityDefenseFrames,
     ],
   ],
   [
@@ -1191,12 +1198,24 @@ function freeze(x) {
   }
   return x;
 }
-export const problems = freeze(bank);
+export const problems = freeze([...bank, ...assessmentProblems]);
+const prerequisites = {
+  priority: [],
+  conditions: ["priority"],
+  opening: ["conditions"],
+  defense: ["conditions", "opening"],
+  order: ["conditions", "opening"],
+  counter: ["order", "defense"],
+  branch: ["counter"],
+  prepare: ["order", "branch"],
+  practice: ["defense", "counter", "prepare"],
+};
 export const units = freeze(
   unitDefs.map(([id, title, goal, lessonFrames]) => ({
     id,
     title,
     goal,
+    prerequisites: prerequisites[id],
     problemIds: bank.filter((p) => p.unitId === id).map((p) => p.id),
     lessonFrames,
   })),
