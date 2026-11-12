@@ -1029,7 +1029,9 @@ body[data-screen="library"] #library-view {
   font-size: 19px;
 }
 .path-next button {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 48%;
   min-height: 44px;
   padding: 10px 16px;
 }
