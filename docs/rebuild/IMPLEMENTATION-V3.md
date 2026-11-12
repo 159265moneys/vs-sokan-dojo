@@ -48,3 +48,5 @@ Engineは共通1つ。普通対局の応手を破棄せず、課題対局は検�
 最終の自動検証: `npm test` 164件すべて成功、実Rapfi WASMの戦術smoke成功、独立Pythonの局所最短手順証明成功、構文/差分検査成功。新規オリジンのUIでは診断誤答→対応見本→基礎補習→異なる盤面の確認→攻守2条件確認→次単元/1 of 9までを操作した。
 
 公開リポジトリに保存した代表画面: [方向転換の型](screenshots/v3-branch.jpg)、[改善手の理由](screenshots/v3-review.jpg)、[補習後の別確認](screenshots/v3-confirmation.jpg)、[投了を含む挑戦結果](screenshots/v3-challenge.jpg)。
+
+公開後の目視で学習メニューが3列の旧指定を引き継ぐ表示漏れを検出。4列へ修正し、393幅で全4項目のy位置一致・各44px高/87.75px幅を実DOMと画像で確認した。
