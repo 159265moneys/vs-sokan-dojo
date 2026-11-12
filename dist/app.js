@@ -10,9 +10,9 @@ import { Engine } from "./engine-client.js";
 import { Sounds } from "./sound.js";
 import { boardSkin, stoneName, stoneSprite, skinText } from "./board-themes.js";
 import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111-v2";
-import { units, problems } from "./curriculum.js?v=learning-v3-20261111";
+import { units, problems } from "./curriculum.js?v=curriculum-v4-20261112";
 import { positionMoves, reviewStartPly } from "./training-sessions.js";
-import { assessmentProblems } from "./assessment-bank.js?v=learning-v3-20261111";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v4-20261112";
 import {
   createPathProgress,
   noteExposure,
@@ -23,7 +23,7 @@ import {
   recordPracticalResult,
   getExamStatus,
   recordReviewFindings,
-} from "./learning-path.js?v=learning-v3-20261111";
+} from "./learning-path.js?v=curriculum-v4-20261112";
 import {
   journeyTracks,
   createJourney,
@@ -50,13 +50,19 @@ import {
   createLearningProgress,
   recordLearningAttempt,
   recordLessonView,
+  recordBoardExposure,
   getLearningStats,
-} from "./learning.js?v=learning-v3-20261111";
+} from "./learning.js?v=curriculum-v4-20261112";
 import {
   describeMove,
   judgeReviewMove,
 } from "./causal-review.js?v=learning-v3-20261111";
 import { patternHighlights } from "./review-patterns.js?v=patterns-20261111-v2";
+import {
+  strategyMarkup,
+  strategyExposure,
+  strategyRecordExposures,
+} from "./strategy-guide.js?v=strategy-20261112";
 
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
@@ -145,8 +151,11 @@ let engineState = "loading",
   hint = null,
   hintBusy = false;
 let titleVisible = true,
-  mode = read("view-v2", "learn");
-if (!["learn", "play", "review"].includes(mode)) mode = "learn";
+  mode = read("view-v2", "guide");
+if (!["guide", "learn", "play", "review"].includes(mode)) mode = "guide";
+let strategyMounted = false;
+let strategyObserver = null;
+const strategySeen = new Set();
 let progress = createLearningProgress(read("learning-v2", null));
 let learning = restoreLearningAttempt(read("learning-attempt-v2", null));
 let pathProgress = createPathProgress(
@@ -322,6 +331,7 @@ function dismissTitle(destination) {
   $(".shell").inert = false;
   $(".shell").removeAttribute("aria-hidden");
   if (destination) {
+    if (destination === "guide") markLiveHelp("strategy-guide");
     mode = destination;
     save("view-v2", mode);
   }
@@ -469,6 +479,7 @@ function reviewFrames() {
   );
 }
 function canPlace() {
+  if (mode === "guide") return false;
   if (mode === "play")
     return (
       engineState === "ready" &&
@@ -499,6 +510,8 @@ function canPlace() {
 }
 function switchMode(next) {
   if (next === mode) return;
+  if (mode === "guide") saveStrategyScroll();
+  if (next === "guide") markLiveHelp("strategy-guide");
   if (mode === "review" && reviewScan.state === "running")
     reviewAutoOpen = false;
   closeModal();
@@ -572,13 +585,15 @@ function render() {
   const focus = rememberFocus();
   document.body.dataset.mode = mode;
   document.body.dataset.skin = skin();
-  document.body.dataset.screen = libraryVisible() ? "library" : "board";
+  document.body.dataset.screen =
+    mode === "guide" ? "guide" : libraryVisible() ? "library" : "board";
   $$(".nav[data-mode]").forEach((b) => {
     const on = b.dataset.mode === mode;
     b.classList.toggle("active", on);
     b.setAttribute("aria-current", on ? "page" : "false");
   });
   $("#mode-label").textContent = {
+    guide: "攻略書",
     play: "対局",
     learn: "学ぶ",
     review: "振り返り",
@@ -590,9 +605,14 @@ function render() {
   );
   $("#sound").setAttribute("aria-pressed", String(sound));
   $(".new-top-button").hidden = mode !== "play";
-  $("#arena").hidden = libraryVisible();
+  $("#arena").hidden = libraryVisible() || mode === "guide";
   $("#library-view").hidden = !libraryVisible();
-  if (libraryVisible()) {
+  $("#strategy-view").hidden = mode !== "guide";
+  if (mode === "guide") {
+    renderStrategy();
+    $("#context-bar").innerHTML = "";
+    $("#context-bar").hidden = true;
+  } else if (libraryVisible()) {
     renderLibrary();
     $("#context-bar").innerHTML = "";
     $("#context-bar").hidden = true;
@@ -657,6 +677,83 @@ function render() {
   }
   restoreFocus(focus);
 }
+function renderStrategy() {
+  const el = $("#strategy-view");
+  if (!strategyMounted) {
+    el.innerHTML = strategyMarkup();
+    strategyMounted = true;
+    const stored = read("strategy-scroll-v1", 0);
+    const y = typeof stored === "number" ? stored : stored?.y;
+    if (stored?.tocOpen === false) el.querySelector(".guide-toc").open = false;
+    if (Number.isFinite(y) && y > 0) el.scrollTop = y;
+    el.addEventListener("click", (event) => {
+      if (event.target.closest(".guide-toc a"))
+        el.querySelector(".guide-toc").open = false;
+    });
+    el.querySelectorAll("[data-guide-record]").forEach((node) =>
+      node.addEventListener("toggle", () => {
+        if (!node.open || mode !== "guide" || titleVisible) return;
+        const key = `record:${node.dataset.guideRecord}`;
+        if (strategySeen.has(key)) return;
+        strategySeen.add(key);
+        for (const exposure of strategyRecordExposures(
+          node.dataset.guideRecord,
+        )) {
+          progress = recordBoardExposure(progress, exposure.board);
+          pathProgress = noteExposure(pathProgress, {
+            ...exposure,
+            at: nowISO(),
+          });
+        }
+        save("learning-v2", progress);
+        savePath();
+      }),
+    );
+  }
+  if (titleVisible || strategyObserver) return;
+  strategyObserver = new IntersectionObserver(
+    (entries) => {
+      if (mode !== "guide" || titleVisible) return;
+      let changed = false;
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        const node = entry.target;
+        const key = `${node.dataset.guideDiagram}:${node.dataset.guideStep}`;
+        if (strategySeen.has(key)) continue;
+        const exposure = strategyExposure(
+          node.dataset.guideDiagram,
+          Number(node.dataset.guideStep),
+        );
+        if (!exposure) continue;
+        strategySeen.add(key);
+        progress = recordBoardExposure(progress, exposure.board);
+        pathProgress = noteExposure(pathProgress, {
+          ...exposure,
+          at: nowISO(),
+        });
+        changed = true;
+      }
+      if (changed) {
+        save("learning-v2", progress);
+        savePath();
+      }
+    },
+    { root: el, threshold: 0.1 },
+  );
+  el.querySelectorAll("[data-guide-diagram]").forEach((node) =>
+    strategyObserver.observe(node),
+  );
+}
+function saveStrategyScroll() {
+  if (strategyMounted)
+    save("strategy-scroll-v1", {
+      y: $("#strategy-view").scrollTop,
+      tocOpen: $("#strategy-view .guide-toc").open,
+    });
+}
+window.addEventListener("pagehide", () => {
+  if (mode === "guide") saveStrategyScroll();
+});
 function recoverJourney(raw) {
   if (!raw) return null;
   try {
@@ -2300,6 +2397,7 @@ function retryEngine() {
   render();
 }
 const actions = {
+  "title-guide": () => dismissTitle("guide"),
   "title-start": () => dismissTitle("play"),
   "title-learn": () => dismissTitle("learn"),
   retry: retryEngine,

@@ -2,7 +2,7 @@ import {
   priorityDefenseLesson,
   priorityDefenseFrames,
 } from "./priority-defense-lesson.js";
-import { assessmentProblems } from "./assessment-bank.js";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v4-20261112";
 import { parse, coord, winningMoves, winningLine } from "./game.js";
 
 export const curriculumVersion = "2026-11-11.2";

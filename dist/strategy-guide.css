@@ -1,0 +1,297 @@
+/* Reading is isolated from board and button layout rules. */
+#strategy-view {
+  display: none;
+}
+body[data-screen="guide"] #arena,
+body[data-screen="guide"] #library-view,
+body[data-screen="guide"] #context-bar {
+  display: none;
+}
+body[data-screen="guide"] #strategy-view {
+  display: block;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  overflow-anchor: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted) transparent;
+}
+.strategy-article {
+  min-width: 0;
+  padding: 22px 18px 36px;
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.95;
+  overflow-wrap: break-word;
+}
+.strategy-article :where(p, ol, ul, figure, h1, h2, h3) {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.strategy-article p {
+  margin: 0 0 1.25em;
+}
+.strategy-article strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+.strategy-article a {
+  color: var(--gold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.strategy-article a:focus-visible,
+.strategy-article summary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
+}
+.guide-eyebrow {
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 650;
+}
+.strategy-article h1 {
+  margin: 6px 0 12px;
+  font-size: 28px;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+}
+.strategy-article .guide-lead {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.85;
+}
+.guide-title {
+  margin-bottom: 24px;
+}
+.guide-toc {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  max-height: 60svh;
+  overflow: auto;
+  margin: 24px 0;
+  padding: 0;
+  border-block: 1px solid var(--line);
+  background: var(--bg);
+}
+.guide-toc summary {
+  min-height: 48px;
+  padding: 10px 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+.strategy-article .guide-toc ol {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px;
+}
+.guide-toc li {
+  margin: 0;
+  padding: 0;
+}
+.guide-toc a {
+  display: grid;
+  grid-template-columns: 25px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  padding: 8px 0;
+  min-height: 44px;
+  color: var(--ink);
+  line-height: 1.65;
+  text-decoration: none;
+  font-size: 15px;
+}
+.guide-toc a span {
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
+.strategy-article .guide-diagram-key {
+  color: var(--muted);
+  font-size: 14px;
+}
+.guide-chapter {
+  padding-top: 30px;
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 68px;
+}
+.strategy-article h2 {
+  display: block;
+  margin: 0 0 20px;
+  font-size: 23px;
+  line-height: 1.55;
+}
+.guide-chapter-number {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--gold);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.strategy-article h3 {
+  margin: 30px 0 12px;
+  font-size: 18px;
+  line-height: 1.65;
+}
+.strategy-article ol,
+.strategy-article ul {
+  padding-left: 1.5em;
+  margin: 16px 0 24px;
+}
+.strategy-article li {
+  margin-bottom: 12px;
+  padding-left: 0.15em;
+}
+.strategy-article .guide-check-order {
+  list-style: none;
+  counter-reset: scan;
+  padding: 0;
+}
+.guide-check-order li {
+  counter-increment: scan;
+  position: relative;
+  padding: 14px 12px 14px 43px;
+  border-left: 2px solid var(--gold);
+  background: var(--surface);
+  margin-bottom: 10px;
+}
+.guide-check-order li::before {
+  content: counter(scan);
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+.guide-check-order strong,
+.guide-check-order span {
+  display: block;
+}
+.guide-check-order span {
+  margin-top: 5px;
+  font-size: 15px;
+}
+.guide-figure {
+  margin: 22px 0 26px;
+}
+.strategy-diagram {
+  margin: 0;
+}
+.strategy-diagram__label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.strategy-diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+}
+.strategy-diagram figcaption {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+}
+.strategy-diagram figcaption strong {
+  display: block;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+.strategy-article .guide-cite {
+  white-space: nowrap;
+  font-size: 13px;
+}
+.guide-memory {
+  background: var(--surface);
+  padding: 10px 14px 1px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.guide-memory ol {
+  padding-left: 1.5em;
+}
+.guide-sources {
+  padding-top: 32px;
+  margin-top: 32px;
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 68px;
+}
+.strategy-article .guide-sources li {
+  scroll-margin-top: 68px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+  margin-bottom: 24px;
+}
+.guide-sources li p {
+  color: var(--muted);
+  margin: 5px 0 0;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.guide-back-top {
+  display: block;
+  padding: 10px 0;
+  min-height: 44px;
+  font-size: 15px;
+}
+@media (max-width: 360px) {
+  .strategy-article {
+    padding-inline: 14px;
+  }
+  .strategy-article h1 {
+    font-size: 25px;
+  }
+  .strategy-article h2 {
+    font-size: 21px;
+  }
+}
+
+.guide-backward {
+  display: grid;
+  gap: 6px;
+  margin: 20px 0 24px;
+  text-align: center;
+}
+.guide-backward div {
+  background: var(--surface);
+  padding: 10px;
+  border-radius: 6px;
+}
+.guide-backward span {
+  color: var(--gold);
+  font-size: 18px;
+  line-height: 1;
+}
+.guide-record {
+  margin: 22px 0;
+  border-block: 1px solid var(--line);
+}
+.guide-record summary {
+  cursor: pointer;
+  padding: 12px 0;
+  min-height: 44px;
+}
+.strategy-article .guide-record table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+  margin: 0 0 16px;
+  font-variant-numeric: tabular-nums;
+}
+.guide-record th,
+.guide-record td {
+  padding: 7px 12px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+.guide-record th {
+  font-weight: 600;
+  color: var(--muted);
+}

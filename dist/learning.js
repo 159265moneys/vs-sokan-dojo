@@ -2,9 +2,9 @@ import {
   units,
   problems,
   curriculumVersion,
-} from "./curriculum.js?v=learning-v3-20261111";
+} from "./curriculum.js?v=curriculum-v4-20261112";
 import { coord } from "./game.js";
-import { positionFingerprint } from "./learning-path.js?v=learning-v3-20261111";
+import { positionFingerprint } from "./learning-path.js?v=curriculum-v4-20261112";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const byId = new Map(problems.map((p) => [p.id, p]));
@@ -1204,6 +1204,17 @@ export function recordLessonView(progress, unitId) {
       if (attempt.status !== "solved" && attempt.fingerprint === fingerprint)
         attempt.priorExposure = true;
     }
+  }
+  return next;
+}
+export function recordBoardExposure(progress, board) {
+  if (!validBoard(board)) return progress;
+  const next = createLearningProgress(progress);
+  const fingerprint = positionFingerprint(board);
+  if (!next.exposures.includes(fingerprint)) next.exposures.push(fingerprint);
+  for (const attempt of Object.values(next.attempts)) {
+    if (attempt.status !== "solved" && attempt.fingerprint === fingerprint)
+      attempt.priorExposure = true;
   }
   return next;
 }

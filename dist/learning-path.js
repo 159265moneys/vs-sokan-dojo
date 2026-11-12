@@ -3,7 +3,7 @@ import { lineShapes } from "./review-patterns.js";
 import {
   problems as curriculumProblems,
   units as curriculumUnits,
-} from "./curriculum.js?v=learning-v3-20261111";
+} from "./curriculum.js?v=curriculum-v4-20261112";
 
 // Evidence is supplied by the caller. This module reads no clock and schedules nothing.
 export const pathSchemaVersion = 3;
@@ -70,6 +70,10 @@ const normalizedFamily = (unitId, family) =>
   ["priority/gapped-race", "priority/multiple-finishes"].includes(family)
     ? "priority/own-win-first"
     : family;
+// This retired board measured an immediate win, not two-axis prevention.
+// Keep its history and exposure; never promote it into another unit.
+const assessmentExclusion = (problemId) =>
+  problemId === "check-defense-race" ? "retired-defense-race" : null;
 const priorityCondition = (family) => {
   const normalized = normalizedFamily("priority", family);
   return ["priority/own-win-first", "priority/prevent-immediate-loss"].includes(
@@ -293,6 +297,10 @@ export function createPathProgress(
     )
       continue;
     result.attempts[id] = clone(attempt);
+    if (assessmentExclusion(attempt.problemId))
+      result.attempts[id].assessmentExclusion = assessmentExclusion(
+        attempt.problemId,
+      );
     const family = normalizedFamily(attempt.unitId, attempt.family);
     if (family !== attempt.family)
       result.attempts[id] = {
@@ -624,6 +632,9 @@ export function recordAttemptEvidence(progress, attempt, metadata = {}) {
     prior?.requiresBranch ?? metadata.requiresBranch !== false;
   const row = {
     ...key,
+    ...(assessmentExclusion(key.problemId)
+      ? { assessmentExclusion: assessmentExclusion(key.problemId) }
+      : {}),
     role,
     ordinal: prior?.ordinal || next.nextOrdinal++,
     startedAt: prior ? prior.startedAt : currentAt,
@@ -684,6 +695,7 @@ export function recordAttemptEvidence(progress, attempt, metadata = {}) {
 function independent(a) {
   return (
     a.role === "assessment" &&
+    !assessmentExclusion(a.problemId) &&
     a.status === "solved" &&
     a.family &&
     a.fingerprint &&
@@ -1378,6 +1390,7 @@ function reviewStages(progress, unitId = null) {
 function failedAssessment(attempt) {
   return (
     attempt.role === "assessment" &&
+    !assessmentExclusion(attempt.problemId) &&
     (attempt.status === "feedback" ||
       attempt.hints ||
       attempt.guidanceSeen ||
@@ -1854,6 +1867,7 @@ export function selectAssessment(
   const candidates = (Array.isArray(bank) ? bank : []).filter(
     (problem) =>
       problem.role === "assessment" &&
+      !assessmentExclusion(problem.problemId || problem.id) &&
       (problem.unitId || problem.skillId) === unitId &&
       matchesCondition(problem, requiredCondition) &&
       !wasSeen(p, identity(problem)),
@@ -1966,17 +1980,7 @@ export function nextLearningStep(
           label: "課題対局",
         };
   }
-  const failures = rows.filter(
-    (a) =>
-      a.role === "assessment" &&
-      (a.status === "feedback" ||
-        a.hints ||
-        a.guidanceSeen ||
-        a.mistakes ||
-        a.unknownSelections ||
-        a.retries ||
-        a.exposureSeen),
-  );
+  const failures = rows.filter(failedAssessment);
   const lastFailure = Math.max(
     0,
     ...failures.map(

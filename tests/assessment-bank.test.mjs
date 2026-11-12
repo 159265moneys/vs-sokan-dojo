@@ -121,10 +121,10 @@ test("36 assessments are isolated from lessons, with four genuine positions and 
     seen.add(key);
     assert(["original", "record"].includes(p.evidence.source));
     assert(p.evidence.scope && p.evidence.verification);
-    assert.equal(
+    assert.deepEqual(
       problems.find((v) => v.id === p.id),
       p,
-      "curriculum must expose assessment objects",
+      "versioned curriculum imports must expose the same verified problem data",
     );
     const s = createAttempt(p.id);
     assert.deepEqual(getLearningView(s).highlights, []);
@@ -384,6 +384,46 @@ test("two unseen families with their actual response histories can supply initia
     }
     assert.equal(unitStatus(progress, unit.id).initialConfirmed, true, unit.id);
     assert.equal(unitStatus(progress, unit.id).retained, false, unit.id);
+  }
+});
+
+test("both defense families require preventing a real threat rather than substituting an immediate win", () => {
+  const ps = assessments.filter((p) => p.unitId === "defense");
+  assert.equal(ps.length, 4);
+  assert.equal(byId.has("check-defense-race"), false);
+  for (const p of ps) {
+    assert.deepEqual(
+      wins(p.board, 1),
+      [],
+      `${p.id}: an immediate win bypasses defense`,
+    );
+    assert.deepEqual(wins(p.board, 2), [], p.id);
+    assert(forks([...p.board], 2).length, `${p.id}: no threat to prevent`);
+    assert.equal(p.judge.kind, "prevent-fork");
+    const completed = finish(p);
+    assert.equal(
+      winner(completed.board),
+      0,
+      `${p.id}: local prevention is not a win`,
+    );
+    assert.deepEqual(wins(completed.board, 2), [], p.id);
+    assert.deepEqual(forks([...completed.board], 2), [], p.id);
+  }
+  const p = byId.get("check-defense-cross-straight");
+  assert.deepEqual(forks([...p.board], 2).map(coord), ["I7"]);
+  const expected = ["I8", "I7", "J7"].map(parse).sort((a, b) => a - b);
+  assert.deepEqual(
+    [...p.guide].sort((a, b) => a - b),
+    expected,
+  );
+  for (const i of empty(p.board)) {
+    const s = playLearningMove(createAttempt(p.id), i);
+    assert.equal(s.status === "solved", expected.includes(i), coord(i));
+    if (expected.includes(i)) assert.equal(s.feedback.claim, "local-goal");
+    else {
+      assert.equal(s.feedback.kind, "proven-loss", coord(i));
+      assert.equal(winner(s.refutationFrames.at(-1).board), 2, coord(i));
+    }
   }
 });
 

@@ -1602,6 +1602,166 @@ test("the two legacy winning families migrate into one priority condition withou
   assert.equal(unitStatus(defended, "priority").initialConfirmed, true);
 });
 
+test("retiring the defense race preserves its history and exposure without certifying defense or promoting priority", () => {
+  const raceBoard = Array(225).fill(0);
+  for (const [stones, side] of [
+    ["C9 D9 E9 F9 H3 J5", 1],
+    ["C4 D4 E4 F4 J10 J12", 2],
+  ])
+    for (const point of stones.split(" ")) raceBoard[parse(point)] = side;
+  const race = {
+    ...problem(
+      "check-defense-race",
+      "defense/two-axis-threat",
+      raceBoard,
+      "defense",
+    ),
+    branchId: "own-five-before-opponent-four",
+    requiresBranch: false,
+  };
+  const authored = (id) => authoredProblems.find((p) => p.id === id);
+  const solve = (id) => {
+    let state = createAttempt(id, { attemptId: `migration-${id}` });
+    for (let n = 0; state.status === "choose" && n < 12; n++)
+      state = playLearningMove(state, state.guide[0]);
+    assert.equal(state.status, "solved", id);
+    return state;
+  };
+  let raw = recordAttemptEvidence(
+    createPathProgress(),
+    solve("check-defense-gap-a"),
+    {
+      ...authored("check-defense-gap-a"),
+      at: time,
+    },
+  );
+  raw = record(raw, race, { history: [{ i: parse("B9"), side: 1 }] });
+  const raceId = `attempt-${race.id}`;
+  delete raw.attempts[raceId].assessmentExclusion;
+  const untouched = copy(raw);
+  const restored = createPathProgress(raw);
+  assert.deepEqual(
+    raw,
+    untouched,
+    "migration must not mutate the supplied save",
+  );
+  assert.deepEqual(restored.attempts[raceId], {
+    ...untouched.attempts[raceId],
+    assessmentExclusion: "retired-defense-race",
+  });
+  assert.deepEqual(restored.exposures, untouched.exposures);
+  assert.equal(unitStatus(restored, "defense").initialConfirmed, false);
+  assert.equal(unitStatus(restored, "defense").initialAssessmentCount, 1);
+  assert.equal(unitStatus(restored, "priority").initialAssessmentCount, 0);
+  assert.deepEqual(createPathProgress(copy(restored)), restored);
+  assert.equal(selectAssessment(restored, "defense", [race]), null);
+
+  // A different ID still cannot turn the old, encountered board into unseen evidence.
+  const alias = { ...race, id: "old-race-renamed" };
+  const known = record(restored, alias, {
+    history: [{ i: parse("B9"), side: 1 }],
+  });
+  assert.equal(known.attempts["attempt-old-race-renamed"].exposureSeen, true);
+  assert.equal(unitStatus(known, "defense").initialConfirmed, false);
+
+  // An actual two-axis defense restores the pair; unrelated legitimate evidence survives.
+  const withCross = recordAttemptEvidence(
+    restored,
+    solve("check-defense-cross"),
+    {
+      ...authored("check-defense-cross"),
+      at: time,
+    },
+  );
+  const confirmed = unitStatus(withCross, "defense");
+  assert.equal(confirmed.initialConfirmed, true);
+  assert.deepEqual(confirmed.initialEvidence, [
+    "check-defense-gap-a",
+    "check-defense-cross",
+  ]);
+  let validPair = recordAttemptEvidence(
+    createPathProgress(),
+    solve("check-defense-gap-a"),
+    {
+      ...authored("check-defense-gap-a"),
+      at: time,
+    },
+  );
+  validPair = recordAttemptEvidence(validPair, solve("check-defense-cross"), {
+    ...authored("check-defense-cross"),
+    at: time,
+  });
+  const retainedRaw = record(
+    validPair,
+    race,
+    {
+      attemptId: "old-race-later",
+      history: [{ i: parse("B9"), side: 1 }],
+    },
+    "2026-11-13T12:00:00+09:00",
+  );
+  delete retainedRaw.attempts["old-race-later"].assessmentExclusion;
+  assert.equal(retainedRaw.attempts["old-race-later"].exposureSeen, false);
+  const retained = unitStatus(createPathProgress(retainedRaw), "defense");
+  assert.equal(retained.initialConfirmed, true);
+  assert.equal(
+    retained.retained,
+    false,
+    "retired race cannot supply later retention",
+  );
+  assert.deepEqual(retained.initialEvidence, confirmed.initialEvidence);
+
+  // New callers and older candidate lists cannot revive the retired assessment.
+  const incoming = record(restored, race, {
+    attemptId: "old-race-replayed",
+    history: [{ i: parse("G9"), side: 1 }],
+  });
+  assert.equal(
+    incoming.attempts["old-race-replayed"].assessmentExclusion,
+    "retired-defense-race",
+  );
+  assert.equal(unitStatus(incoming, "defense").initialConfirmed, false);
+  assert.equal(selectAssessment(createPathProgress(), "defense", [race]), null);
+  assert.equal(
+    selectAssessment(restored, "defense", [
+      authored("check-defense-cross-straight"),
+    ]).id,
+    "check-defense-cross-straight",
+  );
+});
+
+test("a retired defense-race failure does not demand irrelevant defense remediation", () => {
+  const retired = {
+    ...problem(
+      "check-defense-race",
+      "defense/two-axis-threat",
+      base,
+      "defense",
+    ),
+    requiresBranch: false,
+  };
+  const progress = record(createPathProgress(), retired, {
+    status: "feedback",
+  });
+  const next = problem(
+    "fresh-defense",
+    "defense/distant-broken-threat",
+    different,
+    "defense",
+  );
+  const step = nextLearningStep(progress, {
+    units: [{ id: "defense", problemIds: ["defense-lesson"] }],
+    assessmentProblems: [retired, next],
+    at: time,
+  });
+  assert.equal(step.kind, "assessment");
+  assert.equal(step.problemId, "fresh-defense");
+  assert.equal(
+    progress.attempts["attempt-check-defense-race"].status,
+    "feedback",
+  );
+});
+
 test("failures on both priority decisions remain separate until each condition is freshly reconfirmed", () => {
   const at = "2026-11-13T12:00:00+09:00";
   let progress = record(

@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="game-ui.css?v=learning-rebuild-20261111" />
     <link rel="stylesheet" href="board-themes.css" />
     <link rel="stylesheet" href="rebuild-ui.css?v=learning-layout-20261112-2" />
+    <link rel="stylesheet" href="strategy-guide.css?v=strategy-20261112" />
     <link rel="preload" as="image" href="assets/themes/board-luxury.jpg" />
     <link rel="preload" as="image" href="assets/themes/board-inferno.jpg" />
     <link
@@ -102,7 +103,9 @@
           対局する</button
         ><button id="title-retry" class="secondary" data-action="retry" hidden>
           再読み込み</button
-        ><button class="title-learn" data-action="title-learn">学ぶ</button>
+        ><button class="title-learn" data-action="title-guide">
+          攻略書を読む
+        </button>
       </div>
     </section>
     <div class="shell" inert aria-hidden="true">
@@ -113,6 +116,14 @@
           ></a
         >
         <nav aria-label="モード">
+          <button data-mode="guide" class="nav">
+            <span class="nav-icon"
+              ><svg class="ui-icon" aria-hidden="true">
+                <use
+                  href="assets/ui-icons.svg?v=strategy-20261112#guide"
+                /></svg></span
+            ><span>攻略書</span>
+          </button>
           <button data-mode="learn" class="nav">
             <span class="nav-icon"
               ><svg class="ui-icon" aria-hidden="true">
@@ -255,6 +266,11 @@
           <aside id="panel" class="panel"></aside>
         </div>
         <section id="library-view" class="library-view" hidden></section>
+        <section
+          id="strategy-view"
+          aria-label="五目並べの攻略書"
+          hidden
+        ></section>
         <footer>
           <span>VS 楚涵 <b>五目道場</b></span
           ><span>15 × 15 <i>·</i> 禁手なし <i>·</i> 五連以上で勝ち</span
@@ -277,6 +293,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="app.js?v=learning-v3-20261111"></script>
+    <script type="module" src="app.js?v=strategy-20261112"></script>
   </body>
 </html>
