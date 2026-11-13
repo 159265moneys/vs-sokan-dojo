@@ -128,8 +128,10 @@ test("initial exercise has a populated board but no answer overlay; demos do not
     const state = createAttempt(p.id),
       view = getLearningView(state);
     assert(view.board.some(Boolean));
-    assert.deepEqual(view.highlights, []);
+    assert.deepEqual(view.highlights, p.questionHighlights || []);
     assert.equal(view.hintText, "");
+    assert.equal(view.hintLevel, 0);
+    assert.equal(view.feedback.text, "");
     assert.deepEqual(state.history, []);
     assert(view.choices.every((c) => !("correct" in c)));
     assert(!view.choices.some((c) => /二方向を残す|離れて置く/.test(c.title)));
