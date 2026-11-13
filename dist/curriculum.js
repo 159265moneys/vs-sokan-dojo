@@ -2,7 +2,7 @@ import {
   priorityDefenseLesson,
   priorityDefenseFrames,
 } from "./priority-defense-lesson.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage3-20261113";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v6-20261113";
 import { parse, coord, winningMoves, winningLine } from "./game.js";
 import { conditionsPracticeLessons } from "./assessment-conditions-v5.js";
 import { counterPracticeProblems } from "./assessment-counter-v5.js";
@@ -866,7 +866,7 @@ const bank = [
     "prepare",
     "prepare/quiet-dual-vcf",
     "H8で何が変わるか",
-    "今できる形と、次の狙いを区別する",
+    "黒H8で、今できる形と次の狙いは？",
     quiet,
     [
       choice(
@@ -894,6 +894,7 @@ const bank = [
         quietLine,
       ),
     ],
+    { questionHighlights: [mark("", "H8")], feedbackPreviewFrame: 0 },
   ),
 ];
 
@@ -1225,13 +1226,22 @@ const prerequisites = {
   prepare: ["order", "branch"],
   practice: ["defense", "counter", "prepare"],
 };
+const lessonOrder = {
+  prepare: [
+    "quiet-shape",
+    "practice-prepare-v5-adjacent-elbow-remedial-two",
+    "practice-prepare-v5-adjacent-elbow-remedial-one",
+    "quiet-two-plans",
+  ],
+};
 export const units = freeze(
   unitDefs.map(([id, title, goal, lessonFrames]) => ({
     id,
     title,
     goal,
     prerequisites: prerequisites[id],
-    problemIds: lessons.filter((p) => p.unitId === id).map((p) => p.id),
+    problemIds: lessonOrder[id] || lessons.filter((p) => p.unitId === id).map((p) => p.id),
+    ...(id === "prepare" ? { remediationProblemId: "quiet-two-plans" } : {}),
     lessonFrames,
   })),
 );

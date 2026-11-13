@@ -13,9 +13,9 @@ import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111-v2";
 import {
   units,
   problems,
-} from "./curriculum.js?v=curriculum-v5-stage3-20261113";
+} from "./curriculum.js?v=curriculum-v6-20261113";
 import { positionMoves, reviewStartPly } from "./training-sessions.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage3-20261113";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v6-20261113";
 import {
   createPathProgress,
   noteExposure,
@@ -26,7 +26,7 @@ import {
   recordPracticalResult,
   getExamStatus,
   recordReviewFindings,
-} from "./learning-path.js?v=curriculum-v5-stage3-20261113";
+} from "./learning-path.js?v=curriculum-v6-20261113";
 import {
   nextCourseStep,
   courseProgressSummary,
@@ -898,11 +898,17 @@ function goRecommended(id = null) {
   if (
     learning?.status === "choose" &&
     (learningRole === "assessment" ||
-      (step.kind === "lesson" && step.problemId === learning.problemId)) &&
+      (step.kind === "lesson" &&
+        (step.problemId === learning.problemId ||
+          (step.reason === "course-lesson" &&
+            step.unitId === currentProblem()?.unitId)))) &&
     (!id || currentProblem()?.unitId === id) &&
     step.kind !== "review" &&
     step.reason !== "review-transfer" &&
-    !["remediation", "confirmation-remediation"].includes(step.reason)
+    (!["remediation", "confirmation-remediation"].includes(step.reason) ||
+      (step.unitId === currentProblem()?.unitId &&
+        (learningRole === "assessment" ||
+          step.problemId === learning.problemId)))
   ) {
     mode = "learn";
     learnScreen = "practice";

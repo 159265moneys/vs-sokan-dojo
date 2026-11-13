@@ -17,6 +17,7 @@ import {
   assessmentAvailability,
   unitStatus,
   requiredAssessmentDomains,
+  nextLearningStep,
 } from "../dist/learning-path.js";
 import {
   nextCourseStep,
@@ -119,6 +120,33 @@ function reviewFixture() {
     },
   };
 }
+
+test("quiet preparation builds from a stated candidate to local execution before a full winning sequence", () => {
+  const unit = units.find((u) => u.id === "prepare");
+  const localSettings = { ...settings, units: [unit] };
+  let progress = createPathProgress();
+  const expected = [
+    "quiet-shape",
+    "practice-prepare-v5-adjacent-elbow-remedial-two",
+    "practice-prepare-v5-adjacent-elbow-remedial-one",
+    "quiet-two-plans",
+  ];
+  for (const id of expected) {
+    const step = nextCourseStep(progress, localSettings);
+    assert.equal(step.kind, "lesson");
+    assert.equal(step.problemId, id);
+    progress = record(progress, byId.get(id), true);
+  }
+  const assessment = nextCourseStep(progress, localSettings);
+  assert.equal(assessment.kind, "assessment");
+  progress = record(progress, byId.get(assessment.problemId), true);
+  for (const route of [nextCourseStep, nextLearningStep]) {
+    const remediation = route(progress, localSettings);
+    assert.equal(remediation.kind, "lesson");
+    assert.equal(remediation.problemId, "quiet-two-plans", "baseline remediation still practices the full sequence");
+  }
+  assert.equal(unitStatus(progress, "prepare").currentConfirmed, false);
+});
 
 test("zero progress starts the authored lesson queue; hint completion never confirms", () => {
   let progress = createPathProgress();

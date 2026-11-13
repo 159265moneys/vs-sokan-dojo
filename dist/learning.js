@@ -7,10 +7,10 @@ import {
   units,
   problems,
   curriculumVersion,
-} from "./curriculum.js?v=curriculum-v5-stage3-20261113";
+} from "./curriculum.js?v=curriculum-v6-20261113";
 import { coord } from "./game.js";
 import { tacticalHintStages } from "./learning-hints.js";
-import { positionFingerprint } from "./learning-path.js?v=curriculum-v5-stage3-20261113";
+import { positionFingerprint } from "./learning-path.js?v=curriculum-v6-20261113";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const byId = new Map(problems.map((p) => [p.id, p]));
@@ -265,6 +265,47 @@ function hintKey(state) {
 }
 function makeHints(board, guide) {
   return tacticalHintStages(board, guide);
+}
+function preventionExplanation(before, after, placed) {
+  const immediate = winPoints(before, 2);
+  const threats = forkMoves(before, 2);
+  const threat = threats.includes(placed) ? placed : threats[0];
+  const hypothetical = [...before];
+  if (!immediate.length && threat !== undefined) hypothetical[threat] = 2;
+  const finishes = immediate.length ? immediate : winPoints(hypothetical, 2);
+  const supporting = [...new Set(windows
+    .filter((w) => w.filter((p) => hypothetical[p] === 2).length === 4 &&
+      !w.some((p) => hypothetical[p] === 1) &&
+      w.some((p) => finishes.includes(p)))
+    .flat().filter((p) => before[p] === 2))];
+  let text;
+  if (immediate.length)
+    text = `白は${immediate.map(coord).join("・")}で五連にできた。黒${coord(placed)}で完成点を塞ぎ、次の白の勝ちを防いだ。勝負は続く。`;
+  else if (threat !== undefined) {
+    const premise = `この手の前は、白${coord(threat)}で${finishes.map(coord).join("・")}が完成点になる。`;
+    if (threat === placed)
+      text = premise + `先に黒${coord(placed)}で交点を取り、二つ以上の勝ち口を作らせなかった。`;
+    else {
+      const reply = [...after];
+      reply[threat] = 2;
+      const remaining = winPoints(reply, 2), own = winPoints(reply, 1);
+      text = premise + (remaining.length >= 2 && own.length
+        ? `黒${coord(placed)}の後に白がそこへ攻めると、黒${coord(own[0])}の五連が先になる。`
+        : `黒${coord(placed)}で外側を塞ぐと、白${coord(threat)}の後の完成点は${remaining.length ? `${remaining.map(coord).join("・")}だけ` : "残らない"}。一手で受け切れない形を防いだ。`);
+    }
+  } else {
+    const own = winPoints(after, 1);
+    text = own.length
+      ? `黒${coord(placed)}で${own.map(coord).join("・")}が完成点になった。白は自分の三を伸ばす前に、この五連を防ぐ必要がある。`
+      : `黒${coord(placed)}の後、白の即五連と次に二つの完成点を作る手はない。勝負は続く。`;
+  }
+  return {
+    text,
+    highlights: [
+      ...(supporting.length ? [highlight(supporting, finishes.filter((p) => !after[p]), "danger")] : []),
+      highlight([placed], [], "good"),
+    ],
+  };
 }
 function guideAfter(state) {
   const own = winPoints(state.board, 1);
@@ -719,20 +760,22 @@ export function playLearningMove(state, i) {
     const immediate = winPoints(next.board, 2),
       forks = forkMoves(next.board, 2);
     if (!immediate.length && !forks.length) {
+      const explanation = preventionExplanation(state.board, next.board, i);
+      const text = p.judge.successText || explanation.text;
       next.transitionFrames = [
         makeFrame(
           next.board,
           i,
           p.judge.successTitle || "次の二重攻撃を消した",
-          p.judge.successText || "",
-          [highlight([i], [], "good")],
+          text,
+          explanation.highlights,
         ),
       ];
       return completed(
         next,
         "local-goal",
         p.judge.successTitle || "次の二重攻撃を防いだ",
-        p.judge.successText || "",
+        text,
       );
     }
     const frames = whiteRefutation(next, 5, 600) || [
@@ -986,7 +1029,7 @@ export function getLearningView(state) {
     state.status === "solved"
       ? state.transitionFrames.at(-1)
       : state.status === "feedback" && p.questionHighlights && !state.exercise
-        ? state.refutationFrames.at(-1)
+        ? state.refutationFrames.at(p.feedbackPreviewFrame ?? -1)
         : null;
   if (resultFrame) highlights = resultFrame.highlights || [];
   return clone({

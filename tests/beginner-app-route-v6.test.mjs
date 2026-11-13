@@ -68,3 +68,41 @@ for (const role of ["lesson", "assessment"])
     assert.equal(ctx.lessonReplay, null);
     assert.equal(active.hints.uses, 2);
   });
+
+test("a saved unfinished lesson remains resumable after the unit's lesson order changes", () => {
+  const active = { status: "choose", problemId: "quiet-two-plans", history: [1, 2], hints: { uses: 1 } };
+  const ctx = vm.createContext({
+    recommendedStep: () => ({ kind: "lesson", reason: "course-lesson", unitId: "prepare", problemId: "quiet-shape" }),
+    learningRole: "lesson", learning: active,
+    currentProblem: () => ({ unitId: "prepare" }),
+    mode: "learn", learnScreen: "library", lessonReplay: {},
+    render: () => {},
+    startProblem: () => { throw Error("reordered unit replaced the saved question"); },
+  });
+  vm.runInContext(source("goRecommended", "startGuidedNext") + "\ngoRecommended();", ctx);
+  assert.equal(ctx.learning, active);
+  assert.equal(ctx.learnScreen, "practice");
+  assert.deepEqual(active.history, [1, 2]);
+});
+
+for (const role of ["lesson", "assessment"])
+  test(`requesting help does not replace an unfinished ${role} with its remediation attempt`, () => {
+    const active = { status: "choose", problemId: "active", history: [1, 2], hints: { uses: 2 } };
+    const ctx = vm.createContext({
+      recommendedStep: () => ({
+        kind: "lesson", reason: "confirmation-remediation", unitId: "priority",
+        problemId: role === "lesson" ? "active" : "remedial",
+      }),
+      learningRole: role, learning: active,
+      currentProblem: () => ({ unitId: "priority" }),
+      mode: "learn", learnScreen: "library", lessonReplay: {},
+      render: () => {},
+      openUnit: () => { throw Error("unfinished attempt replaced by remediation"); },
+      startProblem: () => { throw Error("unfinished attempt restarted"); },
+    });
+    vm.runInContext(source("goRecommended", "startGuidedNext") + "\ngoRecommended();", ctx);
+    assert.equal(ctx.learning, active);
+    assert.equal(ctx.learnScreen, "practice");
+    assert.equal(active.hints.uses, 2);
+    assert.deepEqual(active.history, [1, 2]);
+  });

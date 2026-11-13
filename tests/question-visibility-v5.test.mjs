@@ -45,6 +45,32 @@ test("all problems begin with only their stated givens, not answer or hint data"
       assert.deepEqual(Object.keys(c).sort(), ["id", "title"]);
   }
 });
+test("the quiet-plan comparison names its hypothetical move without revealing the plan", () => {
+  const view = getLearningView(createAttempt("quiet-shape"));
+  assert.match(view.goal, /黒H8/);
+  assert.equal(view.board[parse("H8")], 0);
+  assert.deepEqual(view.highlights.flatMap((h) => h.points), [parse("H8")]);
+  assert.equal(view.hintLevel, 0);
+  assert.equal(view.feedback.text, "");
+  assert.deepEqual(view.transitionFrames, []);
+  assert(view.choices.every((choice) => Object.keys(choice).sort().join(",") === "id,title"));
+});
+test("quiet-plan mistakes show the candidate immediately after placement, not the worked example's final five", () => {
+  const original = createAttempt("quiet-shape");
+  for (const choice of ["four", "three"]) {
+    const state = answerLearningChoice(original, choice);
+    for (const answer of [state, restoreLearningAttempt(copy(state))]) {
+      assert(answer);
+      const view = getLearningView(answer);
+      assert.equal(view.status, "feedback");
+      assert.equal(view.board[parse("H8")], 1);
+      assert.equal(view.board[parse("H10")], 0);
+      assert.equal(view.board[parse("F8")], 0);
+      assert.equal(view.board.filter(Boolean).length, original.board.filter(Boolean).length + 1);
+      assert.equal(answer.history.length, 0, "hypothetical feedback is not a player's move");
+    }
+  }
+});
 test("retry, reload and view closing hide hints while preserving every exposure counter", () => {
   let state = createAttempt("shared-point-order", { attemptId: "hidden-hint" });
   state = hintLearning(hintLearning(hintLearning(state)));

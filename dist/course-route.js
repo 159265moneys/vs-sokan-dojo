@@ -2,8 +2,8 @@ import {
   createPathProgress,
   nextLearningStep,
   unitStatus,
-} from "./learning-path.js?v=curriculum-v5-stage3-20261113";
-import { problems } from "./curriculum.js?v=curriculum-v5-stage3-20261113";
+} from "./learning-path.js?v=curriculum-v6-20261113";
+import { problems } from "./curriculum.js?v=curriculum-v6-20261113";
 
 const authoredById = new Map(problems.map((problem) => [problem.id, problem]));
 
@@ -134,7 +134,9 @@ export function nextCourseStep(
           .includes(remediation.requiredDomain),
     );
     const problemId =
-      candidates.find((id) => !state.solved.get(unit.id).has(id)) || candidates[0];
+      candidates.find((id) => !state.solved.get(unit.id).has(id)) ||
+      (!remediation.requiredDomain && candidates.includes(unit.remediationProblemId)
+        ? unit.remediationProblemId : candidates[0]);
     return problemId
       ? lessonStep(unit, problemId, "confirmation-remediation")
       : {

@@ -4,7 +4,7 @@ import { exerciseSatisfied } from "./learning-objectives.js";
 import {
   problems as curriculumProblems,
   units as curriculumUnits,
-} from "./curriculum.js?v=curriculum-v5-stage3-20261113";
+} from "./curriculum.js?v=curriculum-v6-20261113";
 
 // Evidence is supplied by the caller. This module reads no clock and schedules nothing.
 export const pathSchemaVersion = 3;
@@ -295,7 +295,9 @@ function remediationLesson(unit, completedIds, domain = null) {
     (id) =>
       !domain || teachesRequiredDomain(curriculumById.get(id) || {}, domain),
   );
-  return candidates.find((id) => !completedIds.has(id)) || candidates[0];
+  return candidates.find((id) => !completedIds.has(id)) ||
+    (!domain && candidates.includes(unit.remediationProblemId)
+      ? unit.remediationProblemId : candidates[0]);
 }
 function assessmentBundle(rows, domains = [], baseline = true) {
   const selected = [];
