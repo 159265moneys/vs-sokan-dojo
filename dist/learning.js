@@ -1,10 +1,15 @@
 import {
+  exerciseSatisfied,
+  exerciseMoves,
+  exerciseFacts,
+} from "./learning-objectives.js";
+import {
   units,
   problems,
   curriculumVersion,
-} from "./curriculum.js?v=curriculum-v5-stage1-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage2-20261112";
 import { coord } from "./game.js";
-import { positionFingerprint } from "./learning-path.js?v=curriculum-v5-stage1-20261112";
+import { positionFingerprint } from "./learning-path.js?v=curriculum-v5-stage2-20261112";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const byId = new Map(problems.map((p) => [p.id, p]));
@@ -295,51 +300,10 @@ function guideAfter(state) {
   return proof.proven ? [proof.line[0]] : [];
 }
 function meetsExercise(board, exercise, placed) {
-  if (
-    !exercise ||
-    board[placed] !== 1 ||
-    !exercise.cells.every((i) => board[i] === 1)
-  )
-    return false;
-  const required = [...exercise.cells, placed];
-  if (exercise.objective === "prevent-fork")
-    return !winPoints(board, 2).length && !forkMoves(board, 2).length;
-  if (exercise.objective === "safe-four") {
-    const finishes = winPoints(board, 1);
-    if (!finishes.length || winPoints(board, 2).length) return false;
-    if (finishes.length >= 2) return true;
-    const reply = [...board];
-    reply[finishes[0]] = 2;
-    return winner(reply) !== 2 && !winPoints(reply, 2).length;
-  }
-  if (exercise.objective === "four")
-    return windows.some(
-      (w) =>
-        required.every((i) => w.includes(i)) &&
-        w.filter((i) => board[i] === 1).length === 4 &&
-        w.every((i) => board[i] !== 2),
-    );
-  if (exercise.objective === "open-three")
-    return sixWindows.some((w) => {
-      if (board[w[0]] || board[w[5]]) return false;
-      const middle = w.slice(1, 5);
-      return (
-        required.every((i) => middle.includes(i)) &&
-        middle.filter((i) => board[i] === 1).length === 3 &&
-        middle.every((i) => board[i] !== 2)
-      );
-    });
-  return false;
+  return exerciseSatisfied(board, exercise, placed);
 }
 function exerciseCandidates(board, exercise) {
-  const out = [];
-  for (let i = 0; i < 225; i++)
-    if (!board[i]) {
-      const after = [...board];
-      after[i] = 1;
-      if (meetsExercise(after, exercise, i)) out.push(i);
-    }
-  return out;
+  return exerciseMoves(board, exercise);
 }
 function directionName(cells) {
   return cells.every((i) => i % 15 === cells[0] % 15)
@@ -355,23 +319,48 @@ function initializeHints(state, guide) {
       ? clone(problem(state).hintStages)
       : makeHints(state.board, guide);
   state.hintTexts = state.exercise
-    ? state.exercise.objective === "safe-four"
+    ? state.exercise.objective === "two-directions"
       ? [
-          "黒の四を作る候補を探す。",
-          "白が受ける地点から、白の四方向を確かめる。",
-          "白の受けが四を作らない候補を選ぶ。",
+          "指定の黒石と候補を、縦・横・斜めで結ぶ。",
+          "白が途中に入らず、五つ並べる余地がある線を探す。",
+          "異なる二つの方向につながる点を比べる。",
         ]
-      : state.exercise.objective === "prevent-fork"
+      : state.exercise.objective === "open-four"
         ? [
-            "白が次に二つの完成点を作る交点を探す。",
-            "交点か、その先の完成点を塞ぐ候補を比べる。",
-            "置いた後に白の五連と二つの完成点が残らないか確かめる。",
+            "指定した石を使って四を作る候補を探す。",
+            "置いた後に、別々の完成点が二つ残るか数える。",
+            "外側の白石と盤端まで確かめる。",
           ]
-        : [
-            "白が止めた方向を確認する。",
-            "まだ白石のない、残った方向を使う。",
-            state.exercise.title,
-          ]
+        : state.exercise.objective === "five"
+          ? [
+              "今の一手で五つつながる点を探す。",
+              "端だけでなく、石の間の空点も見る。",
+              "自分の五連を完成させる。",
+            ]
+          : state.exercise.objective === "open-three" &&
+              problem(state).questionHighlights
+            ? [
+                "指定した石を使う三を探す。",
+                "その三から四へ伸ばした後、両端が空くか見る。",
+                "外側の白石と盤端まで確かめる。",
+              ]
+            : state.exercise.objective === "safe-four"
+              ? [
+                  "黒の四を作る候補を探す。",
+                  "白が受ける地点から、白の四方向を確かめる。",
+                  "白の受けが四を作らない候補を選ぶ。",
+                ]
+              : state.exercise.objective === "prevent-fork"
+                ? [
+                    "白が次に二つの完成点を作る交点を探す。",
+                    "交点か、その先の完成点を塞ぐ候補を比べる。",
+                    "置いた後に白の五連と二つの完成点が残らないか確かめる。",
+                  ]
+                : [
+                    "白が止めた方向を確認する。",
+                    "まだ白石のない、残った方向を使う。",
+                    state.exercise.title,
+                  ]
     : state.history.length
       ? [
           "直前の白石が、どの方向を止めたか見る。",
@@ -573,10 +562,89 @@ export function playLearningMove(state, i) {
   const p = problem(state),
     next = submitted(state, i);
   if (winner(next.board) === 1) {
-    next.transitionFrames = [makeFrame(next.board, i, "黒の五連")];
+    const predicted =
+      p.questionHighlights &&
+      p.nodes.flatMap((n) => n.choices).find((c) => c.correct);
+    next.transitionFrames = [
+      ...clone(predicted?.frames || []),
+      makeFrame(next.board, i, "黒の五連"),
+    ];
     return completed(next, "win", "五連");
   }
   if (state.exercise) {
+    if (
+      p.questionHighlights &&
+      ["open-four", "two-directions", "open-three", "five"].includes(
+        state.exercise.objective,
+      )
+    ) {
+      const goal = state.exercise.objective;
+      const facts = exerciseFacts(next.board, state.exercise, i);
+      if (facts) {
+        const names = facts.axes.map(
+          (axis) => ["横", "縦", "右下がりの斜め", "右上がりの斜め"][axis],
+        );
+        const title =
+          goal === "two-directions"
+            ? "二方向につながった"
+            : goal === "open-three"
+              ? "活四に進める三"
+              : "完成点を二つ作った";
+        const text =
+          goal === "two-directions"
+            ? `${coord(i)}から${state.exercise.cells.map(coord).join("・")}へ、${names.join("と")}の白を挟まない線でつながる。それぞれに五つ並べる余地がある。`
+            : goal === "open-three"
+              ? `${facts.cells.map(coord).join("・")}が、両端の空いた四へ伸ばせる三になった。`
+              : `${facts.points.map(coord).join("・")}が別々の完成点になった。白に今すぐ五連を作る点はない。`;
+        const predicted = p.nodes
+          .flatMap((n) => n.choices)
+          .find((c) => c.correct);
+        next.transitionFrames = [
+          ...clone(predicted?.frames || []),
+          makeFrame(next.board, i, title, text, [
+            highlight(
+              facts.cells,
+              facts.points,
+              goal === "two-directions" ? "focus" : "good",
+            ),
+          ]),
+        ];
+        return completed(next, "local-goal", title, text);
+      }
+      const enemy = winPoints(next.board, 2);
+      const proof = whiteRefutation(next);
+      if (proof)
+        return failed(next, "proven-loss", "白の攻めが先に届く", "", proof);
+      let title = "指定した形を比べる",
+        text;
+      if (enemy.length)
+        text = `白には${enemy.map(coord).join("・")}の完成点が残る。`;
+      else if (goal === "two-directions") {
+        const missing = state.exercise.cells.filter(
+          (cell) =>
+            !windows.some(
+              (w) =>
+                w.includes(i) &&
+                w.includes(cell) &&
+                w.every((point) => next.board[point] !== 2),
+            ),
+        );
+        title = "二方向の余地を確かめる";
+        text = missing.length
+          ? `${coord(i)}と${missing.map(coord).join("・")}をつなぐ線には、白を挟まず五つ並べる余地がない。`
+          : `${coord(i)}から指定の石への線が、異なる二方向には分かれない。縦・横・斜めの交点を比べよう。`;
+      } else if (goal === "open-four") {
+        text = `${coord(i)}では、指定の石を使う別々の完成点を二つ作れない。四にした後の外側まで確かめよう。`;
+      } else if (goal === "five")
+        text = `${coord(i)}では五連にならない。間の空点も含め、今の完成点を探そう。`;
+      else
+        text = `${coord(i)}では、指定の石を使って活四へ進める三にならない。三の外側の空きを比べよう。`;
+      return failed(next, "goal-miss", title, text, [
+        makeFrame(next.board, i, title, text, [
+          highlight(state.exercise.cells),
+        ]),
+      ]);
+    }
     if (["safe-four", "prevent-fork"].includes(state.exercise.objective)) {
       const safe = state.exercise.objective === "safe-four";
       if (meetsExercise(next.board, state.exercise, i)) {
@@ -800,6 +868,13 @@ export function answerLearningChoice(state, choiceId) {
       const before = [...next.board];
       next.board[m.i] = m.side;
       next.history.push({ ...m });
+      const authoredFrame = c.frames.find(
+        (f) => f.last === m.i && same(f.board, next.board),
+      );
+      if (authoredFrame) {
+        next.transitionFrames.push(clone(authoredFrame));
+        continue;
+      }
       if (m.side === 1) {
         const authored = c.frames.find(
           (f) => f.last === m.i && same(f.board, next.board),
@@ -909,6 +984,12 @@ export function getLearningView(state) {
         ? "board"
         : "choice";
   let highlights = [];
+  if (
+    state.status === "choose" &&
+    state.exercise?.cells.length &&
+    p.questionHighlights
+  )
+    highlights = [{ cells: state.exercise.cells, points: [], tone: "focus" }];
   if (state.status === "choose" && input === "choice")
     highlights = p.questionHighlights || [];
   if (state.status === "choose" && state.hints.level)
@@ -1085,10 +1166,32 @@ export function restoreLearningAttempt(raw) {
       }
     }
     if (raw.exercise) {
-      const allowed = p.nodes
+      const choice = p.nodes
         .flatMap((n) => n.choices)
-        .flatMap((c) => c.continuations || []);
-      if (!allowed.some((c) => same(c, raw.exercise))) return null;
+        .find(
+          (c) =>
+            c.correct &&
+            raw.nodeId === `compare-${c.id}` &&
+            c.continuations?.some((continuation) =>
+              same(continuation, raw.exercise),
+            ),
+        );
+      if (!choice) return null;
+      const prefix = raw.exercise.moves;
+      const matchesPrefix = (history) =>
+        history.length >= prefix.length &&
+        prefix.every(
+          (move, index) =>
+            history[index]?.i === move.i && history[index]?.side === move.side,
+        );
+      if (!matchesPrefix(raw.history) || !matchesPrefix(raw.checkpoint.history))
+        return null;
+      if (
+        raw.history.length !==
+        prefix.length + (raw.status === "choose" ? 0 : 1)
+      )
+        return null;
+      if (raw.checkpoint.history.length !== prefix.length) return null;
       if (
         raw.status === "solved" &&
         !meetsExercise(raw.board, raw.exercise, raw.feedback.move)

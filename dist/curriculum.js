@@ -2,10 +2,11 @@ import {
   priorityDefenseLesson,
   priorityDefenseFrames,
 } from "./priority-defense-lesson.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage1-20261112";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage2-20261112";
 import { parse, coord, winningMoves, winningLine } from "./game.js";
 import { conditionsPracticeLessons } from "./assessment-conditions-v5.js";
 import { counterPracticeProblems } from "./assessment-counter-v5.js";
+import { positionPracticeLessons } from "./assessment-positions-v5.js";
 
 export const curriculumVersion = "2026-11-11.2";
 const points = (s = "") => s.split(/\s+/).filter(Boolean).map(parse);
@@ -1204,6 +1205,7 @@ const lessons = [
   ...bank,
   ...conditionsPracticeLessons,
   ...counterPracticeProblems,
+  ...positionPracticeLessons,
 ];
 export const baseLessonProblems = freeze(bank);
 export const problems = freeze([...lessons, ...assessmentProblems]);

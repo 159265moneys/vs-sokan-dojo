@@ -1386,7 +1386,14 @@ test("actual authored-strength order, conditions, branch and quiet preparation s
     assert.equal(status.initialMethod, "practical");
     assert.equal(
       status.currentConfirmed,
-      !["conditions", "counter"].includes(unitId),
+      ![
+        "conditions",
+        "counter",
+        "branch",
+        "prepare",
+        "opening",
+        "practice",
+      ].includes(unitId),
       `${unitId}: two actual games preserve baseline history but cannot certify explicit prediction`,
     );
   }

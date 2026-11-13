@@ -87,10 +87,14 @@ function covered(unitId) {
   return progress;
 }
 
-test("v5 only adds explicit capability requirements to conditions and counter", () => {
+test("v5 retains the stage-one requirements while adding explicit position capabilities", () => {
   assert.deepEqual(Object.keys(requiredAssessmentDomains).sort(), [
+    "branch",
     "conditions",
     "counter",
+    "opening",
+    "practice",
+    "prepare",
   ]);
   for (const unit of units.filter(
     (unit) => !requiredAssessmentDomains[unit.id],

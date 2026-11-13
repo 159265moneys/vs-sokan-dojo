@@ -1,9 +1,10 @@
 import { winner, winningMoves } from "./game.js";
 import { lineShapes } from "./review-patterns.js";
+import { exerciseSatisfied } from "./learning-objectives.js";
 import {
   problems as curriculumProblems,
   units as curriculumUnits,
-} from "./curriculum.js?v=curriculum-v5-stage1-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage2-20261112";
 
 // Evidence is supplied by the caller. This module reads no clock and schedules nothing.
 export const pathSchemaVersion = 3;
@@ -13,6 +14,19 @@ export const retentionMinimumMs = 24 * 60 * 60 * 1000;
 export const requiredAssessmentDomains = Object.freeze({
   conditions: Object.freeze(["conditions-positive", "conditions-negative"]),
   counter: Object.freeze(["counter-threat", "counter-clear"]),
+  branch: Object.freeze(["branch-ready", "branch-rebuild"]),
+  prepare: Object.freeze(["prepare-two", "prepare-one"]),
+  opening: Object.freeze([
+    "opening-near-ready",
+    "opening-near-blocked",
+    "opening-far-ready",
+    "opening-far-blocked",
+  ]),
+  practice: Object.freeze([
+    "practical-win",
+    "practical-defense",
+    "practical-build",
+  ]),
 });
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const roles = new Set([
@@ -212,25 +226,58 @@ function trustedAssessmentDomain(value) {
     : null;
 }
 function domainEvidenceValid(value) {
-  const domain = trustedAssessmentDomain(value);
-  if (!domain || integer(value.acceptedDecisions) < 1) return false;
-  if (!domain.startsWith("counter-")) return true;
-  const authored = domainProblem(value);
   return (
-    value.acceptedDecisions >= 2 &&
-    Array.isArray(value.history) &&
-    value.history.length === 1 &&
-    value.history[0]?.side === 1 &&
-    Number.isInteger(value.history[0].i) &&
-    value.history[0].i >= 0 &&
-    value.history[0].i < 225 &&
-    authored.board[value.history[0].i] === 0
+    !!trustedAssessmentDomain(value) &&
+    comparisonEvidenceValid(value, domainProblem(value))
   );
 }
+function comparisonEvidenceValid(value, authored) {
+  if (authored.kind !== "compare" || integer(value.acceptedDecisions) < 1)
+    return false;
+  if (authored.unitId === "conditions") return true;
+  if (value.acceptedDecisions < 2 || !Array.isArray(value.history))
+    return false;
+  const continuations = (authored.nodes || []).flatMap((node) =>
+    (node.choices || [])
+      .filter((choice) => choice.correct)
+      .flatMap((choice) => choice.continuations || []),
+  );
+  return continuations.some((exercise) => {
+    const prefix = exercise.moves;
+    if (
+      !Array.isArray(prefix) ||
+      value.history.length !== prefix.length + 1 ||
+      !prefix.every(
+        (move, index) =>
+          move.i === value.history[index]?.i &&
+          move.side === value.history[index]?.side,
+      )
+    )
+      return false;
+    const placed = value.history.at(-1);
+    if (placed?.side !== 1) return false;
+    const board = [...authored.board];
+    for (const move of value.history) {
+      if (
+        !Number.isInteger(move?.i) ||
+        move.i < 0 ||
+        move.i >= 225 ||
+        ![1, 2].includes(move.side) ||
+        board[move.i] ||
+        winner(board)
+      )
+        return false;
+      board[move.i] = move.side;
+    }
+    return exerciseSatisfied(board, exercise, placed.i);
+  });
+}
 const baselineIndependent = (value) =>
-  independent(value) && !domainProblem(value);
+  independent(value) &&
+  !domainProblem(value) &&
+  !curriculumById.get(value.problemId || value.id)?.teachesAssessmentDomain;
 const domainOf = (value) => trustedAssessmentDomain(value);
-function teachesRequiredDomain(value, domain) {
+function teachesRequiredDomain(value, domain, completed = false) {
   if (!domain) return true;
   const authored = curriculumById.get(value.problemId || value.id);
   if (authored?.role !== "lesson") return false;
@@ -239,7 +286,8 @@ function teachesRequiredDomain(value, domain) {
     [].concat(authored.teachesAssessmentDomain || []).includes(domain) &&
     key.unitId === authored.unitId &&
     key.family === authored.family &&
-    key.fingerprint === positionFingerprint(authored.board)
+    key.fingerprint === positionFingerprint(authored.board) &&
+    (!completed || comparisonEvidenceValid(value, authored))
   );
 }
 function remediationLesson(unit, completedIds, domain = null) {
@@ -1604,7 +1652,7 @@ function assessmentReviewStates(progress, unitId, initial, practicalEvidence) {
           ([, attempt]) =>
             attempt.role === "lesson" &&
             attempt.status === "solved" &&
-            teachesRequiredDomain(attempt, requiredDomain) &&
+            teachesRequiredDomain(attempt, requiredDomain, true) &&
             attempt.completedOrdinal > failure.ordinal &&
             date(attempt.startedAt) &&
             datedAfter(attempt.completedAt, failureAt),
@@ -2319,7 +2367,7 @@ export function nextLearningStep(
   const lessonAfterFailure = completedLessons.some(
     (a) =>
       a.completedOrdinal > lastFailure &&
-      teachesRequiredDomain(a, requiredRemediationDomain),
+      teachesRequiredDomain(a, requiredRemediationDomain, true),
   );
   const journeyAfterFailure = Object.values(ledger.practicalResults).some(
     (record) => {

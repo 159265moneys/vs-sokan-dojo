@@ -13,9 +13,9 @@ import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111-v2";
 import {
   units,
   problems,
-} from "./curriculum.js?v=curriculum-v5-stage1-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage2-20261112";
 import { positionMoves, reviewStartPly } from "./training-sessions.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage1-20261112";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage2-20261112";
 import {
   createPathProgress,
   noteExposure,
@@ -26,7 +26,7 @@ import {
   recordPracticalResult,
   getExamStatus,
   recordReviewFindings,
-} from "./learning-path.js?v=curriculum-v5-stage1-20261112";
+} from "./learning-path.js?v=curriculum-v5-stage2-20261112";
 import {
   journeyTracks,
   createJourney,
@@ -55,7 +55,7 @@ import {
   recordLessonView,
   recordBoardExposure,
   getLearningStats,
-} from "./learning.js?v=curriculum-v5-stage1-20261112";
+} from "./learning.js?v=curriculum-v5-stage2-20261112";
 import {
   describeMove,
   judgeReviewMove,

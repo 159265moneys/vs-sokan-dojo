@@ -1,6 +1,7 @@
 import { parse, coord } from "./game.js";
 import { conditionsAssessments } from "./assessment-conditions-v5.js";
 import { counterAssessmentProblems } from "./assessment-counter-v5.js";
+import { positionAssessments } from "./assessment-positions-v5.js";
 
 const points = (s = "") => s.split(/\s+/).filter(Boolean).map(parse);
 const board = (black, white) => {
@@ -1294,4 +1295,5 @@ export const assessmentProblems = freeze([
   ...baseAssessmentProblems,
   ...conditionsAssessments,
   ...counterAssessmentProblems,
+  ...positionAssessments,
 ]);
