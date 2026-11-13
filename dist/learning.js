@@ -9,6 +9,7 @@ import {
   curriculumVersion,
 } from "./curriculum.js?v=curriculum-v5-stage3-20261113";
 import { coord } from "./game.js";
+import { tacticalHintStages } from "./learning-hints.js";
 import { positionFingerprint } from "./learning-path.js?v=curriculum-v5-stage3-20261113";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
@@ -263,35 +264,7 @@ function hintKey(state) {
   return `${state.nodeId || "play"}:${state.history.length}`;
 }
 function makeHints(board, guide) {
-  const focus = new Set(),
-    lines = new Set();
-  for (const p of guide) {
-    for (let i = 0; i < 225; i++)
-      if (
-        board[i] &&
-        Math.max(
-          Math.abs((i % 15) - (p % 15)),
-          Math.abs(((i / 15) | 0) - ((p / 15) | 0)),
-        ) <= 4
-      )
-        focus.add(i);
-    for (const w of windows)
-      if (
-        w.includes(p) &&
-        w.filter((i) => board[i] === 1).length >= 2 &&
-        !w.some((i) => board[i] === 2)
-      )
-        w.filter((i) => board[i]).forEach((i) => lines.add(i));
-  }
-  if (!focus.size)
-    board.forEach((c, i) => {
-      if (c) focus.add(i);
-    });
-  return [
-    [highlight([...focus])],
-    [highlight(lines.size ? [...lines] : [...focus])],
-    [highlight(lines.size ? [...lines] : [], guide)],
-  ];
+  return tacticalHintStages(board, guide);
 }
 function guideAfter(state) {
   const own = winPoints(state.board, 1);

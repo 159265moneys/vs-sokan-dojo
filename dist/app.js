@@ -22,12 +22,15 @@ import {
   recordAttemptEvidence,
   unitStatus,
   selectAssessment,
-  nextLearningStep,
   assessmentAvailability,
   recordPracticalResult,
   getExamStatus,
   recordReviewFindings,
 } from "./learning-path.js?v=curriculum-v5-stage3-20261113";
+import {
+  nextCourseStep,
+  courseProgressSummary,
+} from "./course-route.js?v=beginner-path-v6-20261113";
 import {
   journeyTracks,
   createJourney,
@@ -57,7 +60,7 @@ import {
   recordLessonView,
   recordBoardExposure,
   getLearningStats,
-} from "./learning.js?v=curriculum-v5-stage3-20261113";
+} from "./learning.js?v=beginner-path-v6-20261113";
 import {
   describeMove,
   judgeReviewMove,
@@ -670,9 +673,7 @@ function render() {
           : learnScreen === "demo"
             ? units.find((u) => u.id === unitId)?.title
             : learningRole === "assessment"
-              ? independentQuestion()
-                ? "確認問題"
-                : "復習問題"
+              ? `${currentUnit()?.title} · ${independentQuestion() ? "確認" : "復習"}`
               : learnSection === "mixed"
                 ? "問題練習"
                 : currentUnit()?.title
@@ -885,7 +886,7 @@ function exposeCurrent(kind) {
   savePath();
 }
 function recommendedStep(id = null) {
-  return nextLearningStep(pathProgress, {
+  return nextCourseStep(pathProgress, {
     units,
     assessmentProblems,
     unitId: id,
@@ -895,16 +896,13 @@ function recommendedStep(id = null) {
 function goRecommended(id = null) {
   const step = recommendedStep(id);
   if (
-    learningRole === "assessment" &&
     learning?.status === "choose" &&
-    (step.kind === "assessment" ||
-      step.kind === "assessment-unavailable" ||
-      (step.reason === "assessment-exhausted" &&
-        !currentProblem()?.assessmentDomain)) &&
+    (learningRole === "assessment" ||
+      (step.kind === "lesson" && step.problemId === learning.problemId)) &&
+    (!id || currentProblem()?.unitId === id) &&
+    step.kind !== "review" &&
     step.reason !== "review-transfer" &&
-    (!step.assessmentDomain ||
-      step.assessmentDomain === currentProblem()?.assessmentDomain) &&
-    step.unitId === currentProblem()?.unitId
+    !["remediation", "confirmation-remediation"].includes(step.reason)
   ) {
     mode = "learn";
     learnScreen = "practice";
@@ -959,10 +957,10 @@ function goRecommended(id = null) {
     return;
   }
   if (step.reason === "assessment-exhausted") {
-    startJourney("practice", { white: practiceLevelFor(step.unitId) });
+    showAssessmentUnavailable(step);
     return;
   }
-  if (step.reason === "initial-complete") {
+  if (["initial-complete", "course-practiced"].includes(step.reason)) {
     if (examState().challengeCompleted) {
       learnSection = "games";
       learnScreen = "library";
@@ -970,6 +968,10 @@ function goRecommended(id = null) {
       return;
     }
     startGuidedNext();
+    return;
+  }
+  if (step.kind === "journey" && step.guided) {
+    startJourney("build");
     return;
   }
   learnSection = "games";
@@ -1105,7 +1107,10 @@ function startAssessment(id, phase = "initial") {
       assessmentProblems,
       { phase, at: nowISO() },
     );
-    if (availability.reason === "domain-exhausted") {
+    if (
+      availability.state === "exhausted" ||
+      ["domain-exhausted", "baseline-exhausted"].includes(availability.reason)
+    ) {
       showAssessmentUnavailable(availability);
       return;
     }
@@ -1129,7 +1134,7 @@ function startAssessment(id, phase = "initial") {
       toast("保持確認は24時間以上あけて行います");
       return;
     }
-    startJourney("practice", { white: practiceLevelFor(id) });
+    showAssessmentUnavailable(availability);
     return;
   }
   learnSection = "lessons";
@@ -1137,13 +1142,15 @@ function startAssessment(id, phase = "initial") {
 }
 function pathCard() {
   const step = recommendedStep(),
-    u = units.find((u) => u.id === step.unitId);
-  const confirmed = units.filter(
-    (x) => unitStatus(pathProgress, x.id).currentConfirmed,
-  ).length;
+    u = units.find((u) => u.id === step.unitId),
+    course = courseProgressSummary(pathProgress, { units }),
+    index = units.findIndex((u) => u.id === step.unitId),
+    progressLabel = step.kind === "lesson"
+      ? `単元 ${index + 1}/${units.length} · 練習`
+      : `確認 ${course.confirmedUnitCount}/${units.length}`;
   const reached =
     step.reason === "initial-complete" && examState().challengeCompleted;
-  return `<div class='path-next'><div><span class='lesson-kicker'>次の一歩 · 確認 ${confirmed}/${units.length}</span><h2>${esc(reached ? "最強10局全勝" : step.kind === "journey" ? "空盤から試す" : u?.title)}</h2></div>${button("path-next", reached ? "成績を見る" : step.label, "primary")}</div>`;
+  return `<div class='path-next'><div><span class='lesson-kicker'>${esc(progressLabel)}</span><h2>${esc(reached ? "最強10局全勝" : step.kind === "journey" ? "空盤から試す" : u?.title)}</h2></div>${button("path-next", reached ? "成績を見る" : step.label, "primary")}</div>`;
 }
 function showAssessmentUnavailable(step) {
   mode = "learn";
@@ -1160,7 +1167,7 @@ function showAssessmentUnavailable(step) {
   );
   render();
   openModal(
-    `<h2>${esc(u?.title || "確認")}</h2><p>新しい確認問題なし</p><div class='modal-actions'>${button("unavailable-practice", "同じ形を練習", "primary", `data-unit-id='${esc(step.unitId)}' data-problem-id='${esc(lesson?.id || "")}'`)}${button("unavailable-units", "他の単元へ")}</div>`,
+    `<h2>${esc(u?.title || "確認")}</h2><p>確認は保留</p><div class='modal-actions'>${button("unavailable-course", "順に学ぶへ", "primary")}${button("unavailable-practice", "この単元を練習", "secondary", `data-unit-id='${esc(step.unitId)}' data-problem-id='${esc(lesson?.id || "")}'`)}</div>`,
   );
 }
 function examState() {
@@ -1550,7 +1557,7 @@ function renderLibrary() {
             )
               action = button("learn-resume", "問題の続き", "primary");
             else if (
-              availability.reason === "domain-exhausted" &&
+              availability.state === "exhausted" &&
               st.assessmentReview?.stage !== "remediation" &&
               !st.reviewPending
             )
@@ -1886,8 +1893,13 @@ function renderPanel() {
               );
     } else if (learning) {
       const v = getLearningView(learning),
-        f = v.feedback;
-      content = `<div class='lesson-kicker'>${problemQueue.length > 1 ? `問題 ${queueIndex + 1}/${problemQueue.length}` : ""}</div><h2 class='lesson-heading'>${esc(f?.title || v.goal)}</h2><p class='lesson-copy'>${esc(f?.text || "")}</p>`;
+        f = v.feedback,
+        unit = currentUnit(),
+        lessonIndex = unit?.problemIds.indexOf(learning.problemId) ?? -1,
+        sequence = learningRole === "lesson" && learnSection === "lessons" && lessonIndex >= 0
+          ? `練習 ${lessonIndex + 1}/${unit.problemIds.length}`
+          : problemQueue.length > 1 ? `問題 ${queueIndex + 1}/${problemQueue.length}` : "";
+      content = `<div class='lesson-kicker'>${sequence}</div><h2 class='lesson-heading'>${esc(f?.title || v.goal)}</h2><p class='lesson-copy'>${esc(f?.text || "")}</p>`;
 
       if (v.hintLevel)
         content += `<p class='lesson-copy hint-copy'>${esc(v.hintText || "印をつけた石から、次に四や五になる点を考えよう。")}</p><div class='hint-step'>ヒント ${v.hintLevel}</div>`;
@@ -2580,6 +2592,10 @@ function retryEngine() {
   render();
 }
 const actions = {
+  "unavailable-course": () => {
+    closeModal();
+    goRecommended();
+  },
   "unavailable-check": (el) =>
     showAssessmentUnavailable(
       assessmentAvailability(
