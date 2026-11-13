@@ -20,7 +20,7 @@ const day = "2026-11-12T09:00:00+09:00";
 const later = "2026-11-14T09:00:00+09:00";
 const copy = (value) => JSON.parse(JSON.stringify(value));
 const assessmentBank = problems.filter(
-  (problem) => problem.role === "assessment",
+  (problem) => problem.role === "assessment" && problem.supply !== "reserve",
 );
 const baseline = (unitId) =>
   assessmentBank.filter(
@@ -388,7 +388,7 @@ for (const unitId of ["conditions", "counter"]) {
         units: units.filter((unit) => unit.id === unitId),
         assessmentProblems: assessmentBank,
       }).reason,
-      "assessment-exhausted",
+      "domain-exhausted",
     );
   });
 }

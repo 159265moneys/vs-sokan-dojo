@@ -4,7 +4,7 @@ import { exerciseSatisfied } from "./learning-objectives.js";
 import {
   problems as curriculumProblems,
   units as curriculumUnits,
-} from "./curriculum.js?v=curriculum-v5-stage2-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage3-20261113";
 
 // Evidence is supplied by the caller. This module reads no clock and schedules nothing.
 export const pathSchemaVersion = 3;
@@ -429,6 +429,14 @@ export function createPathProgress(
     result.attempts[id] = clone(attempt);
     // Re-derive capability identity on restore without discarding historical rows.
     result.attempts[id].assessmentDomain = trustedAssessmentDomain(attempt);
+    if (
+      attempt.role === "assessment" &&
+      (domainProblem(attempt) ||
+        attempt.assessmentDomain ||
+        attempt.supply === "reserve") &&
+      !result.attempts[id].assessmentDomain
+    )
+      result.attempts[id].invalidAssessmentDomain = true;
     if (assessmentExclusion(attempt.problemId))
       result.attempts[id].assessmentExclusion = assessmentExclusion(
         attempt.problemId,
@@ -781,7 +789,6 @@ export function recordAttemptEvidence(progress, attempt, metadata = {}) {
     status,
     family: prior?.family || key.family,
     fingerprint: prior?.fingerprint || key.fingerprint,
-    assessmentDomain: trustedAssessmentDomain(key),
     acceptedDecisions: Math.max(
       integer(prior?.acceptedDecisions),
       integer(attempt.metrics?.acceptedDecisions ?? attempt.acceptedDecisions),
@@ -820,6 +827,18 @@ export function recordAttemptEvidence(progress, attempt, metadata = {}) {
       integer(attempt.metrics?.retries ?? attempt.retries),
     ),
   };
+  row.assessmentDomain = trustedAssessmentDomain(row);
+  if (
+    prior?.invalidAssessmentDomain ||
+    (role === "assessment" &&
+      (domainProblem(row) ||
+        metadata.assessmentDomain ||
+        attempt.assessmentDomain ||
+        metadata.supply === "reserve" ||
+        attempt.supply === "reserve") &&
+      !row.assessmentDomain)
+  )
+    row.invalidAssessmentDomain = true;
   const newFailure =
     (row.status === "feedback" && prior?.status !== "feedback") ||
     ["hints", "mistakes", "unknownSelections", "retries"].some(
@@ -837,6 +856,7 @@ export function recordAttemptEvidence(progress, attempt, metadata = {}) {
 function independent(a) {
   return (
     a.role === "assessment" &&
+    !a.invalidAssessmentDomain &&
     !assessmentExclusion(a.problemId) &&
     a.status === "solved" &&
     a.family &&
@@ -1566,6 +1586,7 @@ function reviewStages(progress, unitId = null) {
 function failedAssessment(attempt) {
   return (
     attempt.role === "assessment" &&
+    !attempt.invalidAssessmentDomain &&
     !assessmentExclusion(attempt.problemId) &&
     (attempt.status === "feedback" ||
       attempt.hints ||
@@ -2189,7 +2210,19 @@ export function unitStatus(progress, unitId) {
   };
 }
 
-export function selectAssessment(
+const reserveProblem = (problem) =>
+  !!trustedAssessmentDomain(problem) &&
+  curriculumById.get(problem.problemId || problem.id)?.supply === "reserve";
+const supplyCounts = (problems) => {
+  const reserve = problems.filter(reserveProblem).length;
+  return {
+    authored: problems.length - reserve,
+    reserve,
+    total: problems.length,
+  };
+};
+
+function assessmentSupply(
   progress,
   unitId,
   bank,
@@ -2197,14 +2230,17 @@ export function selectAssessment(
 ) {
   const p = createPathProgress(progress),
     status = unitStatus(p, unitId);
-  if (
-    phase === "retention" &&
-    (!(status.requiredAssessmentDomains.length
-      ? status.currentConfirmed
-      : status.initialConfirmed) ||
-      !laterDay(at, status.coverageInitialAt || status.initialAt))
-  )
-    return null;
+  const initialReady = status.requiredAssessmentDomains.length
+    ? status.currentConfirmed
+    : status.initialConfirmed;
+  const waitingReason =
+    phase !== "retention"
+      ? null
+      : !initialReady
+        ? "initial-incomplete"
+        : !laterDay(at, status.coverageInitialAt || status.initialAt)
+          ? "retention-not-due"
+          : null;
   const successful = new Set(
     Object.values(p.attempts)
       .filter((a) => a.unitId === unitId && independent(a))
@@ -2224,23 +2260,124 @@ export function selectAssessment(
     : phase === "retention"
       ? !status.baselineRetained
       : !status.baselineConfirmed;
-  const candidates = (Array.isArray(bank) ? bank : []).filter(
+  const seenCandidates = new Set();
+  const available = (Array.isArray(bank) ? bank : [])
+    .filter(
+      (problem) =>
+        problem.role === "assessment" &&
+        !assessmentExclusion(problem.problemId || problem.id) &&
+        (problem.unitId || problem.skillId) === unitId &&
+        matchesCondition(problem, requiredCondition) &&
+        (!domainProblem(problem) || !!trustedAssessmentDomain(problem)) &&
+        (!problem.assessmentDomain || !!trustedAssessmentDomain(problem)) &&
+        (problem.supply !== "reserve" ||
+          curriculumById.has(problem.problemId || problem.id)) &&
+        !curriculumById.get(problem.problemId || problem.id)
+          ?.teachesAssessmentDomain &&
+        !wasSeen(p, identity(problem)),
+    )
+    .map((problem) =>
+      trustedAssessmentDomain(problem)
+        ? curriculumById.get(problem.problemId || problem.id)
+        : problem,
+    )
+    .filter((problem) => {
+      const key = identity(problem);
+      const structure = key.fingerprint || key.problemId;
+      if (seenCandidates.has(structure)) return false;
+      seenCandidates.add(structure);
+      return true;
+    });
+  const candidates = available.filter(
     (problem) =>
-      problem.role === "assessment" &&
-      !assessmentExclusion(problem.problemId || problem.id) &&
-      (problem.unitId || problem.skillId) === unitId &&
-      matchesCondition(problem, requiredCondition) &&
-      (!status.requiredAssessmentDomains.length ||
-        (needsBaseline
-          ? !domainProblem(problem)
-          : pendingDomains.includes(trustedAssessmentDomain(problem)))) &&
-      !wasSeen(p, identity(problem)),
+      !status.requiredAssessmentDomains.length ||
+      (needsBaseline
+        ? !domainProblem(problem)
+        : pendingDomains.includes(trustedAssessmentDomain(problem))),
   );
   candidates.sort(
     (a, b) =>
+      Number(reserveProblem(a)) - Number(reserveProblem(b)) ||
       Number(successful.has(a.family)) - Number(successful.has(b.family)),
   );
-  return candidates[0] || null;
+  const domains = status.requiredAssessmentDomains.map((assessmentDomain) => ({
+    assessmentDomain,
+    pending: pendingDomains.includes(assessmentDomain),
+    remaining: supplyCounts(
+      available.filter(
+        (problem) => trustedAssessmentDomain(problem) === assessmentDomain,
+      ),
+    ),
+  }));
+  const exhaustedDomains = domains
+    .filter((domain) => domain.pending && !domain.remaining.total)
+    .map((domain) => domain.assessmentDomain);
+  const complete =
+    phase === "retention" ? status.retained : status.currentConfirmed;
+  const state = complete
+    ? "complete"
+    : waitingReason
+      ? "waiting"
+      : candidates.length
+        ? "ready"
+        : "exhausted";
+  const selected = waitingReason ? null : candidates[0] || null;
+  return {
+    selected,
+    availability: {
+      unitId,
+      phase: phase === "retention" ? phase : review ? "reconfirmation" : phase,
+      state,
+      reason:
+        state === "waiting"
+          ? waitingReason
+          : state === "exhausted"
+            ? exhaustedDomains.length
+              ? "domain-exhausted"
+              : "baseline-exhausted"
+            : null,
+      problemId:
+        state === "ready" ? selected?.id || selected?.problemId || null : null,
+      assessmentDomain:
+        state === "ready"
+          ? trustedAssessmentDomain(selected)
+          : exhaustedDomains[0] ||
+            (!needsBaseline ? pendingDomains[0] : null) ||
+            null,
+      needsBaseline,
+      pendingDomains: [...pendingDomains],
+      exhaustedDomains,
+      remaining: supplyCounts(candidates),
+      domains,
+    },
+  };
+}
+
+export function assessmentAvailability(progress, unitId, bank, options = {}) {
+  return assessmentSupply(progress, unitId, bank, options).availability;
+}
+
+export function selectAssessment(progress, unitId, bank, options = {}) {
+  return assessmentSupply(progress, unitId, bank, options).selected;
+}
+
+function domainUnavailable(availability) {
+  if (
+    availability.state !== "exhausted" ||
+    availability.reason !== "domain-exhausted"
+  )
+    return null;
+  return {
+    kind: "assessment-unavailable",
+    unitId: availability.unitId,
+    assessmentDomain: availability.assessmentDomain,
+    pendingDomains: availability.pendingDomains,
+    exhaustedDomains: availability.exhaustedDomains,
+    needsBaseline: availability.needsBaseline,
+    phase: availability.phase,
+    reason: "domain-exhausted",
+    label: "復習へ",
+  };
 }
 
 export function nextLearningStep(
@@ -2298,9 +2435,14 @@ export function nextLearningStep(
       target = prerequisite(pending[0]);
   }
   const status = unitStatus(progress, target.id);
-  const problem = selectAssessment(progress, target.id, assessmentProblems, {
-    at,
-  });
+  const { selected: problem, availability } = assessmentSupply(
+    progress,
+    target.id,
+    assessmentProblems,
+    {
+      at,
+    },
+  );
   const rows = Object.values(ledger.attempts).filter(
     (a) => a.unitId === target.id,
   );
@@ -2339,7 +2481,7 @@ export function nextLearningStep(
           reason: "reconfirmation",
           label: "新しい局面で確認",
         }
-      : {
+      : domainUnavailable(availability) || {
           kind: "journey",
           unitId: target.id,
           reason: "assessment-exhausted",
@@ -2446,12 +2588,14 @@ export function nextLearningStep(
         ? { assessmentDomain: trustedAssessmentDomain(problem) }
         : {}),
     };
-  return {
-    kind: "journey",
-    unitId: target.id,
-    reason: "assessment-exhausted",
-    label: "課題対局",
-  };
+  return (
+    domainUnavailable(availability) || {
+      kind: "journey",
+      unitId: target.id,
+      reason: "assessment-exhausted",
+      label: "課題対局",
+    }
+  );
 }
 
 function fullGameCheck(record) {

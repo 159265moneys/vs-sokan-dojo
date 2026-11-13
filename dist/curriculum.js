@@ -2,7 +2,7 @@ import {
   priorityDefenseLesson,
   priorityDefenseFrames,
 } from "./priority-defense-lesson.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage2-20261112";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage3-20261113";
 import { parse, coord, winningMoves, winningLine } from "./game.js";
 import { conditionsPracticeLessons } from "./assessment-conditions-v5.js";
 import { counterPracticeProblems } from "./assessment-counter-v5.js";

@@ -1,0 +1,3406 @@
+{
+  "schemaVersion": 1,
+  "registryVersion": "reserve-v5.1",
+  "recipes": [
+    {
+      "id": "gen-v5-relocate1:check-conditions-01:w55-128",
+      "source": "check-conditions-01",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-01",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 55,
+        "to": 128
+      },
+      "domain": "conditions-negative",
+      "positionFingerprint": "0,0,2;0,10,1;2,12,2;4,2,2;4,4,1;4,5,1;4,6,1;4,7,2;4,8,2;9,1,1",
+      "semanticFingerprint": "conditions-negative|0,0,W;0,1,C;0,1,S;0,2,S;0,3,S;0,4,S;0,5,W",
+      "certificate": {
+        "accepted": [],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-conditions-04:w31-47",
+      "source": "check-conditions-04",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-04",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 31,
+        "to": 47
+      },
+      "domain": "conditions-negative",
+      "positionFingerprint": "0,1,1;0,10,2;2,0,2;4,12,2;4,6,2;6,4,1;7,3,1;8,2,1;9,1,2;9,10,1",
+      "semanticFingerprint": "conditions-negative|0,0,W;1,1,C;1,1,S;2,2,S;3,3,S;4,4,S;5,5,W",
+      "certificate": {
+        "accepted": [],
+        "finishes": [],
+        "outcome": "zero",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-conditions-04:w127-47",
+      "source": "check-conditions-04",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-04",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 127,
+        "to": 47
+      },
+      "domain": "conditions-negative",
+      "positionFingerprint": "0,0,2;0,8,2;1,1,2;1,10,1;10,1,1;10,10,2;12,6,2;2,2,1;3,3,1;4,4,1",
+      "semanticFingerprint": "conditions-negative|0,0,F;1,1,C;1,1,S;2,2,S;3,3,S;4,4,S;5,5,W",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          127
+        ],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-conditions-07:w39-64",
+      "source": "check-conditions-07",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-07",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 39,
+        "to": 64
+      },
+      "domain": "conditions-negative",
+      "positionFingerprint": "0,0,1;0,12,2;10,6,1;13,13,2;2,10,2;2,2,1;3,3,1;4,4,2;4,8,2;7,11,1",
+      "semanticFingerprint": "conditions-negative|0,0,S;1,1,C;1,1,S;2,2,S;3,3,S;4,4,W",
+      "certificate": {
+        "accepted": [],
+        "finishes": [],
+        "outcome": "zero",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-conditions-10:w174-169",
+      "source": "check-conditions-10",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-10",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 174,
+        "to": 169
+      },
+      "domain": "conditions-negative",
+      "positionFingerprint": "0,10,2;2,11,1;4,12,2;4,2,1;6,0,2;7,13,2;9,5,1;9,6,1;9,8,1;9,9,2",
+      "semanticFingerprint": "conditions-negative|0,0,F;0,1,S;0,2,S;0,3,C;0,3,S;0,4,S;0,5,W",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          174
+        ],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-conditions-11:w43-112",
+      "source": "check-conditions-11",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-11",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 43,
+        "to": 112
+      },
+      "domain": "conditions-negative",
+      "positionFingerprint": "0,0,2;1,2,1;1,9,2;10,10,1;10,3,2;4,2,2;5,11,2;6,10,1;6,5,1;6,7,2;6,8,1;6,9,1;8,1,1;8,12,2",
+      "semanticFingerprint": "conditions-negative|0,0,S;0,1,C;0,1,S;0,2,W;0,3,S;0,4,S;0,5,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [],
+        "outcome": "zero",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-counter-v5-straight-reply-clear:w127-113",
+      "source": "check-counter-v5-straight-reply-clear",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-clear",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 127,
+        "to": 113
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,0,1;0,1,1;0,3,1;0,4,2;2,2,2;3,2,2",
+      "semanticFingerprint": "counter-clear|0,0,A;0,0,C;0,0,S;0,1,S;0,2,S;0,3,A;0,4,S;2,3,W;3,3,W",
+      "certificate": {
+        "accepted": [
+          108,
+          111
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-counter-v5-diagonal-attack-clear:w128-174",
+      "source": "check-counter-v5-diagonal-attack-clear",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-clear",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 128,
+        "to": 174
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,0,1;0,2,2;1,1,1;1,2,2;3,3,1;4,4,2",
+      "semanticFingerprint": "counter-clear|0,0,A;0,0,C;0,0,S;1,1,S;1,3,W;2,2,S;2,3,W;3,3,A;4,4,S",
+      "certificate": {
+        "accepted": [
+          94,
+          142
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-double-interior-gap-rebuild:w31-52",
+      "source": "check-branch-v5-double-interior-gap-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 31,
+        "to": 52
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;0,5,2;1,5,1;3,5,1;4,6,1;4,8,1;7,2,2;7,5,2",
+      "semanticFingerprint": "branch-rebuild|0,0,W;0,1,S;0,3,S;0,4,C;0,4,S;1,2,A;1,4,S;2,3,A;2,5,A;3,0,A;3,3,A;3,4,S;3,6,A;4,3,A",
+      "certificate": {
+        "accepted": [
+          64,
+          80,
+          108,
+          109,
+          110,
+          126,
+          154
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-double-interior-gap-rebuild:w31-64",
+      "source": "check-branch-v5-double-interior-gap-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 31,
+        "to": 64
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;0,5,2;1,5,1;3,5,1;4,6,1;4,8,1;6,8,2;7,2,2",
+      "semanticFingerprint": "branch-rebuild|0,0,A;0,3,C;0,3,S;0,4,S;0,6,S;0,7,W;1,3,S;1,5,A;2,2,A;2,4,A;3,3,S;3,4,A;3,7,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          52,
+          80,
+          108,
+          109,
+          110,
+          126,
+          154
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-double-interior-gap-rebuild:w31-80",
+      "source": "check-branch-v5-double-interior-gap-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 31,
+        "to": 80
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;0,5,2;1,5,1;3,5,1;4,6,1;4,8,1;5,7,2;7,2,2",
+      "semanticFingerprint": "branch-rebuild|0,0,C;0,0,S;0,1,S;0,3,S;0,4,W;1,0,S;1,2,A;2,1,A;3,0,S;3,1,A;3,4,A;4,1,A",
+      "certificate": {
+        "accepted": [
+          108,
+          109,
+          110,
+          126,
+          154
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-double-interior-gap-rebuild:w31-108",
+      "source": "check-branch-v5-double-interior-gap-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 31,
+        "to": 108
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;0,5,2;1,5,1;3,5,1;3,9,2;4,6,1;4,8,1;7,2,2",
+      "semanticFingerprint": "branch-rebuild|0,0,A;0,3,A;0,4,S;0,6,A;1,3,A;1,5,A;2,2,A;2,4,S;3,0,W;3,1,S;3,3,S;3,4,C;3,4,S;3,7,A",
+      "certificate": {
+        "accepted": [
+          52,
+          64,
+          80,
+          109,
+          110,
+          126,
+          154
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-double-interior-gap-rebuild:w31-109",
+      "source": "check-branch-v5-double-interior-gap-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 31,
+        "to": 109
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;0,5,2;1,5,1;3,5,1;3,8,2;4,6,1;4,8,1;7,2,2",
+      "semanticFingerprint": "branch-rebuild|0,0,A;0,3,C;0,3,S;0,4,S;0,6,S;0,7,W;1,3,S;1,5,A;2,2,A;2,4,A;3,1,A;3,3,S",
+      "certificate": {
+        "accepted": [
+          52,
+          64,
+          80,
+          110,
+          126
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-double-interior-gap-rebuild:w31-110",
+      "source": "check-branch-v5-double-interior-gap-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 31,
+        "to": 110
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;0,5,2;1,5,1;3,5,1;3,7,2;4,6,1;4,8,1;7,2,2",
+      "semanticFingerprint": "branch-rebuild|0,0,A;0,3,C;0,3,S;0,4,S;0,6,S;0,7,W;1,3,S;2,2,A;3,1,A;3,3,S;3,7,A",
+      "certificate": {
+        "accepted": [
+          52,
+          64,
+          80,
+          154
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-offset-arm-rebuild:w71-91",
+      "source": "check-branch-v5-offset-arm-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-offset-arm-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 71,
+        "to": 91
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;0,5,2;11,2,2;2,7,1;4,5,1;5,1,1;5,2,1;5,5,2",
+      "semanticFingerprint": "branch-rebuild|0,1,A;1,2,A;2,0,S;2,1,S;2,3,C;2,3,S;2,4,W;3,0,A;3,1,A;3,2,A;3,4,S;4,3,A;5,6,S;6,1,A",
+      "certificate": {
+        "accepted": [
+          109,
+          125,
+          127,
+          137,
+          140,
+          143,
+          155
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-branch-v5-offset-arm-rebuild:w71-109",
+      "source": "check-branch-v5-offset-arm-rebuild",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-offset-arm-rebuild",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 71,
+        "to": 109
+      },
+      "domain": "branch-rebuild",
+      "positionFingerprint": "0,0,2;1,5,1;2,11,2;2,5,1;4,3,2;5,4,1;5,5,2;7,2,1",
+      "semanticFingerprint": "branch-rebuild|0,0,S;2,2,S;2,3,W;3,3,C;3,3,S;4,2,A;4,4,A;5,2,A;5,3,S;5,5,A;6,2,A;6,3,S",
+      "certificate": {
+        "accepted": [
+          125,
+          127,
+          140,
+          143,
+          155
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-prepare-v5-oblique-and-wide-two:w56-47",
+      "source": "check-prepare-v5-oblique-and-wide-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-oblique-and-wide-two",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 56,
+        "to": 47
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;0,9,2;2,2,1;4,7,1",
+      "semanticFingerprint": "prepare-two|0,0,W;2,2,S;3,3,A;4,4,C;4,5,A;4,6,A;4,7,S;5,5,A",
+      "certificate": {
+        "accepted": [
+          95,
+          126,
+          127,
+          141
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-prepare-v5-oblique-and-wide-two:w56-143",
+      "source": "check-prepare-v5-oblique-and-wide-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-oblique-and-wide-two",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 56,
+        "to": 143
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;2,4,1;3,6,2;7,2,1",
+      "semanticFingerprint": "prepare-two|0,0,A;1,1,S;2,2,A;3,3,C;3,4,A;3,5,A;3,6,S;5,5,W",
+      "certificate": {
+        "accepted": [
+          63,
+          95,
+          126,
+          141
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-prepare-v5-oblique-and-wide-one:w63-96",
+      "source": "check-prepare-v5-oblique-and-wide-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-oblique-and-wide-one",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 63,
+        "to": 96
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;2,4,1;6,4,2;7,2,1",
+      "semanticFingerprint": "prepare-one|0,0,A;1,1,S;2,2,A;2,3,W;3,3,C;4,4,A;6,3,S",
+      "certificate": {
+        "accepted": [
+          63,
+          95,
+          127
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-prepare-v5-near-and-wide-two:w62-138",
+      "source": "check-prepare-v5-near-and-wide-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-near-and-wide-two",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 62,
+        "to": 138
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;4,6,1;4,8,2;7,4,1",
+      "semanticFingerprint": "prepare-two|0,0,A;0,1,C;0,2,A;0,3,S;0,5,W;1,1,A;2,1,A;3,1,S",
+      "certificate": {
+        "accepted": [
+          112,
+          127,
+          141,
+          143
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-prepare-v5-near-and-wide-two:w62-144",
+      "source": "check-prepare-v5-near-and-wide-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-near-and-wide-two",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 62,
+        "to": 144
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;2,4,2;4,7,1;6,4,1",
+      "semanticFingerprint": "prepare-two|0,0,A;0,1,S;0,2,A;0,3,C;0,5,W;1,3,A;2,3,A;3,3,S",
+      "certificate": {
+        "accepted": [
+          112,
+          127,
+          139,
+          141
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-prepare-v5-near-and-wide-one:w143-82",
+      "source": "check-prepare-v5-near-and-wide-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-near-and-wide-one",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 143,
+        "to": 82
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;4,6,1;7,4,1;8,4,2",
+      "semanticFingerprint": "prepare-one|0,0,A;0,1,C;0,2,A;0,3,S;0,4,A;3,1,S;4,1,W",
+      "certificate": {
+        "accepted": [
+          139,
+          141,
+          143
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-near:w191-93",
+      "source": "check-opening-v5-orthogonal-gap-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 191,
+        "to": 93
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,1;0,4,2;1,2,2;2,2,1",
+      "semanticFingerprint": "opening-near-blocked|0,0,W;0,2,C;0,4,S;1,2,W;2,2,S;2,4,A;2,6,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          127,
+          129,
+          157
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-near:w191-112",
+      "source": "check-opening-v5-orthogonal-gap-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 191,
+        "to": 112
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,1;0,1,2;2,1,2;2,2,1",
+      "semanticFingerprint": "opening-near-blocked|0,0,A;0,2,C;0,4,S;1,2,W;2,2,S;2,6,A",
+      "certificate": {
+        "accepted": [
+          93,
+          129
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-near:w191-113",
+      "source": "check-opening-v5-orthogonal-gap-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 191,
+        "to": 113
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,1;0,1,2;2,2,1;3,1,2",
+      "semanticFingerprint": "opening-near-blocked|0,0,A;0,2,A;0,4,S;2,2,S;2,3,W;2,4,C;4,4,A",
+      "certificate": {
+        "accepted": [
+          93,
+          127,
+          157
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-near:w191-126",
+      "source": "check-opening-v5-orthogonal-gap-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 191,
+        "to": 126
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,1;0,1,2;1,0,2;2,2,1",
+      "semanticFingerprint": "opening-near-blocked|0,0,A;0,2,C;0,4,S;1,2,W;2,2,S;4,4,A",
+      "certificate": {
+        "accepted": [
+          93,
+          157
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-near:w191-127",
+      "source": "check-opening-v5-orthogonal-gap-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 191,
+        "to": 127
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,1;0,1,2;2,0,2;2,2,1",
+      "semanticFingerprint": "opening-near-blocked|0,0,A;0,2,C;0,4,S;1,2,W;2,2,S",
+      "certificate": {
+        "accepted": [
+          93
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-near:w191-141",
+      "source": "check-opening-v5-orthogonal-gap-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 191,
+        "to": 141
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,1;1,2,2;2,2,1;3,1,2",
+      "semanticFingerprint": "opening-near-blocked|0,0,A;0,2,A;0,4,S;1,4,W;2,2,S;2,4,C;2,6,A",
+      "certificate": {
+        "accepted": [
+          93,
+          127,
+          129
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-far:w161-65",
+      "source": "check-opening-v5-orthogonal-gap-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-far",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 161,
+        "to": 65
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,2;0,4,1;2,2,1;6,8,2",
+      "semanticFingerprint": "opening-far-ready|0,2,A;2,0,A;2,2,A;2,4,S;4,2,S;4,4,C;4,6,A;6,4,W",
+      "certificate": {
+        "accepted": [
+          93,
+          127,
+          129,
+          157
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-far:w161-112",
+      "source": "check-opening-v5-orthogonal-gap-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-far",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 161,
+        "to": 112
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,2;4,5,2;4,6,1;6,4,1",
+      "semanticFingerprint": "opening-far-ready|0,0,A;0,4,S;2,2,S;2,4,C;2,6,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          65,
+          93,
+          129
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-far:w161-113",
+      "source": "check-opening-v5-orthogonal-gap-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-far",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 161,
+        "to": 113
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,2;3,5,2;4,6,1;6,4,1",
+      "semanticFingerprint": "opening-far-ready|0,0,A;0,2,A;0,4,S;2,2,S;2,4,C;2,6,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          65,
+          93,
+          127,
+          157
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-orthogonal-gap-far:w161-127",
+      "source": "check-opening-v5-orthogonal-gap-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-far",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 161,
+        "to": 127
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,2;4,4,2;4,6,1;6,4,1",
+      "semanticFingerprint": "opening-far-ready|0,2,A;2,0,A;2,2,C;2,4,S;4,2,S",
+      "certificate": {
+        "accepted": [
+          65,
+          93
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-oblique-bridge-near:w192-34",
+      "source": "check-opening-v5-oblique-bridge-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-oblique-bridge-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 192,
+        "to": 34
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,1;0,4,1;1,1,2;4,0,2",
+      "semanticFingerprint": "opening-near-blocked|0,0,A;0,4,A;2,2,A;4,0,S;4,4,S;5,1,W;6,2,C;8,0,W",
+      "certificate": {
+        "accepted": [
+          126,
+          154,
+          158
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-oblique-bridge-near:w192-109",
+      "source": "check-opening-v5-oblique-bridge-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-oblique-bridge-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 192,
+        "to": 109
+      },
+      "domain": "opening-near-blocked",
+      "positionFingerprint": "0,0,2;0,1,1;1,2,2;4,1,1",
+      "semanticFingerprint": "opening-near-blocked|0,0,A;0,4,S;1,3,W;2,2,C;2,6,A;4,4,S;4,8,A",
+      "certificate": {
+        "accepted": [
+          34,
+          126,
+          158
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-oblique-bridge-far:w166-34",
+      "source": "check-opening-v5-oblique-bridge-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-oblique-bridge-far",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 166,
+        "to": 34
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,2;0,4,1;4,4,1;8,10,2",
+      "semanticFingerprint": "opening-far-ready|0,0,A;0,4,A;2,2,A;4,0,S;4,4,S;6,2,C;8,0,A;8,4,W",
+      "certificate": {
+        "accepted": [
+          38,
+          126,
+          154,
+          158
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-oblique-bridge-far:w166-109",
+      "source": "check-opening-v5-oblique-bridge-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-oblique-bridge-far",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 166,
+        "to": 109
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,1;0,1,2;4,0,1;8,6,2",
+      "semanticFingerprint": "opening-far-ready|0,0,A;0,4,A;2,2,C;4,0,S;4,4,S;6,2,A;8,0,A",
+      "certificate": {
+        "accepted": [
+          34,
+          38,
+          126,
+          158
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-oblique-bridge-far:w166-110",
+      "source": "check-opening-v5-oblique-bridge-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-oblique-bridge-far",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 166,
+        "to": 110
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,1;0,4,1;1,1,2;6,8,2",
+      "semanticFingerprint": "opening-far-ready|0,0,A;0,4,A;2,2,C;4,0,S;4,4,S;8,0,A",
+      "certificate": {
+        "accepted": [
+          34,
+          38,
+          154
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-bounded-row-room-near:w114-0",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 0
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,0,1;1,1,2;2,2,1;7,9,2",
+      "semanticFingerprint": "opening-near-ready|0,2,A;2,0,A;2,2,A;2,4,S;4,2,S;4,4,C;4,6,A;6,4,A",
+      "certificate": {
+        "accepted": [
+          82,
+          114,
+          138,
+          140,
+          170
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-bounded-row-room-near:w114-124",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 124
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,0,1;1,1,2;1,3,2;2,2,1",
+      "semanticFingerprint": "opening-near-ready|0,0,A;0,2,A;0,4,S;2,2,S;2,4,C;2,6,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          82,
+          114,
+          140,
+          170
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-bounded-row-room-near:w114-125",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 125
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,0,1;0,1,2;1,1,2;2,2,1",
+      "semanticFingerprint": "opening-near-ready|0,0,A;0,4,S;2,2,S;2,4,C;2,6,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          82,
+          114,
+          138
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-bounded-row-room-near:w114-140",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 140
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,0,1;0,2,2;1,1,2;2,2,1",
+      "semanticFingerprint": "opening-near-ready|0,2,A;2,0,A;2,2,C;2,4,S;4,2,S",
+      "certificate": {
+        "accepted": [
+          82,
+          114
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-opening-v5-bounded-row-room-near:w126-96",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 126,
+        "to": 96
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,1,1;1,0,2;2,3,1;4,1,2",
+      "semanticFingerprint": "opening-near-ready|0,0,W;0,2,C;0,4,S;2,2,S;2,4,A;2,6,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          138,
+          140,
+          170
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-straight-race-win:w114-0",
+      "source": "check-practice-v5-straight-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-straight-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 0
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,2;0,1,2;0,2,2;2,5,1;3,5,1;4,5,1;6,5,1;9,10,2",
+      "semanticFingerprint": "practical-win|0,0,S;0,1,A;0,2,S;0,3,S;0,4,S;3,6,W;4,6,W;5,6,W",
+      "certificate": {
+        "accepted": [
+          79
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-straight-race-win:w114-99",
+      "source": "check-practice-v5-straight-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-straight-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 99
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;0,4,1;1,6,2;3,6,2;4,6,2;5,6,2",
+      "semanticFingerprint": "practical-win|0,0,S;0,1,A;0,2,S;0,3,S;0,4,S;1,6,W;2,6,I;3,6,W;4,6,W;5,6,W",
+      "certificate": {
+        "accepted": [
+          79
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-straight-race-win:w114-174",
+      "source": "check-practice-v5-straight-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-straight-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 174
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;0,4,1;3,6,2;4,6,2;5,6,2;6,6,2",
+      "semanticFingerprint": "practical-win|0,0,I;0,1,W;0,2,W;0,3,W;0,4,W;0,5,I;2,7,S;3,7,S;4,7,S;5,7,A;6,7,S",
+      "certificate": {
+        "accepted": [
+          79
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-straight-race-win:w114-189",
+      "source": "check-practice-v5-straight-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-straight-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 114,
+        "to": 189
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;0,4,1;3,6,2;4,6,2;5,6,2;7,6,2",
+      "semanticFingerprint": "practical-win|0,0,S;0,1,A;0,2,S;0,3,S;0,4,S;3,6,W;4,6,W;5,6,W;6,6,I;7,6,W",
+      "certificate": {
+        "accepted": [
+          79
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-straight-race-win:w129-99",
+      "source": "check-practice-v5-straight-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-straight-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 129,
+        "to": 99
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;0,4,1;1,6,2;2,6,2;4,6,2;5,6,2",
+      "semanticFingerprint": "practical-win|0,0,S;0,1,A;0,2,S;0,3,S;0,4,S;1,6,W;2,6,W;3,6,I;4,6,W;5,6,W",
+      "certificate": {
+        "accepted": [
+          79
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-straight-race-win:w144-99",
+      "source": "check-practice-v5-straight-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-straight-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 144,
+        "to": 99
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;0,4,1;1,6,2;2,6,2;3,6,2;5,6,2",
+      "semanticFingerprint": "practical-win|0,0,S;0,1,A;0,2,S;0,3,S;0,4,S;1,6,W;2,6,W;3,6,W;4,6,I;5,6,W",
+      "certificate": {
+        "accepted": [
+          79
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-oblique-race-win:w167-0",
+      "source": "check-practice-v5-oblique-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-oblique-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 167,
+        "to": 0
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,2;11,3,2;11,4,2;11,5,2;4,5,1;5,6,1;6,7,1;8,9,1",
+      "semanticFingerprint": "practical-win|0,0,W;0,1,W;0,2,W;3,6,S;4,5,A;5,4,S;6,3,S;7,2,S",
+      "certificate": {
+        "accepted": [
+          113
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-oblique-race-win:w167-166",
+      "source": "check-practice-v5-oblique-race-win",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-oblique-race-win",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 167,
+        "to": 166
+      },
+      "domain": "practical-win",
+      "positionFingerprint": "0,0,2;0,2,2;0,3,2;0,4,2;3,8,1;5,6,1;6,5,1;7,4,1",
+      "semanticFingerprint": "practical-win|0,0,W;0,1,I;0,2,W;0,3,W;0,4,W;3,8,S;4,7,A;5,6,S;6,5,S;7,4,S",
+      "certificate": {
+        "accepted": [
+          113
+        ],
+        "finishes": [],
+        "outcome": "win",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-closed-line-defense-defense:w80-0",
+      "source": "check-practice-v5-closed-line-defense-defense",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-closed-line-defense-defense",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 80,
+        "to": 0
+      },
+      "domain": "practical-defense",
+      "positionFingerprint": "0,0,2;11,3,1;4,5,1;6,5,2;6,7,1;7,5,2;8,5,2;8,9,1",
+      "semanticFingerprint": "practical-defense|0,0,A;0,1,A;0,1,Q;0,2,W;0,3,W;0,4,W;0,5,A;0,6,S;1,5,A;3,3,A",
+      "certificate": {
+        "accepted": [
+          80,
+          84,
+          85,
+          95,
+          127
+        ],
+        "finishes": [],
+        "outcome": "defense",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-closed-line-defense-defense:w80-95",
+      "source": "check-practice-v5-closed-line-defense-defense",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-closed-line-defense-defense",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 80,
+        "to": 95
+      },
+      "domain": "practical-defense",
+      "positionFingerprint": "0,0,1;2,3,2;2,4,2;2,5,2;2,7,1;3,6,2;4,5,1;6,3,1",
+      "semanticFingerprint": "practical-defense|0,0,A;0,1,A;0,1,Q;0,2,W;0,3,W;0,4,W;0,5,A;0,6,S",
+      "certificate": {
+        "accepted": [
+          80,
+          84,
+          85
+        ],
+        "finishes": [],
+        "outcome": "defense",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-closed-line-defense-defense:w81-84",
+      "source": "check-practice-v5-closed-line-defense-defense",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-closed-line-defense-defense",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 81,
+        "to": 84
+      },
+      "domain": "practical-defense",
+      "positionFingerprint": "0,0,1;2,2,2;2,3,2;2,4,2;2,6,2;2,7,1;4,5,1;6,3,1",
+      "semanticFingerprint": "practical-defense|0,0,S;0,1,W;0,2,A;0,2,I;0,3,W;0,4,W;0,5,W",
+      "certificate": {
+        "accepted": [
+          81
+        ],
+        "finishes": [],
+        "outcome": "defense",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-closed-line-defense-defense:w81-85",
+      "source": "check-practice-v5-closed-line-defense-defense",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-closed-line-defense-defense",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 81,
+        "to": 85
+      },
+      "domain": "practical-defense",
+      "positionFingerprint": "0,0,1;1,2,2;3,2,2;3,6,1;4,2,2;5,4,1;6,2,2;7,2,1",
+      "semanticFingerprint": "practical-defense|0,0,A;0,1,W;0,2,A;0,2,Q;0,3,W;0,4,W;0,5,A;0,6,W;0,7,S;1,6,A;3,4,A",
+      "certificate": {
+        "accepted": [
+          81,
+          84,
+          86,
+          95,
+          127
+        ],
+        "finishes": [],
+        "outcome": "defense",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-closed-line-defense-defense:w81-86",
+      "source": "check-practice-v5-closed-line-defense-defense",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-closed-line-defense-defense",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 81,
+        "to": 86
+      },
+      "domain": "practical-defense",
+      "positionFingerprint": "0,0,1;0,2,2;3,2,2;3,6,1;4,2,2;5,4,1;6,2,2;7,2,1",
+      "semanticFingerprint": "practical-defense|0,0,S;0,1,W;0,2,A;0,3,W;0,4,W;0,5,A;0,5,Q;0,6,A;0,7,W;1,1,A;3,3,A",
+      "certificate": {
+        "accepted": [
+          81,
+          84,
+          85,
+          95,
+          127
+        ],
+        "finishes": [],
+        "outcome": "defense",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-closed-line-defense-defense:w82-84",
+      "source": "check-practice-v5-closed-line-defense-defense",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-closed-line-defense-defense",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 82,
+        "to": 84
+      },
+      "domain": "practical-defense",
+      "positionFingerprint": "0,0,1;2,2,2;2,3,2;2,5,2;2,6,2;2,7,1;4,5,1;6,3,1",
+      "semanticFingerprint": "practical-defense|0,0,S;0,1,W;0,2,W;0,3,A;0,3,I;0,4,W;0,5,W",
+      "certificate": {
+        "accepted": [
+          82
+        ],
+        "finishes": [],
+        "outcome": "defense",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-pre-fork-defense-defense:w64-66",
+      "source": "check-practice-v5-pre-fork-defense-defense",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-pre-fork-defense-defense",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 64,
+        "to": 66
+      },
+      "domain": "practical-defense",
+      "positionFingerprint": "0,0,1;10,11,1;2,5,2;2,6,2;2,7,2;6,2,1",
+      "semanticFingerprint": "practical-defense|0,0,A;0,0,Q;0,1,W;0,2,W;0,3,W;0,4,A;0,4,Q",
+      "certificate": {
+        "accepted": [
+          64,
+          68
+        ],
+        "finishes": [],
+        "outcome": "defense",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-wide-horizontal-rebuild-build:w65-63",
+      "source": "check-practice-v5-wide-horizontal-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-wide-horizontal-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 65,
+        "to": 63
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,2;0,3,1;3,3,1;5,6,1;7,4,2;9,8,2",
+      "semanticFingerprint": "practical-build|0,0,A;0,3,A;3,0,S;3,3,S;6,0,A;6,3,W",
+      "certificate": {
+        "accepted": [
+          66,
+          153,
+          156
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-relocate1:check-practice-v5-oblique-rebuild-build:w53-65",
+      "source": "check-practice-v5-oblique-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-oblique-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 2,
+        "from": 53,
+        "to": 65
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,2;1,10,2;3,3,1;3,5,1;6,7,2;6,8,1",
+      "semanticFingerprint": "practical-build|0,0,A;0,3,S;1,3,W;3,0,S",
+      "certificate": {
+        "accepted": [
+          109
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-01:b125-60",
+      "source": "check-conditions-01",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-01",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 125,
+        "to": 60
+      },
+      "domain": "conditions-negative",
+      "positionFingerprint": "0,1,1;1,9,2;10,0,2;11,9,1;13,7,2;2,0,1;3,5,2;6,5,1;7,5,1;9,5,2",
+      "semanticFingerprint": "conditions-negative|0,0,S;0,1,S;0,3,C;0,3,S;4,7,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-03:b63-127",
+      "source": "check-conditions-03",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-03",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 63,
+        "to": 127
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;0,8,2;1,10,1;10,1,1;10,10,2;12,6,2;3,3,1;4,4,1;6,6,1;8,1,2",
+      "semanticFingerprint": "conditions-positive|0,0,F;1,1,S;2,2,C;2,2,S;3,3,S;4,4,S;5,5,F",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          63,
+          143
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-12:b81-96",
+      "source": "check-conditions-12",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-12",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 81,
+        "to": 96
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;1,10,2;1,2,1;10,4,2;11,13,2;3,1,2;4,7,1;5,5,1;5,8,1;5,9,1;6,2,2;6,7,1;7,11,2;7,7,1",
+      "semanticFingerprint": "conditions-positive|0,2,F;1,2,S;2,0,S;2,1,F;2,2,C;2,2,S;2,3,S;2,4,S;3,2,S;4,2,S;5,2,F",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          81,
+          112,
+          156
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-12:b81-107",
+      "source": "check-conditions-12",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-12",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 81,
+        "to": 107
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;1,10,2;1,2,1;10,4,2;11,13,2;3,1,2;5,11,1;5,5,1;5,8,1;5,9,1;6,2,2;6,7,1;7,11,2;7,7,1",
+      "semanticFingerprint": "conditions-positive|0,0,S;0,1,F;0,2,C;0,2,S;0,3,S;0,4,S;0,5,F;0,6,S;1,2,S;2,2,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          108,
+          112
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-12:b81-108",
+      "source": "check-conditions-12",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-12",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 81,
+        "to": 108
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;1,10,2;1,2,1;10,4,2;11,13,2;3,1,2;5,10,1;5,5,1;5,8,1;5,9,1;6,2,2;6,7,1;7,11,2;7,7,1",
+      "semanticFingerprint": "conditions-positive|0,0,F;0,1,S;0,2,S;0,3,S;0,4,C;0,4,S;0,5,F;0,6,S;1,4,S;2,4,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          107,
+          112
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-12:b81-156",
+      "source": "check-conditions-12",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-12",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 81,
+        "to": 156
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;1,10,2;1,2,1;10,4,2;11,13,2;3,1,2;5,5,1;5,8,1;5,9,1;6,2,2;6,7,1;7,11,2;7,7,1;8,7,1",
+      "semanticFingerprint": "conditions-positive|0,1,S;1,1,F;2,0,F;2,1,C;2,1,S;2,2,S;2,3,S;2,4,S;2,5,F;3,1,S;4,1,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          96,
+          112,
+          171
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-12:b81-171",
+      "source": "check-conditions-12",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-12",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 81,
+        "to": 171
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;1,10,2;1,2,1;10,4,2;11,13,2;3,1,2;5,5,1;5,8,1;5,9,1;6,2,2;6,7,1;7,11,2;7,7,1;9,7,1",
+      "semanticFingerprint": "conditions-positive|0,0,S;0,1,F;0,2,C;0,2,S;0,3,S;0,4,S;1,2,S;2,2,S;3,2,F;4,2,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          112,
+          156
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-12:b109-156",
+      "source": "check-conditions-12",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-12",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 156
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;1,10,2;1,2,1;10,4,2;11,13,2;3,1,2;3,7,1;5,5,1;5,8,1;6,2,2;6,7,1;7,11,2;7,7,1;8,7,1",
+      "semanticFingerprint": "conditions-positive|0,1,F;1,1,S;2,1,S;3,1,S;4,0,S;4,1,C;4,1,S;4,3,S;5,1,F;6,1,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          96,
+          171
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-conditions-12:b109-171",
+      "source": "check-conditions-12",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-conditions-12",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 171
+      },
+      "domain": "conditions-positive",
+      "positionFingerprint": "0,0,2;1,10,2;1,2,1;10,4,2;11,13,2;3,1,2;3,7,1;5,5,1;5,8,1;6,2,2;6,7,1;7,11,2;7,7,1;9,7,1",
+      "semanticFingerprint": "conditions-positive|0,1,S;1,1,F;2,0,S;2,1,C;2,1,S;2,3,S;3,1,S;4,1,S;5,1,F;6,1,S",
+      "certificate": {
+        "accepted": [],
+        "finishes": [
+          96,
+          156
+        ],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-counter-v5-crossed-diagonals-clear:b110-30",
+      "source": "check-counter-v5-crossed-diagonals-clear",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-counter-v5-crossed-diagonals-clear",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 110,
+        "to": 30
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,0,1;1,7,2;2,2,1;2,6,2;3,3,1;4,5,2",
+      "semanticFingerprint": "counter-clear|0,0,S;1,1,A;1,1,C;1,1,S;1,7,W;2,2,S;2,6,W;3,3,S;4,4,A;4,5,W",
+      "certificate": {
+        "accepted": [
+          46,
+          94
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-double-interior-gap-ready:b112-127",
+      "source": "check-branch-v5-double-interior-gap-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 112,
+        "to": 127
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,0,2;1,9,2;11,8,2;3,4,1;5,4,1;6,6,1;6,7,1;9,1,2",
+      "semanticFingerprint": "branch-ready|0,0,C;0,0,S;0,1,A;0,2,S;0,3,S;1,0,S;3,0,S",
+      "certificate": {
+        "accepted": [
+          112
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-double-interior-gap-ready:b142-67",
+      "source": "check-branch-v5-double-interior-gap-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 142,
+        "to": 67
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,0,2;1,9,2;11,8,2;3,4,1;5,4,1;6,2,1;6,5,1;9,1,2",
+      "semanticFingerprint": "branch-ready|0,0,S;0,1,A;0,2,C;0,2,S;0,3,S;1,2,S;3,2,S",
+      "certificate": {
+        "accepted": [
+          82
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-double-interior-gap-ready:b142-82",
+      "source": "check-branch-v5-double-interior-gap-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 142,
+        "to": 82
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,0,2;1,9,2;11,8,2;3,4,1;5,4,1;6,3,1;6,5,1;9,1,2",
+      "semanticFingerprint": "branch-ready|0,0,A;0,1,S;0,2,C;0,2,S;0,3,S;0,4,A;1,2,S;3,2,S",
+      "certificate": {
+        "accepted": [
+          67,
+          127
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-double-interior-gap-ready:b142-127",
+      "source": "check-branch-v5-double-interior-gap-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-double-interior-gap-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 142,
+        "to": 127
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,0,2;1,9,2;11,8,2;3,4,1;5,4,1;6,5,1;6,6,1;9,1,2",
+      "semanticFingerprint": "branch-ready|0,0,A;0,1,C;0,1,S;0,2,S;0,3,S;0,4,A;1,1,S;3,1,S",
+      "certificate": {
+        "accepted": [
+          82,
+          142
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-offset-arm-ready:b141-126",
+      "source": "check-branch-v5-offset-arm-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-offset-arm-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 141,
+        "to": 126
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,0,2;1,5,1;2,11,2;3,5,1;5,4,1;7,10,2;7,2,1;9,9,2",
+      "semanticFingerprint": "branch-ready|0,0,S;0,1,A;0,2,S;0,3,C;0,3,S;1,4,S;3,6,S",
+      "certificate": {
+        "accepted": [
+          141
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-offset-arm-ready:b156-126",
+      "source": "check-branch-v5-offset-arm-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-offset-arm-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 156,
+        "to": 126
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,0,2;10,7,2;11,2,2;2,7,1;4,5,1;5,2,1;5,3,1;9,9,2",
+      "semanticFingerprint": "branch-ready|0,0,A;0,1,S;0,2,S;0,3,C;0,3,S;0,4,A;1,4,S;3,6,S",
+      "certificate": {
+        "accepted": [
+          96,
+          156
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-crossed-oblique-ready:b127-111",
+      "source": "check-branch-v5-crossed-oblique-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-crossed-oblique-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 127,
+        "to": 111
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,1,2;10,10,2;11,2,2;2,6,1;3,5,1;5,5,1;7,7,1;9,0,2",
+      "semanticFingerprint": "branch-ready|0,0,S;1,1,A;1,5,S;2,2,S;2,4,S;3,3,C;3,3,S",
+      "certificate": {
+        "accepted": [
+          127
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-branch-v5-crossed-oblique-ready:b143-111",
+      "source": "check-branch-v5-crossed-oblique-ready",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-branch-v5-crossed-oblique-ready",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 143,
+        "to": 111
+      },
+      "domain": "branch-ready",
+      "positionFingerprint": "0,1,2;10,10,2;11,2,2;2,6,1;3,5,1;5,5,1;6,6,1;9,0,2",
+      "semanticFingerprint": "branch-ready|0,0,A;1,1,S;1,5,S;2,2,S;2,4,S;3,3,C;3,3,S;4,4,A",
+      "certificate": {
+        "accepted": [
+          79,
+          143
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-two:b109-64",
+      "source": "check-prepare-v5-two-wide-gaps-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-two",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 64
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;1,4,1;7,7,1;9,9,2",
+      "semanticFingerprint": "prepare-two|0,0,S;0,1,A;0,2,A;0,3,C;1,4,A;2,5,A;3,6,S;5,8,W",
+      "certificate": {
+        "accepted": [
+          80,
+          96,
+          127,
+          142
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-two:b109-96",
+      "source": "check-prepare-v5-two-wide-gaps-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-two",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 96
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;1,4,1;5,5,1;9,9,2",
+      "semanticFingerprint": "prepare-two|0,0,W;1,4,S;2,2,A;2,4,A;3,3,A;3,4,A;4,4,C;5,5,S;6,6,A;7,7,A;9,9,W",
+      "certificate": {
+        "accepted": [
+          64,
+          80,
+          127,
+          128,
+          142,
+          144
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-two:b109-111",
+      "source": "check-prepare-v5-two-wide-gaps-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-two",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 111
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;1,4,1;4,5,1;9,9,2",
+      "semanticFingerprint": "prepare-two|0,0,A;0,1,A;0,2,C;0,3,S;0,4,A;0,5,A;1,2,A;2,2,A;3,2,S",
+      "certificate": {
+        "accepted": [
+          109,
+          110,
+          113,
+          114,
+          127,
+          142
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-two:b109-126",
+      "source": "check-prepare-v5-two-wide-gaps-two",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-two",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 126
+      },
+      "domain": "prepare-two",
+      "positionFingerprint": "0,0,2;1,4,1;3,5,1;9,9,2",
+      "semanticFingerprint": "prepare-two|0,0,A;0,3,S;1,1,A;1,3,A;2,2,S;2,3,A;3,3,C;4,4,A;5,5,A",
+      "certificate": {
+        "accepted": [
+          84,
+          98,
+          127,
+          140,
+          142,
+          154
+        ],
+        "finishes": [],
+        "outcome": "two",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-one:b109-67",
+      "source": "check-prepare-v5-two-wide-gaps-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-one",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 67
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;1,4,1;4,8,2;7,4,1",
+      "semanticFingerprint": "prepare-one|0,0,S;0,1,A;0,2,A;0,3,C;0,4,A;0,5,A;0,6,S",
+      "certificate": {
+        "accepted": [
+          82,
+          97,
+          127,
+          142
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-one:b109-82",
+      "source": "check-prepare-v5-two-wide-gaps-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-one",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 82
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;1,4,1;4,8,2;6,4,1",
+      "semanticFingerprint": "prepare-one|0,0,A;0,1,S;0,2,A;0,3,C;0,4,A;0,5,A;0,6,S",
+      "certificate": {
+        "accepted": [
+          67,
+          97,
+          127,
+          142
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-one:b109-97",
+      "source": "check-prepare-v5-two-wide-gaps-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-one",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 109,
+        "to": 97
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;1,4,1;4,8,2;5,4,1",
+      "semanticFingerprint": "prepare-one|0,0,A;0,1,A;0,2,S;0,3,C;0,4,A;0,6,S",
+      "certificate": {
+        "accepted": [
+          67,
+          82,
+          127
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-one:b157-64",
+      "source": "check-prepare-v5-two-wide-gaps-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-one",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 157,
+        "to": 64
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;4,7,1;4,8,2;7,7,1",
+      "semanticFingerprint": "prepare-one|0,0,C;0,3,S;0,4,W;1,1,A;2,2,A;3,3,S",
+      "certificate": {
+        "accepted": [
+          80,
+          96
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-one:b157-70",
+      "source": "check-prepare-v5-two-wide-gaps-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-one",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 157,
+        "to": 70
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;1,7,1;7,4,1;8,4,2",
+      "semanticFingerprint": "prepare-one|0,0,S;1,1,A;2,2,A;3,3,C;3,6,S;3,7,W",
+      "certificate": {
+        "accepted": [
+          84,
+          98
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-prepare-v5-two-wide-gaps-one:b157-80",
+      "source": "check-prepare-v5-two-wide-gaps-one",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-prepare-v5-two-wide-gaps-one",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 157,
+        "to": 80
+      },
+      "domain": "prepare-one",
+      "positionFingerprint": "0,0,2;4,7,1;4,8,2;6,6,1",
+      "semanticFingerprint": "prepare-one|0,0,A;1,1,C;1,4,S;1,5,W;2,2,A;3,3,S;4,4,A",
+      "certificate": {
+        "accepted": [
+          64,
+          96,
+          128
+        ],
+        "finishes": [],
+        "outcome": "one",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-orthogonal-gap-far:b97-31",
+      "source": "check-opening-v5-orthogonal-gap-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-orthogonal-gap-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 97,
+        "to": 31
+      },
+      "domain": "opening-far-ready",
+      "positionFingerprint": "0,0,1;10,10,2;10,8,2;4,6,1",
+      "semanticFingerprint": "opening-far-ready|0,0,S;0,2,A;4,4,C;4,6,S",
+      "certificate": {
+        "accepted": [
+          61
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-near:b110-64",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 110,
+        "to": 64
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,0,1;2,4,2;3,5,1;5,3,2",
+      "semanticFingerprint": "opening-near-ready|0,0,S;3,3,C;3,5,S;4,4,A",
+      "certificate": {
+        "accepted": [
+          128
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-near:b110-80",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 110,
+        "to": 80
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,0,1;1,3,2;2,4,1;4,2,2",
+      "semanticFingerprint": "opening-near-ready|0,0,A;0,2,S;0,4,A;1,1,A;2,2,C;4,2,A;4,4,S",
+      "certificate": {
+        "accepted": [
+          82,
+          128,
+          140,
+          144
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-near:b110-96",
+      "source": "check-opening-v5-bounded-row-room-near",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-near",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 110,
+        "to": 96
+      },
+      "domain": "opening-near-ready",
+      "positionFingerprint": "0,0,1;0,2,2;1,3,1;3,1,2",
+      "semanticFingerprint": "opening-near-ready|0,0,A;0,2,S;0,6,A;1,1,A;2,2,C;3,2,A;3,3,S;4,2,A",
+      "certificate": {
+        "accepted": [
+          82,
+          97,
+          128,
+          138,
+          144
+        ],
+        "finishes": [],
+        "outcome": "yes",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-far:b110-108",
+      "source": "check-opening-v5-bounded-row-room-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 110,
+        "to": 108
+      },
+      "domain": "opening-far-blocked",
+      "positionFingerprint": "0,0,1;0,1,2;0,6,2;2,4,1",
+      "semanticFingerprint": "opening-far-blocked|0,0,A;0,2,S;0,4,A;1,1,A;1,2,W;2,4,A;3,5,A;4,2,C;4,4,S;4,6,A",
+      "certificate": {
+        "accepted": [
+          78,
+          94,
+          138,
+          140,
+          156,
+          172
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-far:b110-111",
+      "source": "check-opening-v5-bounded-row-room-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 110,
+        "to": 111
+      },
+      "domain": "opening-far-blocked",
+      "positionFingerprint": "0,0,2;0,2,1;0,5,2;2,3,1",
+      "semanticFingerprint": "opening-far-blocked|0,1,A;0,3,W;2,0,A;2,1,A;2,2,A;2,3,S;3,1,S;3,2,A;3,3,C;3,4,A;4,1,A;5,3,W",
+      "certificate": {
+        "accepted": [
+          97,
+          126,
+          127,
+          139,
+          141,
+          143,
+          156
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-far:b110-115",
+      "source": "check-opening-v5-bounded-row-room-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 110,
+        "to": 115
+      },
+      "domain": "opening-far-blocked",
+      "positionFingerprint": "0,0,1;0,1,2;0,6,2;2,3,1",
+      "semanticFingerprint": "opening-far-blocked|0,0,A;0,1,S;0,3,C;1,1,A;2,3,W;3,1,A;3,3,S",
+      "certificate": {
+        "accepted": [
+          143,
+          145,
+          157
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-far:b142-48",
+      "source": "check-opening-v5-bounded-row-room-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 142,
+        "to": 48
+      },
+      "domain": "opening-far-blocked",
+      "positionFingerprint": "0,0,1;1,4,2;2,4,1;6,4,2",
+      "semanticFingerprint": "opening-far-blocked|0,0,A;0,2,S;0,4,A;1,1,A;2,2,A;2,4,A;3,5,A;4,3,W;4,4,S;4,6,C;4,8,W",
+      "certificate": {
+        "accepted": [
+          46,
+          50,
+          62,
+          78,
+          80,
+          96
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-far:b142-52",
+      "source": "check-opening-v5-bounded-row-room-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 142,
+        "to": 52
+      },
+      "domain": "opening-far-blocked",
+      "positionFingerprint": "0,0,2;0,1,1;0,5,2;4,3,1",
+      "semanticFingerprint": "opening-far-blocked|0,0,A;0,2,S;0,4,A;1,1,A;2,2,A;2,4,A;3,5,A;4,0,W;4,2,C;4,4,S;4,5,W",
+      "certificate": {
+        "accepted": [
+          50,
+          54,
+          68,
+          80,
+          82,
+          94
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-far:b142-64",
+      "source": "check-opening-v5-bounded-row-room-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 142,
+        "to": 64
+      },
+      "domain": "opening-far-blocked",
+      "positionFingerprint": "0,0,1;0,3,2;1,3,1;5,3,2",
+      "semanticFingerprint": "opening-far-blocked|0,0,W;0,2,C;0,4,S;0,5,W;1,3,A;1,5,A;2,4,A;2,6,A;3,1,A;3,4,A;3,5,S;3,7,A;4,4,A",
+      "certificate": {
+        "accepted": [
+          50,
+          62,
+          65,
+          68,
+          78,
+          80,
+          94,
+          96
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-opening-v5-bounded-row-room-far:b142-67",
+      "source": "check-opening-v5-bounded-row-room-far",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-opening-v5-bounded-row-room-far",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 142,
+        "to": 67
+      },
+      "domain": "opening-far-blocked",
+      "positionFingerprint": "0,0,2;0,1,1;0,5,2;3,3,1",
+      "semanticFingerprint": "opening-far-blocked|0,0,W;0,1,S;0,3,C;0,5,W;1,1,A;2,3,A;3,1,A;3,3,S;3,4,A",
+      "certificate": {
+        "accepted": [
+          65,
+          68,
+          82,
+          95
+        ],
+        "finishes": [],
+        "outcome": "no",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-practice-v5-wide-horizontal-rebuild-build:b108-47",
+      "source": "check-practice-v5-wide-horizontal-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-wide-horizontal-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 108,
+        "to": 47
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,1;1,3,2;4,4,1;5,8,2;7,6,1;9,10,2",
+      "semanticFingerprint": "practical-build|0,0,A;0,4,S;4,0,S;4,4,A",
+      "certificate": {
+        "accepted": [
+          51,
+          107
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-practice-v5-wide-horizontal-rebuild-build:b108-48",
+      "source": "check-practice-v5-wide-horizontal-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-wide-horizontal-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 108,
+        "to": 48
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,1;1,2,2;4,3,1;5,7,2;7,5,1;9,9,2",
+      "semanticFingerprint": "practical-build|0,0,A;0,1,S;0,4,A;1,1,A;3,4,A;4,1,A;4,4,S;4,5,A",
+      "certificate": {
+        "accepted": [
+          47,
+          51,
+          63,
+          96,
+          108,
+          112
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-practice-v5-wide-horizontal-rebuild-build:b108-51",
+      "source": "check-practice-v5-wide-horizontal-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-wide-horizontal-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 108,
+        "to": 51
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,2;2,4,1;4,2,2;5,6,1;8,7,2;9,6,1",
+      "semanticFingerprint": "practical-build|0,0,A;0,4,A;2,2,A;4,0,S;4,4,S;5,1,W;8,0,A",
+      "certificate": {
+        "accepted": [
+          47,
+          55,
+          83,
+          115
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-practice-v5-wide-horizontal-rebuild-build:b108-52",
+      "source": "check-practice-v5-wide-horizontal-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-wide-horizontal-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 108,
+        "to": 52
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,2;2,4,1;4,2,2;5,6,1;8,7,2;9,5,1",
+      "semanticFingerprint": "practical-build|0,0,A;0,3,S;0,4,A;1,4,A;3,3,A;4,3,A;4,4,S;4,7,A",
+      "certificate": {
+        "accepted": [
+          51,
+          55,
+          66,
+          97,
+          108,
+          112
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-practice-v5-wide-horizontal-rebuild-build:b108-60",
+      "source": "check-practice-v5-wide-horizontal-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-wide-horizontal-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 108,
+        "to": 60
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,1;0,5,2;3,6,1;4,10,2;6,8,1;8,12,2",
+      "semanticFingerprint": "practical-build|0,0,S;0,3,A;3,3,A;3,6,S",
+      "certificate": {
+        "accepted": [
+          63,
+          108
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-local-edit1:check-practice-v5-wide-horizontal-rebuild-build:b108-76",
+      "source": "check-practice-v5-wide-horizontal-rebuild-build",
+      "recipe": "local-edit1",
+      "edit": {
+        "source": "check-practice-v5-wide-horizontal-rebuild-build",
+        "recipe": "local-edit1",
+        "side": 1,
+        "from": 108,
+        "to": 76
+      },
+      "domain": "practical-build",
+      "positionFingerprint": "0,0,2;11,7,1;2,4,2;4,2,1;6,5,1;7,8,2",
+      "semanticFingerprint": "practical-build|0,0,S;0,3,A;2,2,A;2,5,S",
+      "certificate": {
+        "accepted": [
+          79,
+          108
+        ],
+        "finishes": [],
+        "outcome": "build",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d1-m07",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 7
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,1,1;0,3,1;2,2,2;3,2,2;4,2,2",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;0,1,S;0,2,S;0,3,A;0,4,S;1,3,F;2,3,W;3,3,W;4,3,W",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          96
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d1-m0b",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 11
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,1,1;0,3,1;1,2,2;3,2,2;4,2,2",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;0,1,S;0,2,S;0,3,A;0,4,S;1,3,W;2,3,F;3,3,W;4,3,W",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          81
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d1-m0d",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 13
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,1,1;0,3,1;1,2,2;2,2,2;4,2,2",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;0,1,S;0,2,S;0,3,A;0,4,S;1,3,W;2,3,W;3,3,F;4,3,W",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          66
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m07",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 7
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;2,3,2;3,4,2;4,5,2",
+      "semanticFingerprint": "counter-threat|0,0,S;0,1,A;0,2,S;0,3,S;0,4,C;0,4,S;1,2,F;2,3,W;3,4,W;4,5,W",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          95
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m0b",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 11
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;1,2,2;3,4,2;4,5,2",
+      "semanticFingerprint": "counter-threat|0,0,S;0,1,A;0,2,S;0,3,S;0,4,C;0,4,S;1,2,W;2,3,F;3,4,W;4,5,W",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          79
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m0d",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 13
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,2,1;0,3,1;1,2,2;2,3,2;4,5,2",
+      "semanticFingerprint": "counter-threat|0,0,S;0,1,A;0,2,S;0,3,S;0,4,C;0,4,S;1,2,W;2,3,W;3,4,F;4,5,W",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          63
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m1c",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 28
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,2;0,1,1;2,1,1;2,2,2;3,1,1;3,3,2",
+      "semanticFingerprint": "counter-threat|0,0,F;0,3,C;0,3,S;1,1,W;1,3,S;2,2,W;2,3,S;3,3,A;4,3,S;4,4,W;5,5,F",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          63,
+          143
+        ],
+        "outcome": "open-four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m2c",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 44
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,2;0,2,1;1,1,2;1,2,1;3,2,1;4,4,2",
+      "semanticFingerprint": "counter-threat|0,0,W;1,1,F;1,2,S;2,2,A;3,2,S;3,3,W;4,2,S;4,4,W;5,2,C;5,2,S",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          127
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m38",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 56
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,2;1,1,2;1,2,1;3,2,1;3,3,2;4,2,1",
+      "semanticFingerprint": "counter-threat|0,0,F;1,1,W;2,2,W;2,3,S;3,3,A;4,3,S;4,4,W;5,3,S;5,5,F;6,3,C;6,3,S",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          79,
+          159
+        ],
+        "outcome": "open-four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m58",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 88
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,2;2,2,2;2,3,1;4,3,1;4,4,2;5,3,1",
+      "semanticFingerprint": "counter-threat|0,0,W;1,1,F;2,2,W;2,3,S;3,3,A;4,3,S;4,4,W;5,3,S;6,3,C;6,3,S",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          143
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-m70",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 112
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,1,1;0,3,1;1,3,2;2,4,2;3,5,2",
+      "semanticFingerprint": "counter-threat|0,0,F;1,1,W;2,2,W;3,3,W;3,4,S;4,4,A;5,4,S;5,5,F;6,4,S;7,4,C;7,4,S",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          95,
+          175
+        ],
+        "outcome": "open-four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s0-d2-mb0",
+      "source": "check-counter-v5-straight-reply-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-threat",
+        "recipe": "counter-ray1",
+        "seed": 0,
+        "direction": 2,
+        "mask": 176
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,1,1;0,3,1;1,3,2;2,4,2;4,6,2",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;0,1,S;0,2,S;0,3,A;0,4,S;1,4,W;2,5,W;3,6,F;4,7,W",
+      "certificate": {
+        "accepted": [
+          111
+        ],
+        "finishes": [
+          159
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m07",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 7
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,3,2;1,4,2;1,5,2;2,2,1;3,3,1",
+      "semanticFingerprint": "counter-threat|0,0,S;1,1,A;1,2,F;1,3,W;1,4,W;1,5,W;2,2,S;3,3,S;4,4,C;4,4,S",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          141
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m0b",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 11
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,2,2;1,4,2;1,5,2;2,2,1;3,3,1",
+      "semanticFingerprint": "counter-threat|0,0,S;1,1,A;1,2,W;1,3,F;1,4,W;1,5,W;2,2,S;3,3,S;4,4,C;4,4,S",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          140
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m0d",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 13
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,2,2;1,3,2;1,5,2;2,2,1;3,3,1",
+      "semanticFingerprint": "counter-threat|0,0,S;1,1,A;1,2,W;1,3,W;1,4,F;1,5,W;2,2,S;3,3,S;4,4,C;4,4,S",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          139
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m0e",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 14
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,2,2;1,3,2;1,4,2;2,2,1;3,3,1",
+      "semanticFingerprint": "counter-threat|0,0,S;0,1,F;1,1,A;2,1,W;2,2,S;3,1,W;3,3,S;4,1,W;4,4,C;4,4,S;5,1,F",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          138,
+          143
+        ],
+        "outcome": "open-four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m2c",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 44
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,2,2;1,1,1;1,2,2;3,3,1;4,2,2",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;1,1,S;1,3,W;2,2,S;2,3,W;3,3,A;4,3,F;4,4,S;5,3,W",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          143
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m38",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 56
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,1,1;1,2,2;3,2,2;3,3,1;4,2,2",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;1,1,S;1,3,F;2,2,S;2,3,W;3,3,A;4,3,W;4,4,S;5,3,W;6,3,F",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          140,
+          145
+        ],
+        "outcome": "open-four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m58",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 88
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,1,1;1,2,2;3,2,2;3,3,1;5,2,2",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;1,1,S;2,2,S;2,3,W;3,3,A;4,3,W;4,4,S;5,3,F;6,3,W",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          144
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-m70",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 112
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,1,1;2,3,2;2,4,2;2,5,2;3,3,1",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;1,1,S;2,2,S;2,3,F;3,3,A;4,3,W;4,4,S;5,3,W;6,3,W;7,3,F",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          141,
+          146
+        ],
+        "outcome": "open-four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d0-mb0",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 0,
+        "mask": 176
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;1,1,1;2,3,2;2,4,2;2,6,2;3,3,1",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;1,1,S;2,2,S;3,3,A;3,4,W;3,5,W;3,6,F;3,7,W;4,4,S",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          145
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d3-m07",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 3,
+        "mask": 7
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,2;1,1,2;2,2,2;2,6,1;3,5,1;5,3,1",
+      "semanticFingerprint": "counter-threat|0,0,W;1,1,W;1,7,C;1,7,S;2,2,W;2,6,S;3,3,F;3,5,S;4,4,A;5,3,S",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          156
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d3-m0b",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 3,
+        "mask": 11
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,2;1,1,2;2,6,1;3,3,2;3,5,1;5,3,1",
+      "semanticFingerprint": "counter-threat|0,0,W;1,1,W;1,7,C;1,7,S;2,2,F;2,6,S;3,3,W;3,5,S;4,4,A;5,3,S",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          170
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d3-m0d",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 3,
+        "mask": 13
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,2;2,2,2;2,6,1;3,3,2;3,5,1;5,3,1",
+      "semanticFingerprint": "counter-threat|0,0,W;1,1,F;1,7,C;1,7,S;2,2,W;2,6,S;3,3,W;3,5,S;4,4,A;5,3,S",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          184
+        ],
+        "outcome": "four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-ray1-s3-d3-m1c",
+      "source": "check-counter-v5-diagonal-attack-threat",
+      "recipe": "counter-ray1",
+      "edit": {
+        "source": "check-counter-v5-diagonal-attack-threat",
+        "recipe": "counter-ray1",
+        "seed": 3,
+        "direction": 3,
+        "mask": 28
+      },
+      "domain": "counter-threat",
+      "positionFingerprint": "0,0,1;0,4,2;1,1,1;1,3,2;3,1,2;3,3,1",
+      "semanticFingerprint": "counter-threat|0,0,C;0,0,S;0,6,F;1,1,S;1,5,W;2,2,S;2,4,W;3,3,A;4,2,W;4,4,S;5,1,F",
+      "certificate": {
+        "accepted": [
+          142
+        ],
+        "finishes": [
+          114,
+          184
+        ],
+        "outcome": "open-four",
+        "negativeSupportPairs": []
+      }
+    },
+    {
+      "id": "gen-v5-counter-clear-ray1-s0-d1-m13",
+      "source": "check-counter-v5-straight-reply-clear",
+      "recipe": "counter-clear-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-clear",
+        "recipe": "counter-clear-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 19
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,1,1;1,0,2;1,4,2;1,5,2;2,1,1;3,1,1",
+      "semanticFingerprint": "counter-clear|0,1,A;0,1,C;0,1,S;1,1,S;2,1,S;3,0,W;3,1,A;3,4,W;3,5,W;4,1,S;5,1,A",
+      "certificate": {
+        "accepted": [
+          108,
+          111,
+          113
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": [
+          [
+            51,
+            66
+          ],
+          [
+            66,
+            126
+          ]
+        ]
+      }
+    },
+    {
+      "id": "gen-v5-counter-clear-ray1-s0-d1-m15",
+      "source": "check-counter-v5-straight-reply-clear",
+      "recipe": "counter-clear-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-clear",
+        "recipe": "counter-clear-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 21
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,1,1;1,0,2;1,3,2;1,5,2;2,1,1;3,1,1",
+      "semanticFingerprint": "counter-clear|0,1,A;0,1,C;0,1,S;1,1,S;2,1,S;3,0,W;3,1,A;3,3,W;3,5,W;4,1,S;5,1,A",
+      "certificate": {
+        "accepted": [
+          108,
+          111,
+          113
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": [
+          [
+            51,
+            81
+          ],
+          [
+            81,
+            126
+          ]
+        ]
+      }
+    },
+    {
+      "id": "gen-v5-counter-clear-ray1-s0-d1-m19",
+      "source": "check-counter-v5-straight-reply-clear",
+      "recipe": "counter-clear-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-clear",
+        "recipe": "counter-clear-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 25
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,1,1;1,0,2;1,2,2;1,5,2;2,1,1;3,1,1",
+      "semanticFingerprint": "counter-clear|0,1,A;0,1,C;0,1,S;1,1,S;2,1,S;3,0,W;3,1,A;3,2,W;3,5,W;4,1,S;5,1,A",
+      "certificate": {
+        "accepted": [
+          108,
+          111,
+          113
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": [
+          [
+            51,
+            96
+          ],
+          [
+            96,
+            126
+          ]
+        ]
+      }
+    },
+    {
+      "id": "gen-v5-counter-clear-ray1-s0-d1-m25",
+      "source": "check-counter-v5-straight-reply-clear",
+      "recipe": "counter-clear-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-clear",
+        "recipe": "counter-clear-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 37
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,1,2;2,0,1;2,2,1;2,3,1;4,1,2;6,1,2",
+      "semanticFingerprint": "counter-clear|0,2,A;0,2,C;0,2,S;1,2,S;2,2,S;3,0,W;3,2,A;3,4,W;3,6,W;4,2,S;5,2,A",
+      "certificate": {
+        "accepted": [
+          108,
+          111,
+          113
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": [
+          [
+            51,
+            81
+          ],
+          [
+            81,
+            141
+          ]
+        ]
+      }
+    },
+    {
+      "id": "gen-v5-counter-clear-ray1-s0-d1-m26",
+      "source": "check-counter-v5-straight-reply-clear",
+      "recipe": "counter-clear-ray1",
+      "edit": {
+        "source": "check-counter-v5-straight-reply-clear",
+        "recipe": "counter-clear-ray1",
+        "seed": 0,
+        "direction": 1,
+        "mask": 38
+      },
+      "domain": "counter-clear",
+      "positionFingerprint": "0,1,2;1,1,2;3,0,1;3,2,1;3,3,1;5,1,2",
+      "semanticFingerprint": "counter-clear|0,2,A;0,2,C;0,2,S;1,2,S;2,2,S;3,0,W;3,2,A;3,4,W;3,5,W;4,2,S;5,2,A",
+      "certificate": {
+        "accepted": [
+          108,
+          111,
+          113
+        ],
+        "finishes": [],
+        "outcome": "clear",
+        "negativeSupportPairs": [
+          [
+            66,
+            81
+          ],
+          [
+            81,
+            141
+          ]
+        ]
+      }
+    }
+  ]
+}

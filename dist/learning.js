@@ -7,9 +7,9 @@ import {
   units,
   problems,
   curriculumVersion,
-} from "./curriculum.js?v=curriculum-v5-stage2-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage3-20261113";
 import { coord } from "./game.js";
-import { positionFingerprint } from "./learning-path.js?v=curriculum-v5-stage2-20261112";
+import { positionFingerprint } from "./learning-path.js?v=curriculum-v5-stage3-20261113";
 
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const byId = new Map(problems.map((p) => [p.id, p]));
@@ -370,7 +370,9 @@ function initializeHints(state, guide) {
           "印の空点から、相手の応手を見て続ける。",
         ]
       : [...problem(state).hintTexts];
-  state.hints.level = state.hints.byDecision[hintKey(state)] || 0;
+  // Exposure history stays cumulative, but entering/retrying/restoring a
+  // decision never reopens a hint without the learner asking for it.
+  state.hints.level = 0;
 }
 export function createAttempt(
   problemId,
@@ -960,7 +962,16 @@ export function hintLearning(state) {
   next.hints.level++;
   next.hints.uses++;
   next.hints.maxLevel = Math.max(next.hints.maxLevel, next.hints.level);
-  next.hints.byDecision[hintKey(next)] = next.hints.level;
+  next.hints.byDecision[hintKey(next)] = Math.max(
+    next.hints.byDecision[hintKey(next)] || 0,
+    next.hints.level,
+  );
+  return next;
+}
+export function hideLearningHints(state) {
+  if (!state || state.hints.level === 0) return state;
+  const next = clone(state);
+  next.hints.level = 0;
   return next;
 }
 export function markLearningGuidance(state) {

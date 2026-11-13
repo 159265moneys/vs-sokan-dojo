@@ -345,7 +345,8 @@ test("all public transitions preserve arguments, invalid operations are no-ops, 
     failed = playLearningMove(s, parse("J8"));
   assert.deepEqual(s, hinted);
   const retried = retryLearning(failed);
-  assert.equal(retried.hints.level, 3);
+  assert.equal(retried.hints.level, 0);
+  assert.equal(retried.hints.maxLevel, 3);
   assert.equal(retried.hints.uses, 3);
   assert.equal(retried.metrics.unknownSelections, 1);
   assert.equal(retried.metrics.retries, 1);
@@ -512,9 +513,11 @@ test("saved state roundtrips and corrupted or incompatible states cannot grant a
   pending = playLearningMove(pending, parse("J8"));
   const restoredFeedback = restoreLearningAttempt(copy(pending));
   assert(restoredFeedback);
-  assert.equal(restoredFeedback.hints.level, 2);
+  assert.equal(restoredFeedback.hints.level, 0);
+  assert.equal(restoredFeedback.hints.maxLevel, 2);
   const retried = retryLearning(restoredFeedback);
-  assert.equal(retried.hints.level, 2);
+  assert.equal(retried.hints.level, 0);
+  assert.equal(retried.hints.uses, 2);
   assert.deepEqual(retried.board, problem("shared-point-order").board);
   assert.equal(retried.metrics.unknownSelections, 1);
 });

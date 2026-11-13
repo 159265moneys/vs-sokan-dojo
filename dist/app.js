@@ -13,9 +13,9 @@ import { initBoard, renderBoard } from "./board-view.js?v=patterns-20261111-v2";
 import {
   units,
   problems,
-} from "./curriculum.js?v=curriculum-v5-stage2-20261112";
+} from "./curriculum.js?v=curriculum-v5-stage3-20261113";
 import { positionMoves, reviewStartPly } from "./training-sessions.js";
-import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage2-20261112";
+import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v5-stage3-20261113";
 import {
   createPathProgress,
   noteExposure,
@@ -23,10 +23,11 @@ import {
   unitStatus,
   selectAssessment,
   nextLearningStep,
+  assessmentAvailability,
   recordPracticalResult,
   getExamStatus,
   recordReviewFindings,
-} from "./learning-path.js?v=curriculum-v5-stage2-20261112";
+} from "./learning-path.js?v=curriculum-v5-stage3-20261113";
 import {
   journeyTracks,
   createJourney,
@@ -47,6 +48,7 @@ import {
   getLearningView,
   getDemoFrames,
   hintLearning,
+  hideLearningHints,
   retryLearning,
   restoreLearningAttempt,
   markLearningGuidance,
@@ -55,7 +57,7 @@ import {
   recordLessonView,
   recordBoardExposure,
   getLearningStats,
-} from "./learning.js?v=curriculum-v5-stage2-20261112";
+} from "./learning.js?v=curriculum-v5-stage3-20261113";
 import {
   describeMove,
   judgeReviewMove,
@@ -171,6 +173,7 @@ let learningRole = "lesson",
   journeyBusy = false,
   journeyError = null,
   journeyEpoch = 0;
+let journeyHelpKey = null;
 let practiceGames = read("practice-games-v3", []);
 if (!Array.isArray(practiceGames)) practiceGames = [];
 let examSeries = read("exam-series-v3", null);
@@ -182,7 +185,7 @@ let playTrace = game.trace
 if (!game.moves.length && !game.result) attachGameEvidence(game);
 delete game.trace;
 
-let learnScreen = learning ? "practice" : "library",
+let learnScreen = learning?.status === "choose" ? "practice" : "library",
   learnSection = "lessons",
   unitId = units[0]?.id,
   demoStep = 0,
@@ -209,6 +212,7 @@ let demoReturn = false,
 let precisionCenter = 112,
   lastPanelKey = "",
   lastLibraryKey = "";
+let lastQuestionView = null;
 const savedRoute = read("learning-route-v2", null);
 if (learning) {
   const validQueue = savedRoute?.problemQueue?.filter((id) =>
@@ -236,6 +240,15 @@ const emptyFrame = () => ({
   history: [],
 });
 const currentProblem = () => problems.find((p) => p.id === learning?.problemId);
+const independentQuestion = () =>
+  learningRole === "assessment" &&
+  !!learning &&
+  !learning.guidanceSeen &&
+  !learning.hints.uses &&
+  !learning.metrics.verifiedMistakes &&
+  !learning.metrics.unknownSelections &&
+  !learning.metrics.retries &&
+  !pathProgress.attempts[learning.attemptId]?.exposureSeen;
 const currentUnit = () =>
   units.find((u) => u.id === (currentProblem()?.unitId || unitId)) || units[0];
 const libraryVisible = () =>
@@ -386,14 +399,17 @@ function rawFrame() {
     if (learnScreen === "journey" && journey) {
       const v = getJourneyView(journey),
         preview =
-          pending.learn !== null
+          journeyHelpShown() && pending.learn !== null
             ? previewJourneyMove(journey, pending.learn)
             : null;
       return {
         board: v.board,
         last: v.last,
         history: v.moves.slice(journey.startPly).map((i) => ({ i })),
-        highlights: preview?.highlights || v.highlights,
+        highlights:
+          v.completed || v.turn !== 1 || journeyHelpShown()
+            ? preview?.highlights || v.highlights
+            : [],
       };
     }
     if (learnScreen === "demo") {
@@ -513,6 +529,17 @@ function canPlace() {
 }
 function switchMode(next) {
   if (next === mode) return;
+  if (mode === "learn") {
+    journeyHelpKey = null;
+    if (
+      learnScreen === "demo" ||
+      (learnScreen === "practice" &&
+        (lessonReplay || learning?.status !== "choose"))
+    ) {
+      learnScreen = "library";
+      lessonReplay = null;
+    }
+  }
   if (mode === "guide") saveStrategyScroll();
   if (next === "guide") markLiveHelp("strategy-guide");
   if (mode === "review" && reviewScan.state === "running")
@@ -589,6 +616,17 @@ function statusText() {
         : `${reviewStep}/${review?.moves.length || 0}手`;
 }
 function render() {
+  if (mode !== "learn" || learnScreen !== "journey") journeyHelpKey = null;
+  const questionView =
+    mode === "learn" &&
+    learnScreen === "practice" &&
+    !lessonReplay &&
+    learning?.status === "choose"
+      ? `${learning.attemptId}:${learning.nodeId}:${learning.history.length}`
+      : null;
+  if (questionView && questionView !== lastQuestionView)
+    learning = hideLearningHints(learning);
+  lastQuestionView = questionView;
   const focus = rememberFocus();
   document.body.dataset.mode = mode;
   document.body.dataset.skin = skin();
@@ -632,7 +670,9 @@ function render() {
           : learnScreen === "demo"
             ? units.find((u) => u.id === unitId)?.title
             : learningRole === "assessment"
-              ? "確認問題"
+              ? independentQuestion()
+                ? "確認問題"
+                : "復習問題"
               : learnSection === "mixed"
                 ? "問題練習"
                 : currentUnit()?.title
@@ -769,6 +809,11 @@ function recoverJourney(raw) {
     return null;
   }
 }
+function journeyHelpShown() {
+  return (
+    !!journey && journeyHelpKey === `${journey.id}:${journey.moves.length}`
+  );
+}
 function nowISO() {
   return (
     new Date(Date.now() + 9 * 3600000).toISOString().slice(0, -1) + "+09:00"
@@ -852,7 +897,10 @@ function goRecommended(id = null) {
   if (
     learningRole === "assessment" &&
     learning?.status === "choose" &&
-    step.kind === "assessment" &&
+    (step.kind === "assessment" ||
+      step.kind === "assessment-unavailable" ||
+      (step.reason === "assessment-exhausted" &&
+        !currentProblem()?.assessmentDomain)) &&
     step.reason !== "review-transfer" &&
     (!step.assessmentDomain ||
       step.assessmentDomain === currentProblem()?.assessmentDomain) &&
@@ -893,6 +941,10 @@ function goRecommended(id = null) {
   mode = "learn";
   save("view-v2", mode);
   learnSection = "lessons";
+  if (step.kind === "assessment-unavailable") {
+    showAssessmentUnavailable(step);
+    return;
+  }
   if (step.kind === "assessment") {
     startAssessment(step.unitId, step.phase || "initial");
     return;
@@ -911,6 +963,12 @@ function goRecommended(id = null) {
     return;
   }
   if (step.reason === "initial-complete") {
+    if (examState().challengeCompleted) {
+      learnSection = "games";
+      learnScreen = "library";
+      render();
+      return;
+    }
     startGuidedNext();
     return;
   }
@@ -1031,6 +1089,32 @@ function startAssessment(id, phase = "initial") {
   });
   if (!p) {
     if (
+      learningRole === "assessment" &&
+      learning?.status === "choose" &&
+      currentProblem()?.unitId === id
+    ) {
+      mode = "learn";
+      learnScreen = "practice";
+      lessonReplay = null;
+      render();
+      return;
+    }
+    const availability = assessmentAvailability(
+      pathProgress,
+      id,
+      assessmentProblems,
+      { phase, at: nowISO() },
+    );
+    if (availability.reason === "domain-exhausted") {
+      showAssessmentUnavailable(availability);
+      return;
+    }
+    if (availability.state === "complete") {
+      learnScreen = "library";
+      render();
+      return;
+    }
+    if (
       phase === "retention" &&
       Date.now() -
         Date.parse(
@@ -1057,7 +1141,27 @@ function pathCard() {
   const confirmed = units.filter(
     (x) => unitStatus(pathProgress, x.id).currentConfirmed,
   ).length;
-  return `<div class='path-next'><div><span class='lesson-kicker'>次の一歩 · 確認 ${confirmed}/${units.length}</span><h2>${esc(step.kind === "journey" ? "空盤から試す" : u?.title)}</h2></div>${button("path-next", step.label, "primary")}</div>`;
+  const reached =
+    step.reason === "initial-complete" && examState().challengeCompleted;
+  return `<div class='path-next'><div><span class='lesson-kicker'>次の一歩 · 確認 ${confirmed}/${units.length}</span><h2>${esc(reached ? "最強10局全勝" : step.kind === "journey" ? "空盤から試す" : u?.title)}</h2></div>${button("path-next", reached ? "成績を見る" : step.label, "primary")}</div>`;
+}
+function showAssessmentUnavailable(step) {
+  mode = "learn";
+  learnScreen = "library";
+  learnSection = "retry";
+  const u = units.find((u) => u.id === step.unitId);
+  const lesson = problems.find(
+    (p) =>
+      p.role === "lesson" &&
+      p.unitId === step.unitId &&
+      []
+        .concat(p.teachesAssessmentDomain || [])
+        .includes(step.assessmentDomain),
+  );
+  render();
+  openModal(
+    `<h2>${esc(u?.title || "確認")}</h2><p>新しい確認問題なし</p><div class='modal-actions'>${button("unavailable-practice", "同じ形を練習", "primary", `data-unit-id='${esc(step.unitId)}' data-problem-id='${esc(lesson?.id || "")}'`)}${button("unavailable-units", "他の単元へ")}</div>`,
+  );
 }
 function examState() {
   const e = getExamStatus(pathProgress, { seriesId: examSeries });
@@ -1151,6 +1255,7 @@ function archiveJourney() {
 }
 function startJourney(trackId, options = {}) {
   const commit = () => {
+    journeyHelpKey = null;
     if (trackId !== "practice" || options.sourceReview)
       markLiveHelp("guided-practice");
     if (journey) archiveJourney();
@@ -1242,6 +1347,7 @@ function putJourney(i) {
   if (!journey || journeyBusy || engine?.pending) return;
   const next = playJourneyMove(journey, i);
   if (next === journey) return;
+  journeyHelpKey = null;
   journey = next;
   pending.learn = null;
   se.play("stone");
@@ -1421,6 +1527,15 @@ function renderLibrary() {
           })
           .map((u) => {
             const st = unitStatus(pathProgress, u.id);
+            const availability = assessmentAvailability(
+              pathProgress,
+              u.id,
+              assessmentProblems,
+              {
+                phase: st.currentConfirmed ? "retention" : "initial",
+                at: nowISO(),
+              },
+            );
             const eligible =
               st.currentConfirmed &&
               selectAssessment(pathProgress, u.id, assessmentProblems, {
@@ -1428,10 +1543,27 @@ function renderLibrary() {
                 at: nowISO(),
               });
             let action;
-            if (st.reviewPending || st.assessmentReviewPending)
+            if (
+              learningRole === "assessment" &&
+              learning?.status === "choose" &&
+              currentProblem()?.unitId === u.id
+            )
+              action = button("learn-resume", "問題の続き", "primary");
+            else if (
+              availability.reason === "domain-exhausted" &&
+              st.assessmentReview?.stage !== "remediation" &&
+              !st.reviewPending
+            )
+              action = button(
+                "unavailable-check",
+                "確認は保留",
+                "secondary",
+                `data-unit-id='${u.id}' data-phase='${availability.phase}'`,
+              );
+            else if (st.reviewPending || st.assessmentReviewPending)
               action = button(
                 "unit-next",
-                st.reviewPending ? "自分の局面へ" : "つまずきを練習",
+                recommendedStep(u.id).label,
                 "primary",
                 `data-unit-id='${u.id}'`,
               );
@@ -1489,7 +1621,7 @@ function renderLibrary() {
       );
       content = `<div class='library-start'>${button("mixed-start", "練習する", "primary")}</div><div class='problem-list'>${list.map((p, j) => `<button class='problem-card' data-problem='${p.id}'><span class='unit-number'>${String(j + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>問題 ${j + 1}</strong><span>${esc(p.goal)}</span></span>${icon("chevron-right")}</button>`).join("")}</div>`;
     }
-    el.innerHTML = `<div class='library-head'><h1>学ぶ</h1>${learning ? button("learn-resume", "問題の続き", "secondary") : ""}</div>${section}${content}`;
+    el.innerHTML = `<div class='library-head'><h1>学ぶ</h1>${learning ? button("learn-resume", learning.status === "choose" ? "問題の続き" : "前の答え合わせ", "secondary") : ""}</div>${section}${content}`;
   } else {
     const wins = records.filter((r) => r.result === "win").length,
       losses = records.filter((r) =>
@@ -1556,6 +1688,14 @@ function renderControls() {
           "課題の一手をやり直す",
           !v.canRetry || journeyBusy || v.completed,
         ) +
+        (journeyTracks.find((t) => t.id === journey.trackId)?.unaided
+          ? ""
+          : ib(
+              "journey-hint",
+              "hint",
+              "ヒント",
+              journeyBusy || v.turn !== 1 || v.completed,
+            )) +
         placeControl() +
         ib("precision", "target", "盤面を拡大");
     } else if (learnScreen === "demo") {
@@ -1692,15 +1832,19 @@ function renderPanel() {
     if (learnScreen === "journey" && journey) {
       const v = getJourneyView(journey),
         preview =
-          pending.learn !== null
+          journeyHelpShown() && pending.learn !== null
             ? previewJourneyMove(journey, pending.learn)
             : null,
         r = getJourneyResult(journey);
       const note =
         preview ||
-        (v.turn === 1 && !v.completed ? v.instruction : v.feedback) ||
+        (v.turn === 1 && !v.completed
+          ? journeyHelpShown()
+            ? v.instruction
+            : { title: v.stage.title, text: v.goal }
+          : v.feedback) ||
         {};
-      content = `<div class='lesson-kicker'>${journey.origin === "review" ? "振り返りから継続" : journey.startPly ? "課題局面から" : v.stage.title} · ${r.white.strength === 100 ? "最強" : r.white.strength === 85 ? "強い" : r.white.strength === 35 ? "普通" : "練習CPU"}${v.assisted ? " · 解説付き" : ""}</div><h2 class='lesson-heading'>${esc(v.completed ? statusText() : note.title || v.title)}</h2><p class='lesson-copy'>${esc(note.text || "")}</p><div class='journey-goals'>${v.objectives.map((o) => `<span class='${o.status === "achieved" ? "achieved" : ""}'>${o.status === "achieved" ? "✓" : v.completed && o.status === "not-observed" ? "—" : "○"} ${esc(o.title)}${v.completed && o.status === "not-observed" ? "（機会なし）" : ""}</span>`).join("")}</div>`;
+      content = `<div class='lesson-kicker'>${journey.origin === "review" ? "振り返りから継続" : journey.startPly ? "課題局面から" : "空盤から"} · ${r.white.strength === 100 ? "最強" : r.white.strength === 85 ? "強い" : r.white.strength === 35 ? "普通" : "練習CPU"}${journeyHelpShown() ? " · ヒント表示" : ""}</div><h2 class='lesson-heading'>${esc(v.completed ? statusText() : note.title || v.title)}</h2><p class='lesson-copy'>${esc(note.text || "")}</p><div class='journey-goals'>${v.objectives.map((o) => `<span class='${o.status === "achieved" ? "achieved" : ""}'>${o.status === "achieved" ? "✓" : v.completed && o.status === "not-observed" ? "—" : "○"} ${esc(o.title)}${v.completed && o.status === "not-observed" ? "（機会なし）" : ""}</span>`).join("")}</div>`;
       actions =
         journeyError || engineState === "error"
           ? button("journey-reply", "もう一度", "primary")
@@ -1743,7 +1887,7 @@ function renderPanel() {
     } else if (learning) {
       const v = getLearningView(learning),
         f = v.feedback;
-      content = `<div class='lesson-kicker'>${learningRole === "assessment" ? "初回・保持の確認 · " : ""}${problemQueue.length > 1 ? `問題 ${queueIndex + 1}/${problemQueue.length}` : "問題"}</div><h2 class='lesson-heading'>${esc(f?.title || v.goal)}</h2><p class='lesson-copy'>${esc(f?.text || "")}</p>`;
+      content = `<div class='lesson-kicker'>${problemQueue.length > 1 ? `問題 ${queueIndex + 1}/${problemQueue.length}` : ""}</div><h2 class='lesson-heading'>${esc(f?.title || v.goal)}</h2><p class='lesson-copy'>${esc(f?.text || "")}</p>`;
 
       if (v.hintLevel)
         content += `<p class='lesson-copy hint-copy'>${esc(v.hintText || "印をつけた石から、次に四や五になる点を考えよう。")}</p><div class='hint-step'>ヒント ${v.hintLevel}</div>`;
@@ -1870,6 +2014,17 @@ function hasLearningBranch() {
   );
 }
 function openUnit(id, returnToPractice = false, targetProblemId = null) {
+  if (!returnToPractice) {
+    const u = units.find((u) => u.id === id);
+    if (!u?.problemIds.length) return;
+    unitId = id;
+    lessonTarget = targetProblemId;
+    startProblem(targetProblemId || u.problemIds[0], {
+      queue: targetProblemId ? [targetProblemId] : u.problemIds,
+      role: "lesson",
+    });
+    return;
+  }
   lessonTarget = targetProblemId;
   if (learningRole === "assessment" && learning?.status === "choose") {
     learning = markLearningGuidance(learning);
@@ -1923,32 +2078,10 @@ function submitLearning(i = null, choice = null) {
   if (before === learning) return;
   pending.learn = null;
   let transitions = getLearningView(learning).transitionFrames;
-  if (transitions.length && learning.feedback.correct === true) {
-    if (learning.status === "choose") {
-      if (
-        learningRole !== "assessment" &&
-        (learnSection === "lessons" ||
-          (currentProblem()?.questionHighlights &&
-            learning.exercise &&
-            !learning.history.length))
-      )
-        learning = markLearningGuidance(learning);
-      else
-        transitions = transitions.map((f) => ({
-          ...f,
-          title:
-            f.last === null
-              ? "相手の応手"
-              : `${f.board[f.last] === 1 ? "黒" : "白"} ${coord(f.last)}`,
-          text: "",
-          highlights:
-            f.last === null
-              ? []
-              : [{ cells: [f.last], points: [], tone: "focus" }],
-        }));
-    }
+  if (transitions.length && learning.status === "solved") {
     lessonReplay = { kind: "transition", frames: transitions, step: 0 };
   }
+  if (learning.status !== "choose") markLiveHelp("lesson-feedback");
   saveLearning();
   se.play(
     learning.status === "solved"
@@ -1970,6 +2103,12 @@ function nextLearning() {
 
 function replayLearning(kind) {
   if (kind === "refutation") exposeCurrent("answer");
+  if (learning?.status === "choose") {
+    exposeCurrent("explanation");
+    markLiveHelp("explanation");
+    learning = markLearningGuidance(learning);
+    saveLearning();
+  }
   const v = getLearningView(learning),
     frames = kind === "refutation" ? v.refutationFrames : v.transitionFrames;
   if (frames.length) {
@@ -2441,6 +2580,26 @@ function retryEngine() {
   render();
 }
 const actions = {
+  "unavailable-check": (el) =>
+    showAssessmentUnavailable(
+      assessmentAvailability(
+        pathProgress,
+        el.dataset.unitId,
+        assessmentProblems,
+        { phase: el.dataset.phase, at: nowISO() },
+      ),
+    ),
+  "unavailable-practice": (el) => {
+    closeModal();
+    openUnit(el.dataset.unitId, false, el.dataset.problemId || null);
+  },
+  "unavailable-units": () => {
+    closeModal();
+    mode = "learn";
+    learnScreen = "library";
+    learnSection = "lessons";
+    render();
+  },
   "title-guide": () => dismissTitle("guide"),
   "title-start": () => dismissTitle("play"),
   "title-learn": () => dismissTitle("learn"),
@@ -2469,12 +2628,26 @@ const actions = {
   "journey-variant": (el) =>
     startJourney(el.dataset.track, { replyVariant: el.dataset.variant }),
   "journey-resume": () => {
+    journeyHelpKey = null;
     mode = "learn";
     learnScreen = "journey";
     learnSection = "games";
     lessonReplay = null;
     render();
     journeyReply();
+  },
+  "journey-hint": () => {
+    if (
+      !journey ||
+      journey.completed ||
+      journeyBusy ||
+      getJourneyView(journey).turn !== 1
+    )
+      return;
+    journeyHelpKey = `${journey.id}:${journey.moves.length}`;
+    journey = markJourneyAssistance(journey, "hint");
+    saveJourney();
+    render();
   },
   "journey-reply": () => {
     if (engineState === "error") retryEngine();
@@ -2483,6 +2656,7 @@ const actions = {
   "journey-retry": () => {
     if (!journey || journeyBusy || journey.completed) return;
     journey = retryJourney(journey);
+    journeyHelpKey = null;
     pending.learn = null;
     saveJourney();
     render();

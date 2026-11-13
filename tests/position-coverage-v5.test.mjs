@@ -30,7 +30,10 @@ const targets = {
   practice: ["practical-win", "practical-defense", "practical-build"],
 };
 const clone = (value) => JSON.parse(JSON.stringify(value));
-const bank = problems.filter((problem) => problem.role === "assessment");
+// These cases audit the original finite bank independently of reserve supply.
+const bank = problems.filter(
+  (problem) => problem.role === "assessment" && problem.supply !== "reserve",
+);
 const baseline = (unitId) =>
   bank.filter(
     (problem) => problem.unitId === unitId && !problem.assessmentDomain,
@@ -413,7 +416,7 @@ for (const [unitId, domains] of Object.entries(targets)) {
       assert.equal(unitStatus(progress, unitId).currentConfirmed, false);
       assert.equal(
         nextLearningStep(progress, settings(unitId)).reason,
-        "assessment-exhausted",
+        "domain-exhausted",
       );
       return;
     }
@@ -545,7 +548,7 @@ test("practical supply exhaustion never restores current confirmation or recycle
   assert.equal(selectAssessment(progress, "practice", bank), null);
   assert.equal(
     nextLearningStep(progress, settings("practice")).reason,
-    "assessment-exhausted",
+    "domain-exhausted",
   );
   assert.equal(unitStatus(progress, "practice").initialConfirmed, true);
   assert.equal(unitStatus(progress, "practice").currentConfirmed, false);
