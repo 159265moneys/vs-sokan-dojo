@@ -1162,9 +1162,17 @@ export function restoreLearningAttempt(raw) {
         const selected = p.nodes
           .flatMap((n) => n.choices)
           .find((c) => c.id === raw.feedback.choiceId);
-        if (!selected?.correct) return null;
+        if (!selected?.correct || selected.continuations?.length) return null;
       }
     }
+    if (
+      !raw.exercise &&
+      p.nodes.some((n) => n.input === "choice") &&
+      (raw.nodeId !== p.rootNodeId ||
+        raw.history.length ||
+        raw.feedback.kind === "continued")
+    )
+      return null;
     if (raw.exercise) {
       const choice = p.nodes
         .flatMap((n) => n.choices)
@@ -1192,9 +1200,13 @@ export function restoreLearningAttempt(raw) {
       )
         return null;
       if (raw.checkpoint.history.length !== prefix.length) return null;
+      if (raw.checkpoint.nodeId !== raw.nodeId) return null;
+      if (raw.status === "choose") {
+        if (raw.feedback.move !== null) return null;
+      } else if (raw.feedback.move !== raw.history.at(-1)?.i) return null;
       if (
         raw.status === "solved" &&
-        !meetsExercise(raw.board, raw.exercise, raw.feedback.move)
+        !meetsExercise(raw.board, raw.exercise, raw.history.at(-1)?.i)
       )
         return null;
     }
