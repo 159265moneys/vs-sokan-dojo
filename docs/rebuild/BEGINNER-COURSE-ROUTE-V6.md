@@ -77,7 +77,10 @@ Command:
 node --test tests/course-route-v6.test.mjs tests/learning-path.test.mjs tests/assessment-supply-v5.test.mjs
 ```
 
-Result: **133 passed, 0 failed**, including 25 course-route tests.
+Initial helper check: **133 passed, 0 failed**, including 25 course-route tests.
+The final release also verifies the later scaffolding case and application
+integration; see [the independent review](BEGINNER-INDEPENDENT-REVIEW-V6.md)
+for the final **419 passed, 0 failed** result.
 
 Coverage includes:
 
@@ -107,3 +110,20 @@ They verify navigation and evidence accounting; they do not establish human
 learning effectiveness or replace the application's separate browser playthrough.
 The helper does not itself launch a board, so the caller's guided-journey dispatch
 must also be verified in the application.
+
+## Quiet-preparation scaffolding
+
+The prepare unit now presents its stated-candidate comparison, the two local
+two-direction/one-direction exercises, then the full preparation-to-five
+sequence. Problem identities, positions, judgments, and prerequisites are
+unchanged. The unit's `remediationProblemId` keeps `quiet-two-plans` as the
+baseline remediation fallback once all its lessons are complete. Domain-specific
+remediation continues to select the matching local lesson. Both the legacy and
+course routes respect this fallback without treating a short conceptual answer
+as execution of the full sequence.
+
+The application resumes a valid unfinished lesson in the same unit even if
+reordering places a different ordinary course lesson first. A different required
+remediation or real-game review still has priority. Browser tests confirmed
+that moving to the library and back retains the actual two-ply position and
+hint-use evidence while closing the visible hint.
