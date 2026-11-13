@@ -709,6 +709,32 @@ body[data-screen="library"] #library-view {
   font-size: 14px;
 }
 
+.library-start {
+  display: flex;
+  gap: 8px;
+}
+.library-start > button {
+  flex: 1 1 0;
+  min-height: 48px;
+  margin: 0;
+}
+.drill-source-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 20px 2px 10px;
+  font-size: 16px;
+}
+.drill-source-title > span,
+.drill-status {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+.drill-status {
+  margin: 12px 2px;
+}
+
 .record-summary {
   display: flex;
   align-items: baseline;

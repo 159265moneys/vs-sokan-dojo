@@ -15,6 +15,9 @@ import {
   problems,
 } from "./curriculum.js?v=curriculum-v6-20261113";
 import { positionMoves, reviewStartPly } from "./training-sessions.js";
+import { RecordDrillController } from "./record-drill-controller.js?v=record-drills-v7";
+import { normalizeRecordDrillSkill } from "./record-drill-bank.js?v=record-drills-v7";
+import { recordDrillFingerprint } from "./record-drills.js?v=record-drills-v7";
 import { assessmentProblems } from "./assessment-bank.js?v=curriculum-v6-20261113";
 import {
   createPathProgress,
@@ -208,6 +211,16 @@ let review = null,
   reviewJob = 0;
 const reviewCache = new Map();
 const shownReviewBoards = new Set();
+let recordDrills = null,
+  recordDrillReady = null,
+  recordDrillFrame = null,
+  recordDrillReplayFrames = [],
+  recordDrillEntering = false,
+  recordDrillLoadingQuestion = null,
+  recordDrillNavigation = 0,
+  recordDrillRound = [],
+  recordDrillSelection = null;
+const shownRecordDrillBoards = new Set();
 const pending = { play: null, learn: null, review: null };
 let demoReturn = false,
   lessonTarget = null,
@@ -232,6 +245,14 @@ if (learning) {
       : "lesson";
   if (["lessons", "mixed", "retry", "games"].includes(savedRoute?.section))
     learnSection = savedRoute.section;
+}
+const savedRecordDrillRoute = read("record-drill-route-v7", null);
+if (savedRecordDrillRoute?.section === "mixed") {
+  learnScreen = "library";
+  learnSection = "mixed";
+  recordDrillRound = Array.isArray(savedRecordDrillRoute.round)
+    ? savedRecordDrillRoute.round.filter((id) => typeof id === "string").slice(0, 60) : [];
+  recordDrillSelection = savedRecordDrillRoute.selection || null;
 }
 
 const emptyFrame = () => ({
@@ -399,6 +420,7 @@ function rawFrame() {
       highlights: hint?.highlights || [],
     };
   if (mode === "learn") {
+    if (learnScreen === "record-drill") return currentRecordDrillFrame();
     if (learnScreen === "journey" && journey) {
       const v = getJourneyView(journey),
         preview =
@@ -502,6 +524,9 @@ function reviewFrames() {
 }
 function canPlace() {
   if (mode === "guide") return false;
+  if (mode === "learn" && learnScreen === "record-drill")
+    return !!recordDrills?.view?.canPlay && !recordDrills.busy &&
+      !recordDrillEntering && recordDrillFrame === null;
   if (mode === "play")
     return (
       engineState === "ready" &&
@@ -534,6 +559,13 @@ function switchMode(next) {
   if (next === mode) return;
   if (mode === "learn") {
     journeyHelpKey = null;
+    if (learnScreen === "record-drill") {
+      recordDrillNavigation++;
+      recordDrillEntering = false;
+      recordDrillLoadingQuestion = null;
+      recordDrillFrame = null;
+      if (!recordDrills?.view?.canPlay) learnScreen = "library";
+    }
     if (
       learnScreen === "demo" ||
       (learnScreen === "practice" &&
@@ -551,10 +583,21 @@ function switchMode(next) {
   mode = next;
   save("view-v2", mode);
   render();
+  if (mode === "play" && !game.result && game.moves.length)
+    recordDrills?.pauseGeneration();
+  if (mode === "learn" && learnSection === "mixed") {
+    recordDrills?.resumeGeneration();
+    if (learnScreen === "record-drill") resumeRecordDrill();
+  }
   if (mode === "play") cpuTurn();
   if (mode === "learn" && learnScreen === "journey") journeyReply();
 }
 function statusText() {
+  if (mode === "learn" && learnScreen === "record-drill")
+    return recordDrills?.busy || recordDrillEntering ? "確認中" :
+      recordDrillFrame !== null ? "手順を確認" :
+      recordDrills?.view?.canPlay ? "黒の番" :
+      recordDrills?.view?.completion ? "できた" : "答え合わせ";
   if (mode === "play")
     return game.result
       ? {
@@ -668,7 +711,9 @@ function render() {
     $("#context-bar").hidden = false;
     const heading =
       mode === "learn"
-        ? learnScreen === "journey"
+        ? learnScreen === "record-drill"
+          ? "実戦問題"
+          : learnScreen === "journey"
           ? getJourneyView(journey).title
           : learnScreen === "demo"
             ? units.find((u) => u.id === unitId)?.title
@@ -702,6 +747,8 @@ function render() {
       }
     }
     const displayFrame = getFrame();
+    if (mode === "learn" && learnScreen === "record-drill")
+      exposeRecordDrillBoard(displayFrame.board, recordDrills?.question?.moment.skillId);
     if (mode === "review" && reviewRetry?.status !== "choose") {
       const key = displayFrame.board.join("");
       if (!shownReviewBoards.has(key)) {
@@ -1265,9 +1312,12 @@ function archiveJourney() {
   else practiceGames[i] = item;
   save("practice-games-v3", practiceGames);
   saveJourney();
+  if (r.completed) refreshRecordDrills();
 }
 function startJourney(trackId, options = {}) {
   const commit = () => {
+    save("record-drill-route-v7", null);
+    recordDrills?.pauseGeneration();
     journeyHelpKey = null;
     if (trackId !== "practice" || options.sourceReview)
       markLiveHelp("guided-practice");
@@ -1495,6 +1545,170 @@ function startExam() {
     };
   } else begin();
 }
+function recordDrillSources() {
+  return [...records, ...practiceGames].filter((r) =>
+    r?.moves?.length >= 15 && (!r.startPly || r.startPly === 0) &&
+    !r.sourceLessonId && (!r.startBoard ||
+      (Array.isArray(r.startBoard) && !r.startBoard.some(Boolean))) &&
+    !(r.id === game.id && !game.result));
+}
+function refreshRecordDrills() {
+  recordDrills?.syncRecords(recordDrillSources());
+  recordDrills?.resumeGeneration();
+}
+function saveRecordDrillRoute() {
+  save("record-drill-route-v7", {
+    section: "mixed", round: recordDrillRound,
+    selection: recordDrillSelection,
+  });
+}
+function exposeRecordDrillBoard(board, skillId) {
+  if (!board?.length || !board.some(Boolean)) return;
+  const key = board.join("");
+  if (shownRecordDrillBoards.has(key)) return;
+  shownRecordDrillBoards.add(key);
+  progress = recordBoardExposure(progress, board);
+  pathProgress = noteExposure(pathProgress, {
+    board: [...board], unitId: normalizeRecordDrillSkill(skillId),
+    kind: "record-drill", at: nowISO(),
+  });
+  save("learning-v2", progress);
+  savePath();
+}
+function currentRecordDrillFrame() {
+  const q = recordDrillLoadingQuestion || recordDrills?.question;
+  if (recordDrillEntering || !recordDrills?.view)
+    return { ...emptyFrame(), board: q?.before?.slice() || Array(225).fill(0) };
+  const v = recordDrills.view;
+  if (recordDrillFrame !== null && recordDrillReplayFrames.length)
+    return recordDrillReplayFrames[Math.min(recordDrillFrame, recordDrillReplayFrames.length - 1)];
+  return { board: v.board, last: v.last, highlights: v.highlights,
+    history: (recordDrills.state?.moves || []).map((i) => ({ i })) };
+}
+function openRecordDrillLibrary() {
+  recordDrillNavigation++;
+  recordDrillEntering = false;
+  recordDrillLoadingQuestion = null;
+  mode = "learn";
+  learnSection = "mixed";
+  learnScreen = "library";
+  recordDrillFrame = null;
+  save("view-v2", mode);
+  saveRecordDrillRoute();
+  refreshRecordDrills();
+  render();
+}
+async function openRecordDrill(question, { newRound = false } = {}) {
+  if (!recordDrills || !question) return;
+  const navigation = ++recordDrillNavigation;
+  if (newRound) { recordDrillRound = []; recordDrillSelection = null; }
+  recordDrillRound = [...new Set([...recordDrillRound, question.id])];
+  mode = "learn";
+  learnSection = "mixed";
+  learnScreen = "record-drill";
+  lessonReplay = null;
+  recordDrillFrame = null;
+  recordDrillEntering = true;
+  recordDrillLoadingQuestion = question;
+  pending.learn = null;
+  save("view-v2", mode);
+  saveRecordDrillRoute();
+  render();
+  try { await recordDrills.start(question); }
+  finally {
+    if (navigation !== recordDrillNavigation) return;
+    recordDrillEntering = false;
+    recordDrillLoadingQuestion = null;
+    if (!recordDrills.view) learnScreen = "library";
+    render();
+  }
+}
+async function resumeRecordDrill() {
+  if (!recordDrills?.question || recordDrills.busy || recordDrillEntering) return;
+  const navigation = ++recordDrillNavigation;
+  mode = "learn"; learnSection = "mixed"; learnScreen = "record-drill";
+  recordDrillEntering = true;
+  recordDrillLoadingQuestion = recordDrills.question;
+  recordDrillFrame = null;
+  pending.learn = null;
+  save("view-v2", mode); saveRecordDrillRoute(); render();
+  try { await recordDrills.resume(); }
+  finally {
+    if (navigation !== recordDrillNavigation) return;
+    recordDrillEntering = false; recordDrillLoadingQuestion = null;
+    if (!recordDrills.view) learnScreen = "library";
+    render();
+  }
+}
+async function nextRecordDrill({ newRound = false } = {}) {
+  if (newRound) { recordDrillRound = []; recordDrillSelection = null; }
+  const navigation = recordDrillNavigation;
+  await recordDrillReady;
+  if (navigation !== recordDrillNavigation || mode !== "learn") return;
+  const q = recordDrills?.choose({ ...recordDrillSelection, excludeIds: recordDrillRound });
+  if (q) return openRecordDrill(q);
+  openRecordDrillLibrary();
+  if (recordDrillSelection)
+    openModal(`<h2>別の実戦問題はまだありません</h2><div class='modal-actions'>${button("drill-all", "実戦問題へ", "primary")}</div>`);
+  else if (recordDrillRound.length) toast("この組の練習は終了");
+}
+async function submitRecordDrillMove(point) {
+  if (!recordDrills?.view?.canPlay || recordDrills.busy) return;
+  pending.learn = null;
+  recordDrillFrame = null;
+  const v = await recordDrills.command("grade", point);
+  if (v && mode === "learn" && learnScreen === "record-drill") {
+    markLiveHelp("record-drill-feedback");
+    se.play(v.status === "refuted" ? "wrong" : v.status === "completed" ? "correct" : "stone");
+  }
+  render();
+}
+async function recordDrillCommand(command) {
+  if (recordDrills?.busy) return;
+  recordDrillFrame = null;
+  pending.learn = null;
+  await recordDrills?.command(command);
+  render();
+}
+async function explainRecordDrill(correction = false) {
+  if (!recordDrills?.question || recordDrills.busy) return;
+  const navigation = recordDrillNavigation;
+  const refutation = !correction && recordDrills.view?.status === "refuted"
+    ? recordDrills.view.refutationFrames : null;
+  if (refutation?.length) markLiveHelp("record-drill-refutation");
+  if (!refutation?.length)
+    await recordDrills.command("answer");
+  if (navigation !== recordDrillNavigation || learnScreen !== "record-drill") return;
+  recordDrillReplayFrames = refutation?.length ? refutation : recordDrills.view?.explanationFrames || [];
+  if (recordDrillReplayFrames.length) recordDrillFrame = 0;
+  render();
+}
+function continueRecordDrill() {
+  const q = recordDrills?.question, s = recordDrills?.state;
+  if (!q || s?.result !== "line-prevented") return;
+  startJourney("defend", {
+    initialMoves: q.prefix,
+    initialBlackMove: s.moves[q.prefix.length],
+    white: { ms: levels[q.source.level || "normal"].ms,
+      strength: levels[q.source.level || "normal"].strength },
+  });
+}
+function renderRecordDrillLibrary() {
+  const bank = recordDrills?.bank;
+  const questions = bank?.questions || [];
+  const own = questions.filter((q) => q.source.kind !== "library");
+  const library = questions.filter((q) => q.source.kind === "library");
+  const cards = (items) => `<div class='problem-list'>${items.map((q, i) => {
+    const stat = bank.stats[q.id] || {};
+    const label = stat.completed ? "解けた" : stat.mistakes ? "復習" : stat.seen ? "挑戦中" : "未挑戦";
+    return `<button class='problem-card' data-action='drill-start' data-drill-id='${esc(q.id)}'><span class='unit-number'>${String(i + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>実戦問題 ${i + 1}</strong><span>${esc(q.source.label)} · ${q.ply}手目</span></span><span class='unit-progress'>${label}</span>${icon("chevron-right")}</button>`;
+  }).join("")}</div>`;
+  const scan = recordDrills?.scan;
+  const state = recordDrills?.loading ? "問題を準備中" :
+    scan?.state === "scanning" ? `対局から出題中 ${scan.done}/${scan.total}` :
+    recordDrills?.error || recordDrills?.seedsError ? "読み込みを再試行できます" : "";
+  return `<div class='library-start'>${button("drill-start-round", "練習する", "primary", questions.length ? "" : "disabled")}${button("drill-play", "対局から増やす")}</div>${state ? `<p class='drill-status' role='status'>${esc(state)}</p>` : ""}${recordDrills?.error || recordDrills?.seedsError ? button("drill-reload", "もう一度読み込む") : ""}${own.length ? `<h2 class='drill-source-title'>自分の棋譜 <span>${own.length}問</span></h2>${cards(own)}` : ""}${library.length ? `<h2 class='drill-source-title'>収録棋譜 <span>${library.length}問</span></h2>${cards(library)}` : ""}${!questions.length && !state ? `<div class='empty-state'><h2>出題できる局面はまだありません</h2>${button("drill-play", "対局する", "primary")}</div>` : ""}`;
+}
 function renderLibrary() {
   const el = $("#library-view"),
     key = mode + ":" + learnSection,
@@ -1504,7 +1718,7 @@ function renderLibrary() {
     const section = `<div class='learning-sections' role='group' aria-label='学習メニュー'>${[
       ["lessons", "順に学ぶ"],
       ["games", "課題対局"],
-      ["mixed", "問題練習"],
+      ["mixed", "実戦問題"],
       ["retry", "復習"],
     ]
       .map(([id, label]) =>
@@ -1628,13 +1842,11 @@ function renderLibrary() {
           .join("") ||
         `<div class='empty-state'><h2>復習はありません</h2>${button("path-next", "次の一歩へ", "primary")}</div>`
       }</div>`;
-    else {
-      const list = problems.filter(
-        (p) => p.role !== "assessment" && p.unitId !== units[0]?.id,
-      );
-      content = `<div class='library-start'>${button("mixed-start", "練習する", "primary")}</div><div class='problem-list'>${list.map((p, j) => `<button class='problem-card' data-problem='${p.id}'><span class='unit-number'>${String(j + 1).padStart(2, "0")}</span><span class='unit-copy'><strong>問題 ${j + 1}</strong><span>${esc(p.goal)}</span></span>${icon("chevron-right")}</button>`).join("")}</div>`;
-    }
-    el.innerHTML = `<div class='library-head'><h1>学ぶ</h1>${learning ? button("learn-resume", learning.status === "choose" ? "問題の続き" : "前の答え合わせ", "secondary") : ""}</div>${section}${content}`;
+    else content = renderRecordDrillLibrary();
+    const resume = learnSection === "mixed"
+      ? recordDrills?.state ? button("drill-resume", recordDrills.busy ? "確認中" : recordDrills.view?.canPlay ? "問題の続き" : "前の答え合わせ", "secondary", recordDrills.busy ? "disabled" : "") : ""
+      : learning ? button("learn-resume", learning.status === "choose" ? "問題の続き" : "前の答え合わせ") : "";
+    el.innerHTML = `<div class='library-head'><h1>学ぶ</h1>${resume}</div>${section}${content}`;
   } else {
     const wins = records.filter((r) => r.result === "win").length,
       losses = records.filter((r) =>
@@ -1676,7 +1888,7 @@ function placeControl() {
         `ここに置く · ${coord(pending[mode])}`,
         "primary place-button",
       )
-    : `<span class='place-prompt'>${canPlace() ? "盤をタップ" : mode === "play" || learnScreen === "journey" ? esc(present(statusText())) : "答えを選ぶ"}</span>`;
+    : `<span class='place-prompt'>${canPlace() ? "盤をタップ" : mode === "play" || ["journey", "record-drill"].includes(learnScreen) ? esc(present(statusText())) : "答えを選ぶ"}</span>`;
 }
 function renderControls() {
   let html = "";
@@ -1692,7 +1904,16 @@ function renderControls() {
       placeControl() +
       ib("precision", "target", "盤面を拡大");
   else if (mode === "learn") {
-    if (learnScreen === "journey" && journey) {
+    if (learnScreen === "record-drill") {
+      const v = recordDrills?.view;
+      if (recordDrillFrame !== null && recordDrillReplayFrames.length)
+        html = ib("drill-frame-prev", "chevron-left", "前の一手", recordDrillFrame === 0) +
+          `<span class='place-prompt'>${recordDrillFrame + 1}/${recordDrillReplayFrames.length}</span>` +
+          ib("drill-frame-next", "chevron-right", "次の一手", recordDrillFrame >= recordDrillReplayFrames.length - 1) +
+          ib("precision", "target", "盤面を拡大");
+      else html = ib("drill-hint", "hint", "ヒント", !v?.canHint || recordDrills.busy || recordDrillEntering) +
+        placeControl() + ib("precision", "target", "盤面を拡大");
+    } else if (learnScreen === "journey" && journey) {
       const v = getJourneyView(journey);
       html =
         ib(
@@ -1842,7 +2063,38 @@ function renderPanel() {
             )
             .join("")}</div>`;
   } else if (mode === "learn") {
-    if (learnScreen === "journey" && journey) {
+    if (learnScreen === "record-drill") {
+      const v = recordDrills?.view, q = recordDrills?.question;
+      const source = v?.source || recordDrillLoadingQuestion?.source;
+      const label = source ? `${source.label} · ${v?.source.ply || q?.ply || recordDrillLoadingQuestion?.ply}手目` : "実戦問題";
+      const replaying = recordDrillFrame !== null && recordDrillReplayFrames.length;
+      const title = replaying ? frame.title :
+        v?.canPlay ? (v.status === "continuing" ? "応手を見て続ける" : "次の一手を選ぶ") :
+        v?.feedback?.title || (recordDrills?.error ? "問題を開けませんでした" : "問題を準備中");
+      const text = recordDrillEntering ? "" : replaying ? frame.text :
+        [v?.feedback?.text, v?.feedback?.explanation].filter(Boolean).join(" ");
+      content = `<div class='lesson-kicker'>${esc(label)}</div><h2 class='lesson-heading'>${esc(present(title))}</h2><p class='lesson-copy'>${esc(present(text))}</p>`;
+      if (!replaying && !recordDrillEntering && v?.hintStage)
+        content += `<div class='hint-step'>ヒント ${v.hintStage}</div>`;
+      if (recordDrills?.busy || recordDrillEntering)
+        actions = button("drill-library", "問題一覧", "secondary");
+      else if (replaying)
+        actions = button("drill-close-explanation", v.canPlay ? "問題に戻る" : "答え合わせへ") +
+          (recordDrillFrame < recordDrillReplayFrames.length - 1
+            ? button("drill-frame-next", "次の一手を見る", "primary")
+            : button("drill-next", "次の問題", "primary"));
+      else if (v?.canPlay)
+        actions = button("drill-explain", "解説を見る") + button("drill-next", "別の問題");
+      else if (v?.completion)
+        actions = button("drill-explain", "図で確かめる") +
+          (v.completion.scope === "line-prevented" ? button("drill-continue", "ここから対局") : "") +
+          button("drill-next", "次の問題", "primary");
+      else if (v)
+        actions = v.status === "refuted"
+          ? button("drill-explain", "相手の返し", "primary") + button("drill-correction", "改善手を見る") + button("drill-retry", "もう一度")
+          : button("drill-explain", "別の手順を見る", "primary") + button("drill-retry", "もう一度") + button("drill-next", "別の問題");
+      else actions = button("drill-library", "問題一覧", "primary");
+    } else if (learnScreen === "journey" && journey) {
       const v = getJourneyView(journey),
         preview =
           journeyHelpShown() && pending.learn !== null
@@ -1960,7 +2212,7 @@ function renderPanel() {
           (reviewRetry.accepted
             ? button("review-continue", "ここから対局", "primary")
             : button("review-retry", "もう一度試す", "primary")) +
-          button("review-related", "似た形を学ぶ");
+          button("review-related", "別の実戦で試す");
       else
         actions =
           (reviewPhase === "advice"
@@ -2060,6 +2312,7 @@ function openUnit(id, returnToPractice = false, targetProblemId = null) {
   render();
 }
 function startProblem(id, { queue = null, variant = 0, role = "lesson" } = {}) {
+  save("record-drill-route-v7", null);
   learningRole = role;
   learning = createAttempt(id, {
     replyVariant: variant,
@@ -2224,11 +2477,13 @@ function finish(result) {
   render();
   if (mode !== "play")
     toast(result === "win" ? "対局終了：あなたの勝ち" : "対局が終了しました");
+  refreshRecordDrills();
 }
 function putGame(i) {
   const b = boardFrom(game.moves);
   if (b[i] || game.result || !Number.isInteger(i) || i < 0 || i >= 225)
     return false;
+  if (!game.moves.length) recordDrills?.pauseGeneration();
   const side = (game.moves.length % 2) + 1;
   if (!game.moves.length) recordGameEvidence();
   game.moves.push({ i });
@@ -2598,6 +2853,29 @@ function retryEngine() {
   render();
 }
 const actions = {
+  "drill-start-round": () => nextRecordDrill({ newRound: true }),
+  "drill-start": (el) => openRecordDrill(recordDrills?.bank.questions.find((q) => q.id === el.dataset.drillId), { newRound: true }),
+  "drill-resume": resumeRecordDrill,
+  "drill-next": () => nextRecordDrill(),
+  "drill-library": openRecordDrillLibrary,
+  "drill-hint": () => recordDrillCommand("hint"),
+  "drill-retry": () => recordDrillCommand("retry"),
+  "drill-explain": () => explainRecordDrill(),
+  "drill-correction": () => explainRecordDrill(true),
+  "drill-continue": continueRecordDrill,
+  "drill-close-explanation": () => recordDrillCommand("hide-hints"),
+  "drill-frame-prev": () => { recordDrillFrame = Math.max(0, recordDrillFrame - 1); render(); },
+  "drill-frame-next": () => {
+    recordDrillFrame = Math.min((recordDrillReplayFrames.length || 1) - 1, (recordDrillFrame ?? -1) + 1);
+    render();
+  },
+  "drill-play": () => switchMode("play"),
+  "drill-all": () => { closeModal(); recordDrillSelection = null; recordDrillRound = []; openRecordDrillLibrary(); },
+  "drill-reload": () => {
+    recordDrillReady = recordDrills.initialize(recordDrillSources());
+    recordDrillReady.catch(() => {});
+    render();
+  },
   "unavailable-course": () => {
     closeModal();
     goRecommended();
@@ -2726,6 +3004,7 @@ const actions = {
       if (putGame(i)) cpuTurn();
     } else if (mode === "learn") {
       if (learnScreen === "journey") putJourney(i);
+      else if (learnScreen === "record-drill") submitRecordDrillMove(i);
       else submitLearning(i);
     } else submitReview(i);
   },
@@ -2750,6 +3029,7 @@ const actions = {
     finish("resign");
   },
   "learn-library": () => {
+    if (learnScreen === "record-drill") { openRecordDrillLibrary(); return; }
     learnScreen = "library";
     lessonReplay = null;
     render();
@@ -2761,6 +3041,8 @@ const actions = {
   },
   "learn-section": (el) => {
     learnSection = el.dataset.section;
+    if (learnSection === "mixed") { openRecordDrillLibrary(); return; }
+    save("record-drill-route-v7", null);
     render();
   },
   "learn-resume": () => {
@@ -2768,18 +3050,7 @@ const actions = {
     lessonReplay = null;
     render();
   },
-  "mixed-start": () => {
-    const ids = problems
-      .filter(
-        (p) =>
-          p.role !== "assessment" &&
-          (learnSection === "retry"
-            ? needsRetry(p.id)
-            : p.unitId !== units[0]?.id),
-      )
-      .map((p) => p.id);
-    if (ids.length) startProblem(ids[0], { queue: ids });
-  },
+  "mixed-start": () => nextRecordDrill({ newRound: true }),
   "demo-prev": () => {
     demoStep = Math.max(0, demoStep - 1);
     exposeLesson(unitId);
@@ -2875,7 +3146,7 @@ const actions = {
   "review-patterns": () => {
     const f = getFrame();
     openModal(
-      `<h2>この局面の型</h2><div class='menu-list'>${(f.motifs || []).map((p) => button("select-review-pattern", esc(present((p.color === 1 ? "黒" : "白") + "の" + p.name)), "secondary", `data-pattern='${esc(p.id)}'`)).join("")}</div><p class='lesson-copy'>${esc(present(f.selectedMotif?.lesson))}</p>${button("review-related", "この型を学ぶ", "primary")}`,
+      `<h2>この局面の型</h2><div class='menu-list'>${(f.motifs || []).map((p) => button("select-review-pattern", esc(present((p.color === 1 ? "黒" : "白") + "の" + p.name)), "secondary", `data-pattern='${esc(p.id)}'`)).join("")}</div><p class='lesson-copy'>${esc(present(f.selectedMotif?.lesson))}</p>${button("review-related", "別の実戦で試す", "primary")}`,
     );
   },
   "select-review-pattern": (el) => {
@@ -2903,21 +3174,17 @@ const actions = {
     reviewFrame = 0;
     render();
   },
-  "review-related": () => {
-    const skill =
-        getFrame().selectedMotif?.skillId || moments[momentIndex]?.skillId,
-      target =
-        {
-          shape: "conditions",
-          connections: "opening",
-          preparation: "prepare",
-          real: "practice",
-        }[skill] || skill;
+  "review-related": async () => {
+    const m = reviewScreen === "moment" ? moments[momentIndex] : null;
+    const skill = m?.skillId || getFrame().selectedMotif?.skillId;
+    recordDrillSelection = {
+      skillId: normalizeRecordDrillSkill(skill),
+      excludeFingerprints: [recordDrillFingerprint(m?.before || getFrame().board)],
+    };
+    recordDrillRound = [];
     closeModal();
-    mode = "learn";
-    save("view-v2", mode);
-    learnSection = "lessons";
-    openUnit(units.find((u) => u.id === target)?.id || units[0].id);
+    openRecordDrillLibrary();
+    await nextRecordDrill();
   },
   "precise-pick": (el) => {
     const i = Number(el.dataset.index);
@@ -2952,6 +3219,9 @@ const actions = {
       exportedAt: nowISO(),
       path: pathProgress,
       practiceGames,
+      recordDrillPractice: recordDrills ? {
+        version: 7, bank: recordDrills.bank, attempt: recordDrills.state,
+      } : null,
     };
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
@@ -3038,8 +3308,10 @@ $("#import-file").onchange = async (e) => {
     r.id = crypto.randomUUID();
     r.started = Number(r.started) || Date.now();
     r.assisted = true;
+    r.recordOrigin = "import";
     records.push(r);
     save("records", records);
+    refreshRecordDrills();
     loadReview(r);
   } catch {
     toast("棋譜を読み込めませんでした");
@@ -3049,6 +3321,20 @@ initBoard();
 syncViewport();
 window.addEventListener("resize", syncViewport);
 window.visualViewport?.addEventListener("resize", syncViewport);
+recordDrills = new RecordDrillController({
+  read, save,
+  onChange: () => {
+    if (mode === "learn" && (learnScreen === "record-drill" ||
+        (learnScreen === "library" && learnSection === "mixed"))) render();
+  },
+  onAssist: (kind) => markLiveHelp(`record-drill-${kind}`),
+  onExpose: exposeRecordDrillBoard,
+});
+recordDrillReady = recordDrills.initialize(recordDrillSources());
+recordDrillReady.catch(() => {});
+if ((mode === "play" && game.moves.length && !game.result) ||
+    (mode === "learn" && learnScreen === "journey" && journey && !journey.completed))
+  recordDrills.pauseGeneration();
 render();
 engine = new Engine(
   (state) => {

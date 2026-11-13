@@ -1,0 +1,31 @@
+{
+  "id": "qa-v6-22ply",
+  "rule": "freestyle15",
+  "level": "normal",
+  "result": "loss",
+  "moves": [
+    112,
+    126,
+    113,
+    142,
+    98,
+    110,
+    94,
+    144,
+    128,
+    143,
+    145,
+    141,
+    140,
+    156,
+    111,
+    186,
+    171,
+    158,
+    174,
+    172,
+    130,
+    200
+  ],
+  "provenance": "Assistant-operated local UI playthrough; anonymous test fixture, not a shipped seed."
+}

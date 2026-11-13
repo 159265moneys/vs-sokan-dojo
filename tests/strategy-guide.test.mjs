@@ -82,6 +82,8 @@ test("moving into the book marks assistance while leaving preserves the reading 
   const context = vm.createContext({
     mode: "play",
     learnScreen: "practice",
+    learnSection: "lessons",
+    recordDrills: null,
     reviewScan: { state: "idle" },
     reviewAutoOpen: false,
     saveStrategyScroll: () => events.push("scroll"),
