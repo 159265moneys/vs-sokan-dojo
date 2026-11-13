@@ -554,10 +554,15 @@ const bank = [
     "opening",
     "opening/two-directions",
     "二つの組み立て",
-    "候補を選び、白の応手から続きを考える",
+    "今の黒石につながる候補を選び、白の応手から続きを考える",
     opening,
     openingChoices,
-    { kind: "compare" },
+    {
+      kind: "compare",
+      continuationPrompts: {
+        "open-three": "白の応手を見て、残る方向に活三を作る",
+      },
+    },
   ),
   quiz(
     "opening-space",

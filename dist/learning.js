@@ -987,7 +987,8 @@ export function getDemoFrames(unitId) {
 }
 export function getLearningView(state) {
   const p = problem(state),
-    n = decision(state);
+    n = decision(state),
+    continuationPrompt = p.continuationPrompts?.[state.exercise?.objective];
   const input =
     state.status !== "choose"
       ? "none"
@@ -1019,7 +1020,9 @@ export function getLearningView(state) {
     problemId: p.id,
     unitId: p.unitId,
     title: p.title,
-    goal: state.exercise?.title || p.goal,
+    goal: state.exercise
+      ? continuationPrompt || state.exercise.title
+      : p.goal,
     kind: p.kind,
     goalKind: p.goalKind,
     input,
@@ -1039,7 +1042,10 @@ export function getLearningView(state) {
       ? state.hintTexts[state.hints.level - 1] || ""
       : "",
     guidanceSeen: state.guidanceSeen,
-    feedback: state.feedback,
+    feedback:
+      state.status === "choose" && continuationPrompt
+        ? { ...state.feedback, title: continuationPrompt }
+        : state.feedback,
     transitionFrames: state.transitionFrames,
     refutationFrames: state.refutationFrames,
   });

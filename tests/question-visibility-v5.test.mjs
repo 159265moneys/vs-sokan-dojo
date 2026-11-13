@@ -93,6 +93,27 @@ test("a unit tile opens a question without showing or recording its answer demon
   );
   assert.equal(selected.options.role, "lesson");
 });
+test("opening comparison states its criterion without supplying the continuation direction", () => {
+  const initial = createAttempt("opening-two-plans");
+  assert.match(getLearningView(initial).goal, /今の黒石につながる候補/);
+  for (const replyVariant of [0, 1]) {
+    const state = answerLearningChoice(
+      createAttempt("opening-two-plans", { replyVariant }),
+      "connect",
+    );
+    for (const question of [state, restoreLearningAttempt(copy(state))]) {
+      assert(question);
+      const view = getLearningView(question);
+      assert.equal(view.status, "choose");
+      assert.match(view.goal, /残る方向に活三/);
+      assert.doesNotMatch(view.goal, /斜め|縦|G10|I7/);
+      assert.equal(view.feedback.title, view.goal);
+      assert.equal(view.feedback.text, "");
+      assert.deepEqual(view.highlights, []);
+      assert.equal(view.hintText, "");
+    }
+  }
+});
 test("a correct prediction leaves the next input unanswered until explanation is explicitly requested", () => {
   const p = problems.find(
     (p) => p.role === "lesson" && p.assessmentDomain === "counter-threat",

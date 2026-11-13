@@ -1,4 +1,4 @@
-import { strategyChapters, strategySources } from "./strategy-article.js";
+import { strategyChapters, strategySources } from "./strategy-article.js?v=rules-20261113";
 import { diagram, data } from "./strategy-diagrams.js";
 import { coord } from "./game.js";
 

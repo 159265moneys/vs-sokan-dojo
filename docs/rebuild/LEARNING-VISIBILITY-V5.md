@@ -31,3 +31,7 @@ CUA実操作: 393×852で単元「形の条件」を開き、最初の盤に注�
 
 [問題の初期画面](screenshots/v5-question-hidden.jpg) / [課題対局の非表示](screenshots/v5-journey-hidden.jpg) / [要求したヒント](screenshots/v5-journey-requested-hint.jpg)。
 
+追加実操作: `practice-counter-v5-closed-gap-threat` の初期表示は設問が指定するI6の印だけ。白の完成点「1つ」を回答すると、元盤で安全な四を作る本人入力へ進み、注目する石・空点は0、説明の自動再生なし。手順を見たい場合だけ「予測した手順を見る」を押す。[予測正答後の次の問い](screenshots/v5-next-question-hidden.jpg)。
+
+独立教材監査で、従来の`opening-two-plans`は見本なしだと採点条件が足りず、継続見出しが縦/斜めを先に教えると判明。初期の題意に「今の黒石につながる候補」を加え、続きのgoalとfeedback.titleをともに「白の応手を見て、残る方向に活三を作る」へ変更。保存済みexerciseを変えず表示だけを中立化する。両応手の通常/復元を検査し、CUAでも変更前の保存から復帰して方向/空点の先出し0を確認。[修正後の序盤の続き](screenshots/v5-opening-hidden.jpg)。
+

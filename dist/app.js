@@ -67,7 +67,7 @@ import {
   strategyMarkup,
   strategyExposure,
   strategyRecordExposures,
-} from "./strategy-guide.js?v=strategy-20261112";
+} from "./strategy-guide.js?v=strategy-20261113";
 
 const $ = (s) => document.querySelector(s),
   $$ = (s) => [...document.querySelectorAll(s)];
