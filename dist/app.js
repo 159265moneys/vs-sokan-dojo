@@ -249,12 +249,12 @@ if (learning) {
     learnSection = savedRoute.section;
 }
 const savedRecordDrillRoute = read("record-drill-route-v7", null);
-if (savedRecordDrillRoute?.section === "mixed") {
+if (savedRecordDrillRoute?.section === "mixed" || (learning && learnSection === "mixed")) {
   learnScreen = "library";
   learnSection = "mixed";
-  recordDrillRound = Array.isArray(savedRecordDrillRoute.round)
+  recordDrillRound = Array.isArray(savedRecordDrillRoute?.round)
     ? savedRecordDrillRoute.round.filter((id) => typeof id === "string").slice(0, 60) : [];
-  recordDrillSelection = savedRecordDrillRoute.selection || null;
+  recordDrillSelection = savedRecordDrillRoute?.selection || null;
 }
 
 const emptyFrame = () => ({
@@ -3070,8 +3070,11 @@ const actions = {
     render();
   },
   "learn-resume": () => {
+    if (!learning) return;
     learnScreen = "practice";
     lessonReplay = null;
+    save("record-drill-route-v7", null);
+    saveLearning();
     render();
   },
   "mixed-start": () => nextRecordDrill({ newRound: true }),

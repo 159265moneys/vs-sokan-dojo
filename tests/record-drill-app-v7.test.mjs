@@ -245,3 +245,32 @@ for (const entry of ["new", "history", "tab"])
     }
     assert(paused);
   });
+
+test("an old fixed mixed-practice save opens the real-game bank without deleting the old attempt", () => {
+  const block = app.slice(app.indexOf('const savedRecordDrillRoute = read('), app.indexOf('const emptyFrame ='));
+  for (const section of ["mixed", "lessons"]) {
+    const learning = { problemId: "three-room", status: "choose", history: [{ i: 118, side: 1 }], hints: { uses: 2 } };
+    const ctx = vm.createContext({ read: () => null, learning, learnScreen: "practice", learnSection: section,
+      recordDrillRound: [], recordDrillSelection: null });
+    vm.runInContext(block, ctx);
+    assert.equal(ctx.learning, learning);
+    assert.equal(ctx.learnScreen, section === "mixed" ? "library" : "practice");
+    assert.equal(ctx.learnSection, section);
+    assert.equal(learning.history.length, 1);
+    assert.equal(learning.hints.uses, 2);
+  }
+});
+
+test("resuming that retained basic question persists its explicit basic-learning destination", () => {
+  const start = app.indexOf('"learn-resume": () => {'), end = app.indexOf('\n  "mixed-start":', start);
+  const handler = app.slice(start, end).replace('"learn-resume": ', 'handler = ').replace(/,\s*$/, '');
+  const saves = [], learning = { problemId: "three-room", status: "choose" };
+  const ctx = vm.createContext({ learning, learnScreen: "library", learnSection: "lessons", lessonReplay: {},
+    save: (key, value) => saves.push([key, value]),
+    saveLearning: () => saves.push(["learning-route", ctx.learnSection]), render: () => {},
+  });
+  vm.runInContext(handler + '\nhandler();', ctx);
+  assert.equal(ctx.learning, learning);
+  assert.equal(ctx.learnScreen, "practice");
+  assert.deepEqual(saves, [["record-drill-route-v7", null], ["learning-route", "lessons"]]);
+});
