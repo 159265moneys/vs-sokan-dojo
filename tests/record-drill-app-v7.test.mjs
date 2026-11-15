@@ -89,6 +89,18 @@ test("finished-game source collection excludes the active game and authored setu
   assert.deepEqual(Array.from(ctx.selected, (r) => r.id), ["actual", "guided"]);
 });
 
+test("old app matches without an explicit rule remain usable, while declared other rules are not rewritten", () => {
+  const legacy = structuredClone(seed.records[0]);
+  delete legacy.rule;
+  const unsupported = { ...legacy, id: "other-rule", rule: "renju" };
+  const ctx = vm.createContext({ records: [legacy, unsupported], practiceGames: [], game: { id: "active", result: null } });
+  vm.runInContext(source("recordDrillSources", "refreshRecordDrills") + "\nselected = recordDrillSources();", ctx);
+  assert.equal(ctx.selected[0].rule, "freestyle15");
+  assert.equal(ctx.selected[0].moves, legacy.moves);
+  assert.equal(legacy.rule, undefined);
+  assert.equal(ctx.selected[1].rule, "renju");
+});
+
 test("late problem loading cannot replace a newer selected question or reopen a departed screen", async () => {
   const [a, b] = seed.questions;
   const waiting = new Map();

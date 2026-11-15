@@ -1556,7 +1556,8 @@ function recordDrillSources() {
     r?.moves?.length >= 15 && (!r.startPly || r.startPly === 0) &&
     !r.sourceLessonId && (!r.startBoard ||
       (Array.isArray(r.startBoard) && !r.startBoard.some(Boolean))) &&
-    !(r.id === game.id && !game.result));
+    !(r.id === game.id && !game.result))
+    .map((r) => r.rule === undefined ? { ...r, rule: "freestyle15" } : r);
 }
 function refreshRecordDrills() {
   recordDrills?.syncRecords(recordDrillSources());
