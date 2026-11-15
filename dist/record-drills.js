@@ -171,23 +171,28 @@ function fresh(q, attemptId) {
     status: "ready", scope: "unknown", result: null, last: q.prefix.at(-1) ?? null,
     hintStage: 0, answerShown: false, feedback: null, plan: null,
     feedbackFrames: [], explanationFrames: [],
-    metrics: { assisted: false, hints: 0, answers: 0, errors: 0, retries: 0, exposures: 0, unknown: 0 },
-    events: [], qualification: { fullGame: false, independentCurriculum: false },
+    metrics: { assisted: false, hints: 0, answers: 0, errors: 0, retries: 0, exposures: 0, unknown: 0, completed: 0 },
+    events: [], eventOffset: 0, checkpoint: null, completionEventOrdinal: null,
+    qualification: { fullGame: false, independentCurriculum: false },
   };
 }
 export function startRecordDrill(q, { attemptId } = {}) { assertQuestion(q); return fresh(q, attemptId); }
 function checked(q, state) {
   assertQuestion(q);
   if (!state || state.version !== RECORD_DRILL_VERSION || state.questionId !== q.id ||
-      state.sourceHash !== q.source.recordHash || !Array.isArray(state.events) || state.events.length >= MAX_EVENTS ||
+      state.sourceHash !== q.source.recordHash || !Array.isArray(state.events) || state.events.length > MAX_EVENTS ||
+      !Number.isSafeInteger(state.eventOffset) || state.eventOffset < 0 ||
       !equal(state.moves?.slice(0, q.prefix.length), q.prefix) ||
       !equal(state.board, Array.from(boardFrom(state.moves)))) throw Error("実戦問題の試行が不正です");
-  return clone(state);
+  const s = clone(state);
+  return s.events.length === MAX_EVENTS ? compactState(q, s) : s;
 }
 const actionable = (s) => s.status === "ready" || s.status === "continuing";
 function finish(s, scope) {
   s.status = "completed"; s.scope = scope;
   s.result = scope === "line-prevented" ? "line-prevented" : "black-win";
+  s.metrics.completed++;
+  s.completionEventOrdinal = s.eventOffset + s.events.length;
   s.plan = null;
 }
 function currentGuide(q, s) { return s.moves.length === q.prefix.length ? q.moment.alternatives : [s.plan?.line?.[0]].filter(Number.isInteger); }
@@ -300,8 +305,81 @@ export function hideRecordDrillHints(q, state) {
 export function retryRecordDrill(q, state) {
   const s = checked(q, state), next = fresh(q, s.attemptId);
   next.events = [...s.events, { type: "retry" }];
+  next.eventOffset = s.eventOffset;
+  next.checkpoint = s.checkpoint;
   next.metrics = { ...s.metrics, retries: s.metrics.retries + 1 };
   return next;
+}
+
+function eventValid(event) {
+  return event && ["play", "hint", "answer", "retry", "hide-hints"].includes(event.type) &&
+    equal(Object.keys(event).sort(), event.type === "play" ? ["point", "type"] : ["type"]);
+}
+function replayEvents(q, initial, events) {
+  let s = initial;
+  for (const event of events) {
+    if (!eventValid(event)) throw Error("試行履歴が不正です");
+    const ordinal = s.eventOffset + s.events.length;
+    if (event.type === "play") s = playRecordDrill(q, s, event.point);
+    else if (event.type === "hint") s = hintRecordDrill(q, s);
+    else if (event.type === "answer") s = answerRecordDrill(q, s);
+    else if (event.type === "hide-hints") s = hideRecordDrillHints(q, s);
+    else s = retryRecordDrill(q, s);
+    if (s.eventOffset + s.events.length !== ordinal + 1) throw Error("試行履歴を再生できません");
+  }
+  return s;
+}
+const positionState = (s) => canonical(Object.fromEntries(Object.entries(s).filter(([key]) =>
+  !["events", "eventOffset", "checkpoint", "completionEventOrdinal", "metrics"].includes(key))));
+function checkpointState(q, attemptId, checkpoint) {
+  const c = checkpoint;
+  if (!c || c.version !== 1 || c.questionId !== q.id || c.sourceHash !== q.source.recordHash ||
+      c.attemptId !== attemptId || c.integrity !== materialHash(c) ||
+      !equal(Object.keys(c).sort(), ["version", "questionId", "sourceHash", "attemptId", "eventOrdinal", "completionEventOrdinal", "events", "metrics", "integrity"].sort()) ||
+      !Array.isArray(c.events) || c.events.length > 16 ||
+      c.events.some((event) => event.type === "retry") ||
+      !Number.isSafeInteger(c.eventOrdinal) || c.eventOrdinal < MAX_EVENTS ||
+      c.eventOrdinal < c.events.length) throw Error("試行の集約履歴が不正です");
+  let s = replayEvents(q, fresh(q, attemptId), c.events);
+  const m = c.metrics, numeric = ["hints", "answers", "errors", "retries", "exposures", "unknown", "completed"];
+  if (!m || !equal(Object.keys(m).sort(), [...numeric, "assisted"].sort()) ||
+      numeric.some((key) => !Number.isSafeInteger(m[key]) || m[key] < s.metrics[key]) ||
+      m.assisted !== (m.hints + m.answers > 0) ||
+      m.exposures + m.retries > c.eventOrdinal ||
+      m.hints + m.answers + m.errors + m.unknown + m.completed > m.exposures ||
+      (s.status === "completed" ?
+        !Number.isSafeInteger(c.completionEventOrdinal) || c.completionEventOrdinal < 1 || c.completionEventOrdinal > c.eventOrdinal :
+        c.completionEventOrdinal !== null)) throw Error("試行の累積記録が不正です");
+  s.events = [];
+  s.eventOffset = c.eventOrdinal;
+  s.checkpoint = clone(c);
+  s.completionEventOrdinal = c.completionEventOrdinal;
+  s.metrics = clone(m);
+  return s;
+}
+/** Compact only historical receipts; replay every current Black choice from the actual source. */
+function compactState(q, state) {
+  const history = [...(state.checkpoint?.events || []), ...state.events];
+  const retryIndex = history.findLastIndex((event) => event.type === "retry");
+  const round = history.slice(retryIndex + 1);
+  const events = round.filter((event) => event.type === "play");
+  const lastPlay = round.findLastIndex((event) => event.type === "play");
+  const answered = round.slice(lastPlay + 1).some((event) => event.type === "answer");
+  if (answered) {
+    events.push({ type: "answer" });
+    if (!state.answerShown) events.push({ type: "hide-hints" });
+  }
+  if (!state.answerShown) for (let n = 0; n < state.hintStage; n++) events.push({ type: "hint" });
+  const checkpoint = {
+    version: 1, questionId: q.id, sourceHash: q.source.recordHash, attemptId: state.attemptId,
+    eventOrdinal: state.eventOffset + state.events.length,
+    completionEventOrdinal: state.completionEventOrdinal,
+    events, metrics: clone(state.metrics),
+  };
+  checkpoint.integrity = materialHash(checkpoint);
+  const compact = checkpointState(q, state.attemptId, checkpoint);
+  if (!equal(positionState(compact), positionState(state))) throw Error("現在の局面を集約できません");
+  return compact;
 }
 
 /** Sole presentation boundary: do not bind raw questions, plans, or source outcomes to blind UI. */
@@ -332,17 +410,15 @@ export function restoreRecordDrill(q, raw) {
     assertQuestion(q);
     if (!raw || raw.questionId !== q.id || raw.sourceHash !== q.source.recordHash ||
         !Array.isArray(raw.events) || raw.events.length > MAX_EVENTS) return null;
-    let s = startRecordDrill(q, { attemptId: raw.attemptId });
-    for (const event of raw.events) {
-      if (!event || !["play", "hint", "answer", "retry", "hide-hints"].includes(event.type) ||
-          !equal(Object.keys(event).sort(), event.type === "play" ? ["point", "type"] : ["type"])) return null;
-      const count = s.events.length;
-      if (event.type === "play") s = playRecordDrill(q, s, event.point);
-      else if (event.type === "hint") s = hintRecordDrill(q, s);
-      else if (event.type === "answer") s = answerRecordDrill(q, s);
-      else if (event.type === "hide-hints") s = hideRecordDrillHints(q, s);
-      else s = retryRecordDrill(q, s);
-      if (s.events.length !== count + 1) return null;
+    const legacy = ["eventOffset", "checkpoint", "completionEventOrdinal"].every((key) => !Object.hasOwn(raw, key)) &&
+      raw.metrics && !Object.hasOwn(raw.metrics, "completed");
+    let s = raw.checkpoint ? checkpointState(q, raw.attemptId, raw.checkpoint) : startRecordDrill(q, { attemptId: raw.attemptId });
+    s = replayEvents(q, s, raw.events);
+    if (legacy) {
+      const previousShape = clone(s);
+      delete previousShape.eventOffset; delete previousShape.checkpoint; delete previousShape.completionEventOrdinal;
+      delete previousShape.metrics.completed;
+      return equal(canonical(previousShape), canonical(raw)) ? s : null;
     }
     return equal(canonical(s), canonical(raw)) ? s : null;
   } catch { return null; }

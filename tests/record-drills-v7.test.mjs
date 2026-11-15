@@ -296,6 +296,123 @@ test("wrong-answer refutation survives correction, hint closing and restore as a
   blind(q, s);
 });
 
+test("the 256-event boundary restores, closes hints, retries and grades without becoming unusable", () => {
+  const q = lossQuestions[0];
+  let s = startRecordDrill(q, { attemptId: "boundary" });
+  for (let n = 0; n < 256; n++) s = retryRecordDrill(q, s);
+  assert.equal(s.events.length, 256);
+  assert.equal(s.eventOffset, 0);
+  s = restoreRecordDrill(q, JSON.parse(JSON.stringify(s)));
+  assert(s);
+  s = hideRecordDrillHints(q, s);
+  assert.equal(s.eventOffset + s.events.length, 256);
+  assert.equal(s.events.length, 0);
+  assert.equal(s.metrics.retries, 256);
+  assert.deepEqual(restoreRecordDrill(q, s), s);
+  s = retryRecordDrill(q, s);
+  s = playRecordDrill(q, s, q.moment.alternatives[0]);
+  assert.equal(s.status, "completed");
+  assert.equal(s.completionEventOrdinal, 258);
+  assert.equal(s.metrics.completed, 1);
+  assert.equal(s.metrics.retries, 257);
+  const successOrdinal = s.completionEventOrdinal;
+  for (let n = 0; n < 140; n++) {
+    s = answerRecordDrill(q, s);
+    s = hideRecordDrillHints(q, s);
+  }
+  assert(s.eventOffset >= 512);
+  assert.equal(s.completionEventOrdinal, successOrdinal);
+  assert.equal(s.metrics.completed, 1);
+  assert.deepEqual(restoreRecordDrill(q, s), s);
+});
+
+test("multiple compactions preserve a partial winning sequence, lifetime counters and actual source prefix", () => {
+  const q = expertQuestions[0];
+  let s = startRecordDrill(q, { attemptId: "long-partial" });
+  for (let n = 0; n < 90; n++) {
+    s = hintRecordDrill(q, s);
+    s = hideRecordDrillHints(q, s);
+    s = retryRecordDrill(q, s);
+  }
+  s = playRecordDrill(q, s, q.moment.alternatives[0]);
+  assert.equal(s.status, "continuing");
+  const board = structuredClone(s.board), plan = structuredClone(s.plan), moves = [...s.moves];
+  for (let n = 0; n < 200; n++) {
+    s = hintRecordDrill(q, s);
+    s = hideRecordDrillHints(q, s);
+  }
+  s = hintRecordDrill(q, s);
+  assert.equal(s.eventOffset + s.events.length, 672);
+  assert(s.eventOffset >= 512);
+  assert(s.events.length <= 256);
+  assert(s.checkpoint.events.length <= 16);
+  assert.deepEqual(s.board, board);
+  assert.deepEqual(s.moves, moves);
+  assert.deepEqual(s.plan, plan);
+  assert.equal(s.metrics.hints, 291);
+  assert.equal(s.metrics.retries, 90);
+  assert.equal(s.metrics.exposures, 292);
+  assert(s.metrics.assisted);
+  const counters = structuredClone(s.metrics);
+  s = restoreRecordDrill(q, JSON.parse(JSON.stringify(s)));
+  assert(s);
+  s = hideRecordDrillHints(q, s);
+  assert.deepEqual(s.metrics, counters);
+  assert.deepEqual(getRecordDrillView(q, s).highlights, []);
+  while (s.status === "continuing") s = playRecordDrill(q, s, s.plan.line[0]);
+  assert.equal(s.result, "black-win");
+  assert.equal(winner(s.board), 1);
+  assert.equal(s.metrics.completed, 1);
+  assert.equal(s.metrics.hints, 291);
+  assert.equal(s.metrics.retries, 90);
+  assert.deepEqual(s.moves.slice(0, q.prefix.length), q.prefix);
+  assert.deepEqual(s.qualification, { fullGame: false, independentCurriculum: false });
+  assert.deepEqual(restoreRecordDrill(q, s), s);
+});
+
+test("checkpoint corruption cannot erase errors, rewrite current choices, change ordinal or fabricate completion", () => {
+  const q = lossQuestions[0];
+  let s = playRecordDrill(q, startRecordDrill(q), q.moment.actual);
+  s = answerRecordDrill(q, s);
+  for (let n = 0; n < 300; n++) s = retryRecordDrill(q, s);
+  s = playRecordDrill(q, s, q.moment.alternatives[0]);
+  assert(s.checkpoint);
+  assert.equal(s.metrics.errors, 1);
+  assert.equal(s.metrics.answers, 1);
+  assert.equal(s.metrics.completed, 1);
+  assert.deepEqual(restoreRecordDrill(q, s), s);
+  for (const mutate of [
+    (x) => x.metrics.errors = 0,
+    (x) => x.metrics.completed = 99,
+    (x) => x.checkpoint.metrics.errors = 0,
+    (x) => x.checkpoint.eventOrdinal--,
+    (x) => x.eventOffset--,
+    (x) => x.checkpoint.events.push({ type: "play", point: 0 }),
+    (x) => x.checkpoint.sourceHash = "changed",
+    (x) => x.completionEventOrdinal--,
+    (x) => x.checkpoint.completionEventOrdinal = 1,
+    (x) => x.qualification.independentCurriculum = true,
+  ]) {
+    const changed = structuredClone(s); mutate(changed);
+    assert.equal(restoreRecordDrill(q, changed), null);
+  }
+});
+
+test("pre-checkpoint v7 full journals upgrade only after complete legacy-shape replay validation", () => {
+  const q = lossQuestions[0];
+  let current = playRecordDrill(q, startRecordDrill(q), q.moment.actual);
+  current = retryRecordDrill(q, current);
+  current = playRecordDrill(q, current, q.moment.alternatives[0]);
+  const legacy = structuredClone(current);
+  delete legacy.eventOffset; delete legacy.checkpoint; delete legacy.completionEventOrdinal;
+  delete legacy.metrics.completed;
+  assert.deepEqual(restoreRecordDrill(q, legacy), current);
+  const tampered = structuredClone(legacy); tampered.metrics.errors = 0;
+  assert.equal(restoreRecordDrill(q, tampered), null);
+  const partiallyMissing = structuredClone(current); delete partiallyMissing.checkpoint;
+  assert.equal(restoreRecordDrill(q, partiallyMissing), null);
+});
+
 test("reject authored snapshots, invalid/terminal-before histories and mismatched colors; unknown-only/density cases are empty", async () => {
   for (const record of [
     { ...loss, startPly: 2 }, { ...loss, startPly: -1 }, { ...loss, sourceLessonId: "lesson" },

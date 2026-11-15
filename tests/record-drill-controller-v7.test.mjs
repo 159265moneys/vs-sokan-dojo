@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { handleRecordDrillMessage } from "../dist/record-drill-worker.js";
-import { RECORD_DRILL_WORKER_VERSION, recordSourceHash, playRecordDrill, startRecordDrill } from "../dist/record-drills.js";
+import { RECORD_DRILL_WORKER_VERSION, recordSourceHash, playRecordDrill, startRecordDrill, retryRecordDrill } from "../dist/record-drills.js";
 import { getRecordDrillStats, hasRecordDrillAnalysis } from "../dist/record-drill-bank.js";
 import {
   RecordDrillController, RECORD_DRILL_BANK_KEY, RECORD_DRILL_ATTEMPT_KEY, RECORD_DRILL_ANALYSIS_KEY,
@@ -11,7 +11,7 @@ import {
 const seeds = JSON.parse(fs.readFileSync(new URL("../dist/record-drill-seeds-v7.json", import.meta.url), "utf8"));
 const copy = (value) => JSON.parse(JSON.stringify(value));
 const flush = async () => { for (let i = 0; i < 15; i++) await Promise.resolve(); };
-function harness({ memory = new Map(), manualGrade = false, manualExtract = true, seedError = false, failSave = false } = {}) {
+function harness({ memory = new Map(), manualGrade = false, manualExtract = true, seedError = false, failSave = false, fetchSeeds } = {}) {
   const workers = [], assists = [], exposures = [], writes = [];
   let changes = 0;
   const workerFactory = (channel) => {
@@ -37,15 +37,57 @@ function harness({ memory = new Map(), manualGrade = false, manualExtract = true
   };
   const controller = new RecordDrillController({
     read: (key, fallback) => memory.has(key) ? copy(memory.get(key)) : fallback,
-    save: (key, value) => { writes.push([key, copy(value)]); if (failSave) return false; memory.set(key, copy(value)); return true; },
+    save: (key, value) => { writes.push([key, copy(value)]); if (typeof failSave === "function" ? failSave(key, value) : failSave) return false; memory.set(key, copy(value)); return true; },
     onChange: () => changes++, onAssist: (kind) => assists.push(kind),
     onExpose: (board, skill) => exposures.push({ board, skill }), workerFactory,
-    fetchSeeds: async () => { if (seedError) throw Error("seed load failed"); return copy(seeds); },
+    fetchSeeds: fetchSeeds || (async () => { if (seedError) throw Error("seed load failed"); return copy(seeds); }),
   });
   return { controller, workers, memory, assists, exposures, writes, get changes() { return changes; } };
 }
 const receipt = (record) => ({ recordHash: recordSourceHash(record), analysisKey: RECORD_DRILL_ANALYSIS_KEY });
 const unfinished = (record) => ({ ...copy(record), moves: copy(record.moves.slice(0, -2)), result: "unfinished" });
+const deferred = () => {
+  let resolve, reject;
+  const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
+  return { promise, resolve, reject };
+};
+
+test("a newer record synchronization survives a pending seed fetch", async () => {
+  const gate = deferred(), h = harness({ fetchSeeds: () => gate.promise }), c = h.controller;
+  const record = { ...unfinished(seeds.records[0]), recordOrigin: "import", id: "qa22-import" };
+  const loading = c.initialize([]);
+  c.syncRecords([record]);
+  const worker = h.workers.at(-1);
+  assert.equal(worker.channel, "extract");
+  gate.resolve(copy(seeds)); await loading;
+  assert.equal(worker.terminated, false);
+  assert.equal(c.scan.state, "scanning");
+  assert.deepEqual(worker.request.record, record);
+  worker.send({ type: "result", questions: [] }); await flush();
+  assert(hasRecordDrillAnalysis(c.bank, receipt(record)));
+});
+
+test("failed seed loading and a retried fetch cannot clear newer active or queued records", async () => {
+  const firstGate = deferred(), retryGate = deferred(), gates = [firstGate, retryGate];
+  const h = harness({ fetchSeeds: () => gates.shift().promise }), c = h.controller;
+  const firstRecord = unfinished(seeds.records[0]), secondRecord = unfinished(seeds.records[1]);
+  const firstLoad = c.initialize([]);
+  c.syncRecords([firstRecord]);
+  const active = h.workers.at(-1);
+  firstGate.reject(Error("seed fetch failed")); await firstLoad;
+  assert.equal(active.terminated, false);
+  const retryLoad = c.initialize([]);
+  c.syncRecords([firstRecord, secondRecord]);
+  retryGate.resolve(copy(seeds)); await retryLoad;
+  assert.equal(active.terminated, false);
+  assert.equal(c.scan.queued, 1);
+  active.send({ type: "result", questions: [] }); await flush();
+  const queued = h.workers.at(-1);
+  assert.deepEqual(queued.request.record, secondRecord);
+  queued.send({ type: "result", questions: [] }); await flush();
+  assert(hasRecordDrillAnalysis(c.bank, receipt(firstRecord)));
+  assert(hasRecordDrillAnalysis(c.bank, receipt(secondRecord)));
+});
 
 test("seed loading, fresh start and storage preserve full real boards with a unique attempt", async () => {
   const h = harness(), c = h.controller;
@@ -307,4 +349,64 @@ test("seed fetch failure leaves cached questions usable and persistence failure 
   assert.equal(failed.controller.state.hintStage, 1);
   assert.deepEqual(original.memory.get(RECORD_DRILL_BANK_KEY), oldBank);
   assert.deepEqual(original.memory.get(RECORD_DRILL_ATTEMPT_KEY), oldAttempt);
+});
+
+test("restore recovers exact missing history after bank writes fail but attempt writes succeed", async () => {
+  let failBank = false;
+  const h = harness({ failSave: (key) => failBank && key === RECORD_DRILL_BANK_KEY }), c = h.controller;
+  await c.initialize();
+  const q = seeds.questions.find((item) => item.moment.skillId === "defense");
+  await c.start(q);
+  failBank = true;
+  await c.command("hint");
+  await c.command("grade", q.moment.alternatives[0]);
+  await c.command("retry");
+  assert(c.error.includes("保存"));
+  assert.equal(h.memory.get(RECORD_DRILL_BANK_KEY).stats[q.id].completed, 0);
+  assert.equal(h.memory.get(RECORD_DRILL_ATTEMPT_KEY).state.status, "ready");
+  assert.equal(h.memory.get(RECORD_DRILL_ATTEMPT_KEY).state.metrics.completed, 1);
+  const restored = harness({ memory: h.memory }).controller;
+  await restored.initialize();
+  const stats = getRecordDrillStats(restored.bank, q.id);
+  assert.deepEqual([stats.seen, stats.hints, stats.retries, stats.completed, stats.attempts], [1, 1, 1, 1, 1]);
+  await restored.resume();
+  assert.deepEqual(getRecordDrillStats(restored.bank, q.id), stats);
+});
+
+test("cumulative history beyond 512 actions survives event receipt eviction and repeated refresh", async () => {
+  const h = harness(), c = h.controller;
+  await c.initialize(); await c.start(c.choose()); await c.command("hint");
+  let state = copy(c.state);
+  for (let i = 0; i < 600; i++) state = retryRecordDrill(c.question, state);
+  assert(state.eventOffset > 0);
+  h.memory.set(RECORD_DRILL_ATTEMPT_KEY, { version: 7, questionId: c.question.id, sourceHash: c.question.source.recordHash, state });
+  const restored = harness({ memory: h.memory }).controller;
+  await restored.initialize();
+  const stats = getRecordDrillStats(restored.bank, c.question.id);
+  assert.deepEqual([stats.seen, stats.hints, stats.retries], [1, 1, 600]);
+  const raw = h.memory.get(RECORD_DRILL_BANK_KEY);
+  raw.eventIds = Array.from({ length: 700 }, (_, i) => `other-attempt-event-${i}`);
+  h.memory.set(RECORD_DRILL_BANK_KEY, raw);
+  const again = harness({ memory: h.memory }).controller;
+  await again.initialize();
+  assert.deepEqual(getRecordDrillStats(again.bank, c.question.id), stats);
+  await again.command("retry");
+  assert.equal(getRecordDrillStats(again.bank, c.question.id).retries, 601);
+});
+
+test("old event receipts migrate to watermarks without reapplying 200 counted retries", async () => {
+  const h = harness(), c = h.controller;
+  await c.initialize(); await c.start(c.choose());
+  let state = copy(c.state);
+  for (let i = 0; i < 200; i++) state = retryRecordDrill(c.question, state);
+  const oldBank = copy(c.bank), prefix = `${c.question.id}:${state.attemptId}:`;
+  delete oldBank.attemptHistory; delete oldBank.activeAttemptKey;
+  oldBank.stats[c.question.id].retries = 200;
+  oldBank.eventIds = [`${prefix}open`, ...Array.from({ length: 200 }, (_, i) => `${prefix}retries:${i + 1}`)];
+  h.memory.set(RECORD_DRILL_BANK_KEY, oldBank);
+  h.memory.set(RECORD_DRILL_ATTEMPT_KEY, { version: 7, questionId: c.question.id, sourceHash: c.question.source.recordHash, state });
+  const restored = harness({ memory: h.memory }).controller;
+  await restored.initialize();
+  assert.deepEqual(getRecordDrillStats(restored.bank, c.question.id), oldBank.stats[c.question.id]);
+  assert.equal(Object.values(restored.bank.attemptHistory)[0].retries, 200);
 });

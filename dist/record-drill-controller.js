@@ -1,7 +1,7 @@
 import { RECORD_DRILL_WORKER_VERSION, recordSourceHash, verifyRecordDrill } from "./record-drills.js";
 import {
   createRecordDrillBank, mergeRecordDrills, selectRecordDrill, pinRecordDrill,
-  noteDrillExposure, recordRecordDrillAttempt, noteRecordDrillAnalysis, hasRecordDrillAnalysis,
+  reconcileRecordDrillHistory, noteRecordDrillAnalysis, hasRecordDrillAnalysis,
 } from "./record-drill-bank.js";
 
 export const RECORD_DRILL_BANK_KEY = "record-drill-bank-v7";
@@ -32,7 +32,7 @@ export class RecordDrillController {
     this.error = ""; this.seedsError = ""; this.busy = false; this.loading = false;
     this.question = null; this.state = null; this.view = null; this.replayFrames = [];
     this.scan = { state: "idle", done: 0, total: 0, queued: 0 };
-    this._serial = 0; this._initSerial = 0; this._gradeEpoch = 0;
+    this._serial = 0; this._initSerial = 0; this._gradeEpoch = 0; this._recordsRevision = 0;
     this._gradeJob = null; this._scanJob = null; this._scanCurrent = null;
     this._queue = new Map(); this._records = new Map(); this._failed = new Set();
     this._scanError = "";
@@ -96,7 +96,7 @@ export class RecordDrillController {
   }
 
   async initialize(records = []) {
-    const serial = ++this._initSerial;
+    const serial = ++this._initSerial, recordsRevision = this._recordsRevision;
     this.loading = true; this.seedsError = ""; this._notify();
     try {
       let seeds = await this._fetchSeeds("./record-drill-seeds-v7.json");
@@ -116,7 +116,7 @@ export class RecordDrillController {
     } finally {
       if (!this._disposed && serial === this._initSerial) {
         this.loading = false;
-        this.syncRecords(records);
+        if (recordsRevision === this._recordsRevision) this.syncRecords(records);
         if (!this.question && this._savedAttempt) await this.resume();
         this._notify();
       }
@@ -134,26 +134,18 @@ export class RecordDrillController {
       throw Error("実戦問題の結果が一致しません");
     return { state: clone(s), view: clone(view) };
   }
-  _history(state, previous = null) {
-    const q = this.question, before = previous?.metrics || {}, metrics = state.metrics;
-    this.bank = noteDrillExposure(this.bank, q.id, { eventId: `${state.attemptId}:open` });
-    for (const [metric, outcome] of [["hints", "hint"], ["answers", "hint"], ["errors", "mistake"], ["unknown", "unknown"], ["retries", "retry"]]) {
-      const total = Number.isInteger(metrics?.[metric]) ? Math.min(256, metrics[metric]) : 0;
-      for (let n = before[metric] || 0; n < total; n++) this.bank = recordRecordDrillAttempt(this.bank, {
-        questionId: q.id, eventId: `${state.attemptId}:${metric}:${n + 1}`, outcome,
-      });
-    }
-    if (state.status === "completed") {
-      const eventCount = state.events.findLastIndex((event) => event.type === "play") + 1;
-      if (eventCount) this.bank = recordRecordDrillAttempt(this.bank, {
-        questionId: q.id, eventId: `${state.attemptId}:success:${eventCount}`, outcome: "success",
-      });
-    }
+  _history(state) {
+    const completionEventOrdinal = state.status === "completed" ? state.completionEventOrdinal ??
+      ((state.eventOffset || 0) + state.events.findLastIndex((event) => event.type === "play") + 1) : null;
+    this.bank = reconcileRecordDrillHistory(this.bank, {
+      questionId: this.question.id, sourceHash: this.question.source.recordHash,
+      attemptId: state.attemptId, metrics: state.metrics, completionEventOrdinal,
+    });
   }
   _publish(result, previous = null) {
     this.state = result.state; this.view = result.view;
     this.replayFrames = clone(this.view.explanationFrames || []);
-    this._history(this.state, previous);
+    this._history(this.state);
     this._saveBank(); this._saveAttempt();
   }
   _expose(board) {
@@ -247,6 +239,7 @@ export class RecordDrillController {
 
   syncRecords(records = []) {
     if (this._disposed) return;
+    this._recordsRevision++;
     const valid = new Map();
     for (const record of Array.isArray(records) ? records : []) {
       if (!completeRecord(record)) continue;

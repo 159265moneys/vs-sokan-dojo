@@ -6,6 +6,7 @@ import {
   createRecordDrillBank, mergeRecordDrills, selectRecordDrill, pinRecordDrill,
   noteDrillExposure, recordRecordDrillAttempt, getRecordDrillStats,
   noteRecordDrillAnalysis, hasRecordDrillAnalysis, recordDrillBankBytes,
+  reconcileRecordDrillHistory,
   normalizeRecordDrillSkill, RECORD_DRILL_BANK_MAX_QUESTIONS, RECORD_DRILL_BANK_MAX_BYTES,
 } from "../dist/record-drill-bank.js";
 
@@ -171,4 +172,43 @@ test("receipt and event histories cannot grow the derived cache beyond its bound
   assert.equal(Object.keys(bank.analysisReceipts).length, 240);
   assert(recordDrillBankBytes(bank) <= RECORD_DRILL_BANK_MAX_BYTES);
   assert.equal(bank.questions.length, 1);
+});
+
+test("one cumulative reconciliation updates exact counters and survives receipt eviction", () => {
+  const q = questions[0];
+  const entry = { questionId: q.id, sourceHash: q.source.recordHash, attemptId: "long-attempt",
+    metrics: { hints: 200, answers: 3, errors: 4, unknown: 5, retries: 600, completed: 2 },
+    completionEventOrdinal: 1200, at: 10 };
+  let bank = reconcileRecordDrillHistory(bankWithSeeds(), entry);
+  const stats = getRecordDrillStats(bank, q.id);
+  assert.deepEqual([stats.seen, stats.hints, stats.mistakes, stats.unknown, stats.retries, stats.completed, stats.attempts],
+    [1, 203, 4, 5, 600, 2, 6]);
+  assert.deepEqual(reconcileRecordDrillHistory(bank, entry), bank);
+  bank = createRecordDrillBank({ ...bank, eventIds: Array.from({ length: 700 }, (_, i) => `other-event-${i}`) });
+  assert.equal(bank.eventIds.length, 512);
+  const restored = reconcileRecordDrillHistory(bank, { ...entry, at: 999 });
+  assert.deepEqual(getRecordDrillStats(restored, q.id), stats);
+  assert.deepEqual(restored, bank);
+  const advanced = reconcileRecordDrillHistory(restored, { ...entry, metrics: { ...entry.metrics, retries: 601, completed: 3 }, completionEventOrdinal: 1400 });
+  assert.equal(advanced.stats[q.id].retries, 601);
+  assert.equal(advanced.stats[q.id].completed, 3);
+  assert.equal(advanced.stats[q.id].attempts, 7);
+});
+
+test("the active attempt watermark is retained when older attempt histories exceed the bounded cache", () => {
+  const q = questions[0];
+  let bank = reconcileRecordDrillHistory(bankWithSeeds(), { questionId: q.id, sourceHash: q.source.recordHash,
+    attemptId: "active", metrics: { retries: 800 }, at: 10 });
+  const activeKey = bank.activeAttemptKey, history = bank.attemptHistory[activeKey];
+  const raw = clone(bank);
+  for (let i = 0; i < 400; i++) {
+    const attemptId = `old-${i}`;
+    raw.attemptHistory[JSON.stringify([q.id, attemptId])] = { ...history, attemptId, updated: i + 100 };
+  }
+  bank = createRecordDrillBank(raw);
+  assert.equal(Object.keys(bank.attemptHistory).length, 240);
+  assert.deepEqual(bank.attemptHistory[activeKey], history);
+  assert.equal(bank.activeAttemptKey, activeKey);
+  assert(recordDrillBankBytes(bank) <= RECORD_DRILL_BANK_MAX_BYTES);
+  assert(recordDrillBankBytes(createRecordDrillBank(raw, { maxBytes: 1024 })) <= 1024);
 });

@@ -216,7 +216,9 @@ let recordDrills = null,
   recordDrillFrame = null,
   recordDrillReplayFrames = [],
   recordDrillEntering = false,
+  recordDrillHideOnReturn = false,
   recordDrillLoadingQuestion = null,
+  recordDrillLoadingFrame = null,
   recordDrillNavigation = 0,
   recordDrillRound = [],
   recordDrillSelection = null;
@@ -561,8 +563,10 @@ function switchMode(next) {
     journeyHelpKey = null;
     if (learnScreen === "record-drill") {
       recordDrillNavigation++;
+      recordDrillHideOnReturn = true;
       recordDrillEntering = false;
       recordDrillLoadingQuestion = null;
+      recordDrillLoadingFrame = null;
       recordDrillFrame = null;
       if (!recordDrills?.view?.canPlay) learnScreen = "library";
     }
@@ -583,9 +587,10 @@ function switchMode(next) {
   mode = next;
   save("view-v2", mode);
   render();
-  if (mode === "play" && !game.result && game.moves.length)
+  if ((mode === "play" && !game.result && game.moves.length) ||
+      (mode === "learn" && learnScreen === "journey" && journey && !journey.completed))
     recordDrills?.pauseGeneration();
-  if (mode === "learn" && learnSection === "mixed") {
+  if (mode === "learn" && learnSection === "mixed" && learnScreen !== "journey") {
     recordDrills?.resumeGeneration();
     if (learnScreen === "record-drill") resumeRecordDrill();
   }
@@ -1291,7 +1296,7 @@ function saveJourney() {
   });
   savePath();
 }
-function archiveJourney() {
+function archiveJourney({ generate = true } = {}) {
   if (!journey) return;
   const r = getJourneyResult(journey);
   const item = {
@@ -1312,7 +1317,7 @@ function archiveJourney() {
   else practiceGames[i] = item;
   save("practice-games-v3", practiceGames);
   saveJourney();
-  if (r.completed) refreshRecordDrills();
+  if (r.completed && generate) refreshRecordDrills();
 }
 function startJourney(trackId, options = {}) {
   const commit = () => {
@@ -1321,7 +1326,7 @@ function startJourney(trackId, options = {}) {
     journeyHelpKey = null;
     if (trackId !== "practice" || options.sourceReview)
       markLiveHelp("guided-practice");
-    if (journey) archiveJourney();
+    if (journey) archiveJourney({ generate: false });
     const cancelOldJourney = journeyBusy;
     journeyEpoch++;
     if (cancelOldJourney && engine?.pending) engine.cancel();
@@ -1364,7 +1369,8 @@ function resumePractice(id) {
     return;
   }
   const commit = () => {
-    if (journey && journey.id !== id) archiveJourney();
+    recordDrills?.pauseGeneration();
+    if (journey && journey.id !== id) archiveJourney({ generate: false });
     const cancel = journeyBusy;
     journeyEpoch++;
     journeyBusy = false;
@@ -1578,7 +1584,7 @@ function exposeRecordDrillBoard(board, skillId) {
 function currentRecordDrillFrame() {
   const q = recordDrillLoadingQuestion || recordDrills?.question;
   if (recordDrillEntering || !recordDrills?.view)
-    return { ...emptyFrame(), board: q?.before?.slice() || Array(225).fill(0) };
+    return recordDrillLoadingFrame || { ...emptyFrame(), board: q?.before?.slice() || Array(225).fill(0) };
   const v = recordDrills.view;
   if (recordDrillFrame !== null && recordDrillReplayFrames.length)
     return recordDrillReplayFrames[Math.min(recordDrillFrame, recordDrillReplayFrames.length - 1)];
@@ -1587,8 +1593,10 @@ function currentRecordDrillFrame() {
 }
 function openRecordDrillLibrary() {
   recordDrillNavigation++;
+  recordDrillHideOnReturn = true;
   recordDrillEntering = false;
   recordDrillLoadingQuestion = null;
+  recordDrillLoadingFrame = null;
   mode = "learn";
   learnSection = "mixed";
   learnScreen = "library";
@@ -1601,6 +1609,7 @@ function openRecordDrillLibrary() {
 async function openRecordDrill(question, { newRound = false } = {}) {
   if (!recordDrills || !question) return;
   const navigation = ++recordDrillNavigation;
+  recordDrillHideOnReturn = false;
   if (newRound) { recordDrillRound = []; recordDrillSelection = null; }
   recordDrillRound = [...new Set([...recordDrillRound, question.id])];
   mode = "learn";
@@ -1610,6 +1619,8 @@ async function openRecordDrill(question, { newRound = false } = {}) {
   recordDrillFrame = null;
   recordDrillEntering = true;
   recordDrillLoadingQuestion = question;
+  recordDrillLoadingFrame = { board: question.before.slice(), last: question.prefix.at(-1) ?? null,
+    highlights: [], history: question.prefix.map((i) => ({ i })) };
   pending.learn = null;
   save("view-v2", mode);
   saveRecordDrillRoute();
@@ -1619,23 +1630,34 @@ async function openRecordDrill(question, { newRound = false } = {}) {
     if (navigation !== recordDrillNavigation) return;
     recordDrillEntering = false;
     recordDrillLoadingQuestion = null;
+    recordDrillLoadingFrame = null;
     if (!recordDrills.view) learnScreen = "library";
     render();
   }
 }
 async function resumeRecordDrill() {
-  if (!recordDrills?.question || recordDrills.busy || recordDrillEntering) return;
+  if (!recordDrills?.question || (recordDrillEntering && !recordDrillHideOnReturn)) return;
   const navigation = ++recordDrillNavigation;
   mode = "learn"; learnSection = "mixed"; learnScreen = "record-drill";
   recordDrillEntering = true;
   recordDrillLoadingQuestion = recordDrills.question;
+  recordDrillLoadingFrame = {
+    board: recordDrills.state?.board?.slice() || recordDrills.question.before.slice(),
+    last: recordDrills.state?.last ?? null, highlights: [],
+    history: (recordDrills.state?.moves || recordDrills.question.prefix).map((i) => ({ i })),
+  };
   recordDrillFrame = null;
   pending.learn = null;
   save("view-v2", mode); saveRecordDrillRoute(); render();
+  if (recordDrills.busy) {
+    recordDrillHideOnReturn = true;
+    return;
+  }
+  recordDrillHideOnReturn = false;
   try { await recordDrills.resume(); }
   finally {
     if (navigation !== recordDrillNavigation) return;
-    recordDrillEntering = false; recordDrillLoadingQuestion = null;
+    recordDrillEntering = false; recordDrillLoadingQuestion = null; recordDrillLoadingFrame = null;
     if (!recordDrills.view) learnScreen = "library";
     render();
   }
@@ -2928,6 +2950,8 @@ const actions = {
   "journey-variant": (el) =>
     startJourney(el.dataset.track, { replyVariant: el.dataset.variant }),
   "journey-resume": () => {
+    recordDrills?.pauseGeneration();
+    save("record-drill-route-v7", null);
     journeyHelpKey = null;
     mode = "learn";
     learnScreen = "journey";
@@ -3324,10 +3348,19 @@ window.visualViewport?.addEventListener("resize", syncViewport);
 recordDrills = new RecordDrillController({
   read, save,
   onChange: () => {
+    if (recordDrillHideOnReturn && !recordDrills?.busy && recordDrills?.question &&
+        mode === "learn" && learnScreen === "record-drill") {
+      recordDrillEntering = false;
+      void resumeRecordDrill();
+      return;
+    }
     if (mode === "learn" && (learnScreen === "record-drill" ||
         (learnScreen === "library" && learnSection === "mixed"))) render();
   },
-  onAssist: (kind) => markLiveHelp(`record-drill-${kind}`),
+  onAssist: (kind) => {
+    if (mode === "learn" && learnScreen === "record-drill" && !recordDrillEntering)
+      markLiveHelp(`record-drill-${kind}`);
+  },
   onExpose: exposeRecordDrillBoard,
 });
 recordDrillReady = recordDrills.initialize(recordDrillSources());

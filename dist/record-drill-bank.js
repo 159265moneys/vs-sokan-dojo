@@ -3,7 +3,7 @@ import { verifyRecordDrill, recordDrillFingerprint } from "./record-drills.js";
 export const RECORD_DRILL_BANK_VERSION = 7;
 export const RECORD_DRILL_BANK_MAX_QUESTIONS = 60;
 export const RECORD_DRILL_BANK_MAX_BYTES = 1_500_000;
-const MAX_STATS = 240, MAX_RECEIPTS = 240, MAX_EVENTS = 512, MAX_RECENT = 12;
+const MAX_STATS = 240, MAX_RECEIPTS = 240, MAX_ATTEMPTS = 240, MAX_EVENTS = 512, MAX_RECENT = 12;
 const sourceRank = { own: 0, import: 1, library: 2 };
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const count = (value) => Number.isSafeInteger(value) && value >= 0 ? value : 0;
@@ -90,12 +90,16 @@ function bound(bank, options) {
   bank.activeId = kept.has(bank.activeId) ? bank.activeId : null;
   bank.stats = trimMap(bank.stats, MAX_STATS, kept);
   bank.analysisReceipts = trimMap(bank.analysisReceipts, MAX_RECEIPTS);
+  bank.attemptHistory = trimMap(bank.attemptHistory, MAX_ATTEMPTS, new Set([bank.activeAttemptKey]));
+  if (!Object.hasOwn(bank.attemptHistory, bank.activeAttemptKey) ||
+      !kept.has(bank.attemptHistory[bank.activeAttemptKey]?.questionId)) bank.activeAttemptKey = null;
   bank.eventIds = bank.eventIds.slice(-MAX_EVENTS);
   bank.recentIds = bank.recentIds.filter((id) => kept.has(id)).slice(-MAX_RECENT);
   const withinBudget = () => recordDrillBankBytes(bank) <= maxBytes;
   // Derived receipts and evicted-position history yield before useful boards.
-  for (const map of [bank.analysisReceipts, bank.stats]) {
-    const removable = Object.keys(map).filter((id) => map !== bank.stats || !kept.has(id))
+  for (const map of [bank.analysisReceipts, bank.attemptHistory, bank.stats]) {
+    const removable = Object.keys(map).filter((id) => (map !== bank.stats || !kept.has(id)) &&
+      (map !== bank.attemptHistory || id !== bank.activeAttemptKey))
       .sort((a, b) => map[a].updated - map[b].updated);
     for (const id of removable) { if (withinBudget()) break; delete map[id]; }
   }
@@ -105,6 +109,10 @@ function bound(bank, options) {
     const q = removable[0];
     bank.questions = bank.questions.filter((item) => item.id !== q.id);
     delete bank.stats[q.id];
+    for (const [key, history] of Object.entries(bank.attemptHistory)) if (history.questionId === q.id) {
+      delete bank.attemptHistory[key];
+      if (bank.activeAttemptKey === key) bank.activeAttemptKey = null;
+    }
     bank.recentIds = bank.recentIds.filter((id) => id !== q.id);
     if (bank.activeId === q.id) bank.activeId = null;
   }
@@ -115,8 +123,9 @@ function bound(bank, options) {
 export function createRecordDrillBank(raw = null, options = {}) {
   if (typeof raw === "string") { try { raw = JSON.parse(raw); } catch { raw = null; } }
   if (raw?.version !== RECORD_DRILL_BANK_VERSION) raw = null;
-  const bank = { version: RECORD_DRILL_BANK_VERSION, questions: [], stats: {}, analysisReceipts: {},
+  const bank = { version: RECORD_DRILL_BANK_VERSION, questions: [], stats: {}, analysisReceipts: {}, attemptHistory: {},
     activeId: text(options.activeId === undefined ? raw?.activeId : options.activeId) || null,
+    activeAttemptKey: text(raw?.activeAttemptKey, 340) || null,
     recentIds: [], eventIds: [], sequence: count(raw?.sequence) };
   if (raw && typeof raw === "object") {
     for (const [id, value] of Object.entries(raw.stats || {})) {
@@ -127,6 +136,10 @@ export function createRecordDrillBank(raw = null, options = {}) {
     for (const [key, receipt] of Object.entries(raw.analysisReceipts || {})) {
       const clean = cleanReceipt(receipt);
       if (clean && receiptKey(clean) === key) bank.analysisReceipts[key] = clean;
+    }
+    for (const [key, history] of Object.entries(raw.attemptHistory || {})) {
+      const clean = cleanAttemptHistory(history);
+      if (clean && attemptHistoryKey(clean) === key) bank.attemptHistory[key] = clean;
     }
     bank.eventIds = Array.isArray(raw.eventIds) ? [...new Set(raw.eventIds.filter((id) => typeof id === "string" && id.length <= 320))] : [];
     bank.recentIds = Array.isArray(raw.recentIds) ? raw.recentIds.filter((id) => typeof id === "string") : [];
@@ -182,6 +195,76 @@ export function selectRecordDrill(raw, options = {}) {
 export function getRecordDrillStats(raw, questionId) {
   const bank = createRecordDrillBank(raw);
   return bank.stats[questionId] ? clone(bank.stats[questionId]) : null;
+}
+const HISTORY_METRICS = ["hints", "answers", "errors", "unknown", "retries", "completed"];
+const attemptHistoryKey = (history) => JSON.stringify([history.questionId, history.attemptId]);
+function cleanAttemptHistory(raw) {
+  if (!raw || !raw.questionId || !raw.attemptId || raw.questionId.length > 160 || raw.attemptId.length > 160 ||
+      typeof raw.questionId !== "string" || typeof raw.attemptId !== "string" || !/^[a-f0-9]{16}$/.test(raw.sourceHash || "")) return null;
+  const out = { questionId: raw.questionId, attemptId: raw.attemptId, sourceHash: raw.sourceHash, opened: raw.opened === true };
+  for (const metric of HISTORY_METRICS) out[metric] = count(raw[metric]);
+  out.successOrdinal = count(raw.successOrdinal); out.updated = count(raw.updated);
+  return out;
+}
+function legacyAttemptHistory(bank, q, attemptId) {
+  const history = cleanAttemptHistory({ questionId: q.id, attemptId, sourceHash: q.source.recordHash });
+  const prefix = `${q.id}:${attemptId}:`, successes = new Set();
+  // One bounded scan migrates the previous event receipts, with no repeated bank validation.
+  for (const id of bank.eventIds) {
+    if (!id.startsWith(prefix)) continue;
+    const suffix = id.slice(prefix.length);
+    if (suffix === "open") { history.opened = true; continue; }
+    const separator = suffix.indexOf(":"), metric = suffix.slice(0, separator), ordinal = Number(suffix.slice(separator + 1));
+    if (separator < 0 || !Number.isSafeInteger(ordinal) || ordinal < 1) continue;
+    if (HISTORY_METRICS.includes(metric)) history[metric] = Math.max(history[metric], ordinal);
+    else if (metric === "success") { successes.add(ordinal); history.successOrdinal = Math.max(history.successOrdinal, ordinal); }
+    else continue;
+    history.opened = true;
+  }
+  history.completed = Math.max(history.completed, successes.size);
+  return history;
+}
+/** Atomically advances independent statistics and this attempt's cumulative watermarks. */
+export function reconcileRecordDrillHistory(raw, { questionId, sourceHash, attemptId, metrics,
+  completionEventOrdinal = null, at = Date.now() } = {}) {
+  const bank = createRecordDrillBank(raw), q = bank.questions.find((item) => item.id === questionId);
+  if (!q || q.source.recordHash !== sourceHash || typeof attemptId !== "string" || !attemptId || attemptId.length > 160 ||
+      !metrics || HISTORY_METRICS.some((metric) => metrics[metric] !== undefined &&
+        (!Number.isSafeInteger(metrics[metric]) || metrics[metric] < 0))) return bank;
+  const key = attemptHistoryKey({ questionId, attemptId });
+  const saved = bank.attemptHistory[key];
+  const previous = saved?.sourceHash === sourceHash ? saved : legacyAttemptHistory(bank, q, attemptId);
+  const next = { ...previous, opened: true }, deltas = {};
+  for (const metric of HISTORY_METRICS) {
+    let total = count(metrics[metric]);
+    // Compatibility with canonical states produced before the cumulative completion metric.
+    if (metric === "completed" && metrics.completed === undefined)
+      total = previous.completed + Number(count(completionEventOrdinal) > previous.successOrdinal);
+    next[metric] = Math.max(previous[metric], total);
+    deltas[metric] = next[metric] - previous[metric];
+  }
+  next.successOrdinal = Math.max(previous.successOrdinal, count(completionEventOrdinal));
+  const opened = !previous.opened, progressed = HISTORY_METRICS.some((metric) => deltas[metric] > 0);
+  if (saved && !opened && !progressed && next.successOrdinal === previous.successOrdinal && bank.activeAttemptKey === key) return bank;
+  bank.sequence++;
+  const stat = bank.stats[q.id], when = timestamp(at), prefix = `${q.id}:${attemptId}:`;
+  if (opened) {
+    stat.seen++; stat.lastSeenAt = when;
+    bank.recentIds = [...bank.recentIds.filter((id) => id !== q.id), q.id];
+    bank.eventIds.push(`${prefix}open`);
+  }
+  if (progressed) {
+    stat.hints += deltas.hints + deltas.answers;
+    stat.mistakes += deltas.errors; stat.unknown += deltas.unknown; stat.retries += deltas.retries;
+    stat.completed += deltas.completed; stat.attempts += deltas.errors + deltas.completed;
+    stat.lastAttemptAt = when;
+    for (const metric of HISTORY_METRICS) if (deltas[metric]) bank.eventIds.push(`${prefix}${metric}:${next[metric]}`);
+  }
+  if (next.successOrdinal > previous.successOrdinal) bank.eventIds.push(`${prefix}success:${next.successOrdinal}`);
+  if (opened || progressed) stat.updated = bank.sequence;
+  bank.attemptHistory[key] = { ...next, updated: bank.sequence };
+  bank.activeAttemptKey = key;
+  return bound(bank);
 }
 function recordEvent(raw, questionId, event, apply) {
   const bank = createRecordDrillBank(raw);

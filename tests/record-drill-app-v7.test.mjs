@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import vm from "node:vm";
 import { readFileSync } from "node:fs";
 import { createRecordDrillBank, mergeRecordDrills, selectRecordDrill, normalizeRecordDrillSkill } from "../dist/record-drill-bank.js";
-import { recordDrillFingerprint, startRecordDrill, playRecordDrill, answerRecordDrill, getRecordDrillView } from "../dist/record-drills.js";
+import { recordDrillFingerprint, startRecordDrill, playRecordDrill, answerRecordDrill, hideRecordDrillHints, getRecordDrillView } from "../dist/record-drills.js";
 import { createJourney, playJourneyMove, getJourneyResult } from "../dist/journey.js";
 
 const app = readFileSync(new URL("../dist/app.js", import.meta.url), "utf8");
@@ -154,6 +154,7 @@ test("a real-drill hint does not mark a future empty match assisted, but marks a
     RecordDrillController: class { constructor(options) { this.options = options; } },
     read: () => null, save: () => {}, exposeRecordDrillBoard: () => {},
     learningRole: "lesson", learning: null, journey: null, playTrace: null,
+    mode: "learn", learnScreen: "record-drill", recordDrillEntering: false,
     game: { moves: [], result: null, assisted: false },
     saveGame: () => writes.push("save"), recordGameEvidence: () => writes.push("evidence"),
   });
@@ -167,4 +168,80 @@ test("a real-drill hint does not mark a future empty match assisted, but marks a
   ctx.recordDrills.options.onAssist("hint");
   assert.equal(ctx.game.assisted, true);
   assert.deepEqual(writes, ["save", "evidence"]);
+  ctx.mode = "play";
+  ctx.game.assisted = false;
+  ctx.recordDrills.options.onAssist("hint");
+  assert.equal(ctx.game.assisted, false, "an unseen late answer must not taint a different active match");
+  assert.deepEqual(writes, ["save", "evidence"]);
 });
+
+test("returning while an answer is still loading hides that late answer before the resumed board is rendered", async () => {
+  const q = seed.questions[0], initial = startRecordDrill(q);
+  let resumes = 0;
+  const frames = [];
+  const controller = {
+    question: q, state: initial, view: getRecordDrillView(q, initial), busy: true,
+    async resume() {
+      resumes++;
+      this.state = hideRecordDrillHints(q, this.state);
+      this.view = getRecordDrillView(q, this.state);
+      return this.view;
+    },
+  };
+  const ctx = vm.createContext({
+    RecordDrillController: class { constructor(options) { controller.options = options; return controller; } },
+    read: () => null, save: () => {}, onAssist: () => {}, exposeRecordDrillBoard: () => {},
+    mode: "learn", learnScreen: "record-drill", learnSection: "mixed",
+    recordDrillNavigation: 0, recordDrillEntering: false, recordDrillHideOnReturn: false,
+    recordDrillLoadingQuestion: null, recordDrillLoadingFrame: null, recordDrillFrame: null,
+    recordDrillReplayFrames: [], pending: { learn: null },
+    saveRecordDrillRoute: () => {}, emptyFrame: () => ({ board: [], highlights: [] }),
+    render: () => frames.push(ctx.currentRecordDrillFrame()),
+  });
+  const start = app.indexOf("recordDrills = new RecordDrillController({");
+  const end = app.indexOf("recordDrillReady = recordDrills.initialize", start);
+  vm.runInContext(source("currentRecordDrillFrame", "openRecordDrillLibrary") +
+    source("resumeRecordDrill", "nextRecordDrill") + app.slice(start, end), ctx);
+  await ctx.resumeRecordDrill();
+  assert.equal(resumes, 0);
+  assert.equal(ctx.recordDrillHideOnReturn, true);
+  controller.state = answerRecordDrill(q, initial);
+  controller.view = getRecordDrillView(q, controller.state);
+  assert(controller.view.highlights.some((mark) => mark.points.length));
+  controller.busy = false;
+  controller.options.onChange();
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(resumes, 1);
+  assert.equal(ctx.recordDrillEntering, false);
+  assert.equal(controller.state.metrics.answers, 1);
+  assert.equal(controller.state.answerShown, false);
+  assert(frames.length > 0 && frames.every((frame) => frame.highlights.length === 0));
+  assert(frames.every((frame) => JSON.stringify(frame.board) === JSON.stringify(q.before)));
+});
+
+for (const entry of ["new", "history", "tab"])
+  test(`background extraction stays paused when an active journey is entered by ${entry}`, () => {
+    let paused = false;
+    const active = { id: "active", completed: false, moves: [], startPly: 0 };
+    const ctx = vm.createContext({
+      recordDrills: { pauseGeneration: () => { paused = true; } },
+      journey: { id: "old", completed: true, moves: [1, 2], startPly: 0 },
+      practiceGames: [{ id: "resume", snapshot: {} }],
+      recoverJourney: () => active,
+      createJourney: () => active,
+      archiveJourney: (options) => { if (options?.generate !== false) paused = false; },
+      journeyBusy: false, journeyEpoch: 0, journeyError: null, journeyHelpKey: null, engine: null,
+      pending: { learn: null }, crypto: { randomUUID: () => "new" },
+      mode: "guide", learnScreen: "journey", learnSection: "games", lessonReplay: null,
+      markLiveHelp: () => {}, closeModal: () => {}, save: () => {}, saveJourney: () => {}, render: () => {},
+      journeyReply: () => { assert(paused, "CPU play must not restart extraction while archiving an older game"); },
+      saveStrategyScroll: () => {}, reviewScan: { state: "idle" },
+    });
+    if (entry === "new") vm.runInContext(source("startJourney", "resumePractice") + "\nstartJourney('build');", ctx);
+    if (entry === "history") vm.runInContext(source("resumePractice", "startRecovery") + "\nresumePractice('resume');", ctx);
+    if (entry === "tab") {
+      ctx.journey = active;
+      vm.runInContext(source("switchMode", "statusText") + "\nswitchMode('learn');", ctx);
+    }
+    assert(paused);
+  });
